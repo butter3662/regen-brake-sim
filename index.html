@@ -168,6 +168,18 @@ dl.sym dd{margin:0;color:var(--ink-2)}
     </div>
     <div class="results">
       <div class="tiles" id="sm-tiles"></div>
+      <div class="card anim">
+        <h2>주행 애니메이션</h2>
+        <p class="cap">위 조건으로 제동하는 모습을 실제 시간 비율로 재생한다. 값을 바꾸면 처음부터 다시 재생된다. 전선 위 점선이 빠를수록 발전 전류가 크고, 배터리 칸은 최종 발전량 대비 누적 비율이다. 차 위 화살표는 발전기와 마찰 브레이크가 내는 제동력이다. 회색 점선 차는 발전기가 없는 차로, 발전기만으로 제동하는 경우에만 앞의 차와 정지 위치가 달라진다.</p>
+        <canvas id="sm-anim" role="img" aria-label="감속하는 자동차 애니메이션"></canvas>
+        <div class="hud" id="sm-hud"></div>
+        <div class="ctrl">
+          <button type="button" id="sm-play">일시정지</button>
+          <button type="button" id="sm-restart">처음부터</button>
+          <label for="sm-rate">재생 속도 <select id="sm-rate"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label>
+          <input type="range" id="sm-scrub" min="0" max="1000" value="0" aria-label="재생 위치">
+        </div>
+      </div>
       <div class="two">
         <div class="card">
           <h2>자기장 세기와 발전량</h2>
@@ -249,10 +261,10 @@ dl.sym dd{margin:0;color:var(--ink-2)}
         <canvas id="veh-anim" role="img" aria-label="감속하는 자동차 애니메이션"></canvas>
         <div class="hud" id="veh-hud"></div>
         <div class="ctrl">
-          <button type="button" id="anim-play">일시정지</button>
-          <button type="button" id="anim-restart">처음부터</button>
-          <label for="anim-rate">재생 속도 <select id="anim-rate"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select></label>
-          <input type="range" id="anim-scrub" min="0" max="1000" value="0" aria-label="재생 위치">
+          <button type="button" id="veh-play">일시정지</button>
+          <button type="button" id="veh-restart">처음부터</button>
+          <label for="veh-rate">재생 속도 <select id="veh-rate"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select></label>
+          <input type="range" id="veh-scrub" min="0" max="1000" value="0" aria-label="재생 위치">
         </div>
       </div>
       <div class="two">
@@ -646,12 +658,11 @@ function runVeh(){
   lineChart($('#veh-c3'),{xLabel:'등가 부하 저항 R (Ω, 로그 눈금)', yLabel:'회수 에너지 (kJ)', xName:'R', xUnit:'Ω', yUnit:'kJ', xLog:true,
     series:[{name:'회수 에너지', color:'--s1', pts}],
     marks:[{x:Math.min(Math.max(p.R,0.01),10), label:`현재 R = ${fmt(p.R)} Ω`},{x:best[0], label:`최대 ≈ ${fmt(best[0])} Ω`, dash:'1 3'}]});
-  animSet(p,on,off);
+  vehAnim.set({on,off,rw:p.rw,forces:v=>vehF(p,v,false),iLabel:'발전 전류 I',eLabel:'누적 회수 E<sub>L</sub>'});
 }
 
-/* ---------- 주행 애니메이션 ---------- */
+/* ---------- 주행 애니메이션 (두 모드 공용) ---------- */
 const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const A={p:null,on:null,off:null,t:0,T:0,playing:false,rate:1,last:null,phase:0,raf:0,maxPfr:1,maxI:1,maxF:1};
 function lerpState(rec,t){
   if(t<=rec[0].t) return rec[0].s;
   const n=rec.length; if(t>=rec[n-1].t) return rec[n-1].s;
@@ -664,26 +675,6 @@ function mixC(a,b,u){ const pa=hexRGB(a), pb=hexRGB(b); return 'rgb('+pa.map((v,
 function colors(){ const cs=getComputedStyle(document.documentElement); const g=n=>cs.getPropertyValue(n).trim();
   return {ink:g('--ink'),ink2:g('--ink-2'),ink3:g('--ink-3'),line:g('--line'),surface:g('--surface'),s1:g('--s1'),s2:g('--s2'),s3:g('--s3'),crit:g('--crit'),
     car:g('--car'),glass:g('--glass'),tire:g('--tire'),disc:g('--disc'),rim:g('--rim'),road:g('--road'),sky:g('--sky')}; }
-function animSet(p,on,off){
-  A.p=p; A.on=on; A.off=off; A.T=Math.max(on.t,off.t); A.t=0; A.last=null; A.phase=0;
-  A.maxPfr=1e-9; A.maxI=1e-9; A.maxF=1e-9;
-  on.rec.forEach(r=>{ const v=r.s[0]; if(v<=0) return; const F=vehF(p,v,false);
-    A.maxPfr=Math.max(A.maxPfr,F.Ffr*v); A.maxI=Math.max(A.maxI,F.I); A.maxF=Math.max(A.maxF,F.Ffr,F.Fgen); });
-  A.playing=!reduceMotion && adv && !$('#view-vehicle').hidden;
-  syncBtn(); drawAnim(); if(A.playing) startLoop();
-}
-function syncBtn(){ const b=$('#anim-play'); b.textContent = A.playing ? '일시정지' : (A.t>=A.T ? '다시 재생' : '재생'); }
-function startLoop(){ cancelAnimationFrame(A.raf); A.last=null; A.raf=requestAnimationFrame(tick); }
-function tick(ts){
-  if(!A.playing) return;
-  if(A.last!=null){ const dtr=Math.min(0.1,(ts-A.last)/1000);
-    const v=lerpState(A.on.rec,A.t)[0]; const I=v>0?vehF(A.p,v,false).I:0;
-    A.phase += 90*dtr*(I/A.maxI); A.t+=dtr*A.rate; }
-  A.last=ts;
-  if(A.t>=A.T){ A.t=A.T; A.playing=false; syncBtn(); }
-  drawAnim();
-  if(A.playing) A.raf=requestAnimationFrame(tick);
-}
 function arrowL(ctx,x,y,len,col,label,C){
   ctx.fillStyle=C.ink2; ctx.font='11px "Noto Sans KR",sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText(label,x+6,y);
   ctx.textBaseline='alphabetic';
@@ -745,48 +736,81 @@ function drawCar(ctx,cx,gy,s,rw,th,o,C){
   drawWheel(ctx,fx,by,R,th,o.ghost?0:o.heat,o.ghost,C);
   ctx.restore();
 }
-function drawAnim(){
-  if(!A.on) return;
-  const cv=$('#veh-anim'); const W=cv.clientWidth, H=cv.clientHeight; if(!W||!H) return;
-  const dpr=window.devicePixelRatio||1;
-  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
-  const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); const C=colors();
-  const p=A.p, st=lerpState(A.on.rec,A.t), so=lerpState(A.off.rec,A.t);
-  const v=st[0], x=st[6], xo=so[6];
-  const F= v>0 ? vehF(p,v,false) : {Fgen:0,Ffr:0,Fair:0,Froll:0,I:0,PL:0};
-  const s=Math.max(16,Math.min(34,W/24)), gy=H-46, X0=W*0.42, half=2.2;
-  const X=xw=>X0+(xw-x)*s;
-  ctx.setLineDash([]);
-  ctx.fillStyle=C.sky; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle=C.road; ctx.fillRect(0,gy,W,24);
-  ctx.strokeStyle=C.surface; ctx.lineWidth=2;
-  const xl=x-X0/s, xr=x+(W-X0)/s;
-  for(let k=Math.floor(xl/3)*3;k<xr;k+=3){ ctx.beginPath(); ctx.moveTo(X(k),gy+12); ctx.lineTo(X(k+1.5),gy+12); ctx.stroke(); }
-  ctx.font='11px "IBM Plex Mono",monospace'; ctx.textAlign='center'; ctx.fillStyle=C.ink3;
-  for(let d=Math.ceil(xl/10)*10; d<xr; d+=10){ const px=X(d); ctx.strokeStyle=C.ink3; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(px,gy+24); ctx.lineTo(px,gy+30); ctx.stroke(); ctx.fillText(d+' m',px,gy+42); }
-  const xs=A.on.s[6], xso=A.off.s[6];
-  ctx.font='11px "Noto Sans KR",sans-serif';
-  const flag=(xw,col,txt,dash,row)=>{ const px=X(xw); if(px<-60||px>W+60) return; ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.setLineDash(dash); ctx.beginPath(); ctx.moveTo(px,12+row*14); ctx.lineTo(px,gy+24); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle=col; const right=px>W-120; ctx.textAlign=right?'right':'left'; ctx.fillText(txt,px+(right?-4:4),22+row*14); };
-  flag(0,C.ink3,'제동 시작',[3,3],0);
-  if(Math.abs(xso-xs)>0.3) flag(xso,C.ink3,`발전기 없음 정지 ${fmt(xso)} m`,[2,3],1);
-  flag(xs,C.s1,`정지 위치 ${fmt(xs)} m`,[5,3],0);
-  const rw=p.rw>0?p.rw:0.3;
-  drawCar(ctx,X(xo-half),gy,s,rw,xo/rw,{ghost:true},C);
-  drawCar(ctx,X(x-half),gy,s,rw,x/rw,{ghost:false,heat:A.maxPfr>0?F.Ffr*v/A.maxPfr:0,I:F.I,phase:A.phase,batt:A.on.s[1]>0?st[1]/A.on.s[1]:0},C);
-  /* 제동력 화살표: 운동 반대 방향(왼쪽) */
-  const ax=X(x-half)-2.2*s+2, maxLen=Math.min(2.8*s, ax-8), yTop=gy-Math.max(4,rw*s)-1.2*s-16;
-  arrowL(ctx,ax,yTop-15,F.Ffr/A.maxF*maxLen,C.s2,`마찰 ${fmt(F.Ffr)} N`,C);
-  arrowL(ctx,ax,yTop,F.Fgen/A.maxF*maxLen,C.s1,`발전기 ${fmt(F.Fgen)} N`,C);
-  const items=[['시간 t',fmt(A.t)+' s'],['속력 v',fmt(v*3.6)+' km/h'],['이동 거리 x',fmt(x)+' m'],['발전 전류 I',fmt(F.I)+' A'],
-    ['발전기 제동력',fmt(F.Fgen)+' N'],['마찰 제동력',fmt(F.Ffr)+' N'],['회수 전력 P<sub>L</sub>',fmt(F.PL)+' W'],['누적 회수 E<sub>L</sub>',fmt(st[1]/1000)+' kJ']];
-  $('#veh-hud').innerHTML=items.map(i=>`<div>${i[0]}<b>${i[1]}</b></div>`).join('');
-  const sc=$('#anim-scrub'); if(document.activeElement!==sc) sc.value=String(Math.round(A.T>0?A.t/A.T*1000:0));
+/* 애니메이션 하나 = 캔버스 + 실시간 표시 + 재생 조작. pre-anim, pre-hud, pre-play, pre-restart, pre-rate, pre-scrub 요소를 쓴다.
+   on/off: {rec:[{t,s}], t} — s[0] 속력, s[1] 누적 발전량(J), s[6] 이동 거리. forces(v): {Fgen,Ffr,I,PL} */
+function makeAnim(pre){
+  const el=id=>$('#'+pre+'-'+id);
+  const A={on:null,off:null,forces:null,rw:0.3,iLabel:'발전 전류 I',eLabel:'누적 발전량',
+    t:0,T:0,playing:false,rate:1,last:null,phase:0,raf:0,maxPfr:1,maxI:1,maxF:1};
+  const visible=()=>el('anim').offsetParent!==null;
+  function sync(){ el('play').textContent = A.playing ? '일시정지' : (A.T>0 && A.t>=A.T ? '다시 재생' : '재생'); }
+  function start(){ cancelAnimationFrame(A.raf); A.last=null; A.raf=requestAnimationFrame(tick); }
+  function tick(ts){
+    if(!A.playing) return;
+    if(A.last!=null){ const dtr=Math.min(0.1,(ts-A.last)/1000);
+      const v=lerpState(A.on.rec,A.t)[0]; const I=v>0?A.forces(v).I:0;
+      A.phase += 90*dtr*(I/A.maxI); A.t+=dtr*A.rate; }
+    A.last=ts;
+    if(A.t>=A.T){ A.t=A.T; A.playing=false; sync(); }
+    draw();
+    if(A.playing) A.raf=requestAnimationFrame(tick);
+  }
+  function draw(){
+    if(!A.on) return;
+    const cv=el('anim'); const W=cv.clientWidth, H=cv.clientHeight; if(!W||!H) return;
+    const dpr=window.devicePixelRatio||1;
+    if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
+    const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); const C=colors();
+    const st=lerpState(A.on.rec,A.t), so=lerpState(A.off.rec,A.t);
+    const v=st[0], x=st[6], xo=so[6];
+    const F= v>0 ? A.forces(v) : {Fgen:0,Ffr:0,I:0,PL:0};
+    const s=Math.max(16,Math.min(34,W/24)), gy=H-46, X0=W*0.42, half=2.2;
+    const X=xw=>X0+(xw-x)*s;
+    ctx.setLineDash([]);
+    ctx.fillStyle=C.sky; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=C.road; ctx.fillRect(0,gy,W,24);
+    ctx.strokeStyle=C.surface; ctx.lineWidth=2;
+    const xl=x-X0/s, xr=x+(W-X0)/s;
+    for(let k=Math.floor(xl/3)*3;k<xr;k+=3){ ctx.beginPath(); ctx.moveTo(X(k),gy+12); ctx.lineTo(X(k+1.5),gy+12); ctx.stroke(); }
+    ctx.font='11px "IBM Plex Mono",monospace'; ctx.textAlign='center'; ctx.fillStyle=C.ink3;
+    for(let d=Math.ceil(xl/10)*10; d<xr; d+=10){ const px=X(d); ctx.strokeStyle=C.ink3; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(px,gy+24); ctx.lineTo(px,gy+30); ctx.stroke(); ctx.fillText(d+' m',px,gy+42); }
+    const xs=A.on.s[6], xso=A.off.s[6];
+    ctx.font='11px "Noto Sans KR",sans-serif';
+    const flag=(xw,col,txt,dash,row)=>{ const px=X(xw); if(px<-60||px>W+60) return; ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.setLineDash(dash); ctx.beginPath(); ctx.moveTo(px,12+row*14); ctx.lineTo(px,gy+24); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle=col; const right=px>W-120; ctx.textAlign=right?'right':'left'; ctx.fillText(txt,px+(right?-4:4),22+row*14); };
+    flag(0,C.ink3,'제동 시작',[3,3],0);
+    if(Math.abs(xso-xs)>0.3) flag(xso,C.ink3,`발전기 없음 정지 ${fmt(xso)} m`,[2,3],1);
+    flag(xs,C.s1,`정지 위치 ${fmt(xs)} m`,[5,3],0);
+    const rw=A.rw>0?A.rw:0.3;
+    drawCar(ctx,X(xo-half),gy,s,rw,xo/rw,{ghost:true},C);
+    drawCar(ctx,X(x-half),gy,s,rw,x/rw,{ghost:false,heat:A.maxPfr>0?F.Ffr*v/A.maxPfr:0,I:F.I,phase:A.phase,batt:A.on.s[1]>0?st[1]/A.on.s[1]:0},C);
+    const ax=X(x-half)-2.2*s+2, maxLen=Math.max(0,Math.min(2.8*s, ax-8)), yTop=gy-Math.max(4,rw*s)-1.2*s-16;
+    arrowL(ctx,ax,yTop-15,F.Ffr/A.maxF*maxLen,C.s2,`마찰 ${fmt(F.Ffr)} N`,C);
+    arrowL(ctx,ax,yTop,F.Fgen/A.maxF*maxLen,C.s1,`발전기 ${fmt(F.Fgen)} N`,C);
+    const E=st[1], Et= E>=1000 ? fmt(E/1000)+' kJ' : fmt(E)+' J';
+    const P=F.PL, Pt= P>=1000 ? fmt(P/1000)+' kW' : fmt(P)+' W';
+    const items=[['시간 t',fmt(A.t)+' s'],['속력 v',fmt(v*3.6)+' km/h'],['이동 거리 x',fmt(x)+' m'],[A.iLabel,fmt(F.I)+' A'],
+      ['발전기 제동력',fmt(F.Fgen)+' N'],['마찰 제동력',fmt(F.Ffr)+' N'],['발전 전력 P',Pt],[A.eLabel,Et]];
+    el('hud').innerHTML=items.map(i=>`<div>${i[0]}<b>${i[1]}</b></div>`).join('');
+    const sc=el('scrub'); if(document.activeElement!==sc) sc.value=String(Math.round(A.T>0?A.t/A.T*1000:0));
+  }
+  A.set=o=>{
+    Object.assign(A,o); A.T=Math.max(o.on.t,o.off.t); A.t=0; A.last=null; A.phase=0;
+    A.maxPfr=1e-9; A.maxI=1e-9; A.maxF=1e-9;
+    o.on.rec.forEach(r=>{ const v=r.s[0]; if(v<=0) return; const F=A.forces(v);
+      A.maxPfr=Math.max(A.maxPfr,F.Ffr*v); A.maxI=Math.max(A.maxI,F.I); A.maxF=Math.max(A.maxF,F.Ffr,F.Fgen); });
+    A.playing=!reduceMotion && visible() && A.T>0;
+    sync(); draw(); if(A.playing) start();
+  };
+  A.pause=()=>{ if(A.playing){ A.playing=false; sync(); } };
+  A.wake=()=>{ if(!A.on) return; draw(); if(!A.playing && A.t===0 && A.T>0 && !reduceMotion){ A.playing=true; sync(); start(); } };
+  el('play').addEventListener('click',()=>{ if(A.playing){ A.playing=false; } else { if(A.t>=A.T){ A.t=0; A.phase=0; } A.playing=A.T>0; if(A.playing) start(); } sync(); });
+  el('restart').addEventListener('click',()=>{ A.t=0; A.phase=0; A.playing=A.T>0; sync(); if(A.playing) start(); else draw(); });
+  el('rate').addEventListener('change',e=>{ A.rate=parseFloat(e.target.value)||1; });
+  el('scrub').addEventListener('input',e=>{ A.t=parseInt(e.target.value,10)/1000*A.T; if(!A.playing) sync(); draw(); });
+  new ResizeObserver(()=>{ if(!A.playing) draw(); }).observe(el('anim'));
+  return A;
 }
-$('#anim-play').addEventListener('click',()=>{ if(A.playing){ A.playing=false; } else { if(A.t>=A.T){ A.t=0; A.phase=0; } A.playing=true; startLoop(); } syncBtn(); });
-$('#anim-restart').addEventListener('click',()=>{ A.t=0; A.phase=0; A.playing=true; syncBtn(); startLoop(); });
-$('#anim-rate').addEventListener('change',e=>{ A.rate=parseFloat(e.target.value)||1; });
-$('#anim-scrub').addEventListener('input',e=>{ A.t=parseInt(e.target.value,10)/1000*A.T; if(!A.playing) syncBtn(); drawAnim(); });
-new ResizeObserver(()=>{ if(!A.playing) drawAnim(); }).observe($('#veh-anim'));
+const vehAnim=makeAnim('veh'), smAnim=makeAnim('sm');
 
 /* ---------- 기본 모드 ---------- */
 const SM=[
@@ -826,6 +850,19 @@ function buildSimple(){
   $('#sm-reset').addEventListener('click',()=>{ SM.forEach(d=>{ $('#sm-'+d.id).value=d.v; $('#sm-'+d.id+'-r').value=d.v; }); runSimple(); });
   const q=smRead(); smBase=Object.assign({},q,{E:smCalc(q).E});
 }
+/* 기본 모드 운동: 발전기 제동력 c·v가 m·a 이하이면 감속도 a로 일정, 넘으면 그 구간은 발전기만으로 지수적으로 감속 */
+function smRec(q, withGen){
+  const f=SMF, o=smCalc(q), v0=o.v0, m=f.m, a=f.a, share=f.R/(f.R+f.r), c=withGen?o.c:0;
+  let t1=0, vs=v0, x1=0;
+  if(withGen && o.sat){ vs=o.vs; t1=(m/c)*Math.log(v0/vs); x1=(m*v0/c)*(1-vs/v0); }
+  const T=t1+vs/a;
+  const st=t=>{ let v,x,E;
+    if(t<t1){ const e=Math.exp(-c*t/m); v=v0*e; x=(m*v0/c)*(1-e); E=share*0.5*m*(v0*v0-v*v); }
+    else { const u=Math.min(t-t1, vs/a); v=Math.max(0,vs-a*u); x=x1+vs*u-0.5*a*u*u; E=share*(0.5*m*(v0*v0-vs*vs)+c*(vs*vs*vs-v*v*v)/(3*a)); }
+    return [v,E,0,0,0,0,x]; };
+  const rec=[]; const n=400; for(let i=0;i<=n;i++){ const t=T*i/n; rec.push({t,s:st(t)}); }
+  return {rec, t:T, s:rec[n].s};
+}
 function runSimple(){
   const q=smRead(), o=smCalc(q);
   const [ev,eu]=eTxt(o.E), [pv,pu]= o.P0>=1000?[fmt(o.P0/1000),'kW']:[fmt(o.P0),'W'];
@@ -850,6 +887,9 @@ function runSimple(){
   if(o.c>0){ const vs=SMF.m*SMF.a/o.c*3.6; if(vs<=150) marksV.push({x:vs, label:`발전기 단독 제동 ${fmt(vs)} km/h~`, dash:'1 3'}); }
   lineChart($('#sm-c2'),{xLabel:'제동 시작 속력 v₀ (km/h)', yLabel:'발전량 E (kJ)', xName:'v₀', xUnit:'km/h', yUnit:'kJ',
     series:[{name:'발전량', color:'--s1', pts:ptsV},{name:'이론 상한', color:'--s2', dash:'6 4', pts:upV}], marks:marksV});
+  const Kc=q.N*q.B*(q.S*1e-4)*SMF.G/SMF.rw, sh=SMF.R/(SMF.R+SMF.r);
+  smAnim.set({on:smRec(q,true), off:smRec(q,false), rw:SMF.rw, iLabel:'발전 전류 (실효값)', eLabel:'누적 발전량 E',
+    forces:v=>({Fgen:o.c*v, Ffr:Math.max(0,SMF.m*SMF.a-o.c*v), I:Kc*v/Math.SQRT2/(SMF.R+SMF.r), PL:sh*o.c*v*v})});
 }
 
 /* ---------- 탭 ---------- */
@@ -864,14 +904,13 @@ function show(){
   const h=(location.hash||'#experiment').slice(1); const name = h==='vehicle'?'vehicle':'experiment';
   ['experiment','vehicle'].forEach(n=>{ $('#view-'+n).hidden = n!==name; $('#tab-'+n).setAttribute('aria-selected', n===name?'true':'false'); });
   if(!done[name]){ done[name]=true; name==='vehicle'?runVeh():runExp(); }
-  else if(name==='vehicle' && A.on){ drawAnim(); }
-  if(name!=='vehicle' && A.playing){ A.playing=false; syncBtn(); }
+  if(name!=='vehicle') vehAnim.pause(); else vehAnim.wake();
 }
 window.addEventListener('hashchange',show);
 function applyMode(){
   $('#adv-toggle').checked=adv; $('#advanced').hidden=!adv; $('#simple').hidden=adv;
   $('#mode-note').textContent = adv ? '고급 모드: 회전 원판 실험 모형, 실차 모형(제동력 분담·주행 애니메이션)을 자세히 계산한다.' : '기본 모드: 자기장 세기, 속력, 코일 조건에 따라 발전량이 어떻게 달라지는지 본다.';
-  if(adv) show(); else if(A.playing){ A.playing=false; syncBtn(); }
+  if(adv){ smAnim.pause(); show(); } else { vehAnim.pause(); smAnim.wake(); }
 }
 $('#adv-toggle').addEventListener('change',e=>{ adv=e.target.checked; try{ localStorage.setItem('rbs-adv',adv?'1':'0'); }catch(err){} applyMode(); });
 buildSimple(); runSimple(); applyMode();
