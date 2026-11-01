@@ -159,7 +159,7 @@ dl.sym dd{margin:0;color:var(--ink-2)}
       <h3>바꿔 볼 값</h3>
       <div id="sm-params"></div>
       <div class="derived">
-        고정 조건: 차량 질량 1500 kg, 브레이크를 밟아 2 m/s²로 일정하게 감속, 바퀴→코일 기어비 10, 타이어 반지름 0.3 m, 코일 저항 <i>r</i> = 1 Ω, 부하 저항 <i>R</i> = 1 Ω. 공기저항과 구름저항은 무시한다.
+        고정 조건: 차량 질량 1500 kg. 마찰 브레이크는 제동 시작부터 정지까지 3000 N으로 작동한다(마찰만 쓰면 2 m/s²로 감속). 발전기 제동력은 여기에 더해진다. 바퀴→코일 기어비 10, 타이어 반지름 0.3 m, 코일 저항 <i>r</i> = 1 Ω, 부하 저항 <i>R</i> = 1 Ω이다. 공기저항과 구름저항은 무시한다.
       </div>
       <div class="btnrow">
         <button type="button" id="sm-base">지금 값을 비교 기준으로 저장</button>
@@ -170,7 +170,7 @@ dl.sym dd{margin:0;color:var(--ink-2)}
       <div class="tiles" id="sm-tiles"></div>
       <div class="card anim">
         <h2>주행 애니메이션</h2>
-        <p class="cap">위 조건으로 제동하는 모습을 실제 시간 비율로 재생한다. 값을 바꾸면 처음부터 다시 재생된다. 전선 위 점선이 빠를수록 발전 전류가 크고, 배터리 칸은 최종 발전량 대비 누적 비율이다. 차 위 화살표는 발전기와 마찰 브레이크가 내는 제동력이다. 회색 점선 차는 발전기가 없는 차로, 발전기만으로 제동하는 경우에만 앞의 차와 정지 위치가 달라진다.</p>
+        <p class="cap">위 조건으로 제동하는 모습을 실제 시간 비율로 재생하며, 값을 바꾸면 처음부터 다시 재생된다. 차 위 화살표는 마찰 브레이크(주황)와 발전기(파랑)의 제동력이다. 전선 위 점선이 빠를수록 발전 전류가 크고, 배터리 칸은 최종 발전량 대비 누적 비율이다. 회색 점선 차는 발전기 없이 마찰 브레이크만으로 서는 차이므로, 두 차의 정지 위치 차이가 발전기가 제동을 도운 정도이다.</p>
         <canvas id="sm-anim" role="img" aria-label="감속하는 자동차 애니메이션"></canvas>
         <div class="hud" id="sm-hud"></div>
         <div class="ctrl">
@@ -183,30 +183,42 @@ dl.sym dd{margin:0;color:var(--ink-2)}
       <div class="two">
         <div class="card">
           <h2>자기장 세기와 발전량</h2>
-          <p class="cap">다른 값은 그대로 두고 <i>B</i>만 바꾼 결과이다. 처음에는 <i>B</i><sup>2</sup>에 비례해 늘다가, 발전기 혼자서 제동을 감당할 만큼 커지면 점선(이론 상한)에 가까워지며 더 늘지 않는다.</p>
+          <p class="cap">다른 값은 그대로 두고 <i>B</i>만 바꾼 결과이다. <i>B</i>가 작을 때는 <i>B</i><sup>2</sup>에 비례해 늘어난다. <i>B</i>가 커지면 발전기가 제동을 많이 도와 차가 빨리 서기 때문에 늘어나는 폭이 줄고, 점선(이론 상한)을 넘지 못한다.</p>
           <div class="chart" id="sm-c1"></div>
         </div>
         <div class="card">
           <h2>제동 시작 속력과 발전량</h2>
-          <p class="cap">다른 값은 그대로 두고 <i>v</i><sub>0</sub>만 바꾼 결과이다. 전력이 속력의 제곱에 비례하고 제동 시간이 속력에 비례하므로 발전량은 <i>v</i><sub>0</sub><sup>3</sup>에 비례해 늘어난다.</p>
+          <p class="cap">다른 값은 그대로 두고 <i>v</i><sub>0</sub>만 바꾼 결과이다. 발전기 힘이 마찰보다 작은 범위에서는 발전량이 대략 <i>v</i><sub>0</sub><sup>3</sup>에 비례한다. 전력이 속력의 제곱에 비례하고, 제동 시간이 속력에 비례하기 때문이다.</p>
           <div class="chart" id="sm-c2"></div>
         </div>
       </div>
       <div class="card">
-        <h2>발전량 공식</h2>
-        <div class="eq"><i>E</i> = <i>R</i> / (<i>R</i>+<i>r</i>)<sup>2</sup> × (<i>N B S G</i> / <i>r</i><sub>w</sub>)<sup>2</sup> × <i>v</i><sub>0</sub><sup>3</sup> / (6<i>a</i>)</div>
+        <h2>계산 방법</h2>
+        <h3 style="font-size:15px;margin:6px 0 4px">1. 운동 방정식</h3>
+        <div class="eq"><i>m</i> d<i>v</i>/d<i>t</i> = −(<i>F</i><sub>fr</sub> + <i>F</i><sub>gen</sub>), &nbsp;&nbsp; <i>F</i><sub>fr</sub> = <i>m a</i><sub>f</sub> (일정), &nbsp;&nbsp; <i>F</i><sub>gen</sub> = <i>c v</i></div>
+        <div class="eq"><i>c</i> = (<i>N B S G</i> / <i>r</i><sub>w</sub>)<sup>2</sup> / (2(<i>R</i>+<i>r</i>))</div>
+        <p>코일이 각속도 <i>ω</i> = <i>Gv</i>/<i>r</i><sub>w</sub>로 돌면 자기선속은 <i>Φ</i> = <i>BS</i> cos <i>ωt</i>이고, 패러데이 법칙에 따라 기전력은 <i>ε</i> = <i>NBSω</i> sin <i>ωt</i>이다. 회로 전체에서 쓰이는 평균 전력은 (<i>NBSω</i>)<sup>2</sup>/(2(<i>R</i>+<i>r</i>)) = <i>cv</i><sup>2</sup>이다. 이 전력은 차의 운동에너지에서 나오므로 발전기 제동력은 <i>F</i><sub>gen</sub> = <i>cv</i><sup>2</sup>/<i>v</i> = <i>cv</i>이다(렌츠 법칙). 마찰 브레이크는 패드를 미는 힘이 일정하므로 일정한 힘 <i>F</i><sub>fr</sub>를 낸다고 두었다. 두 힘은 제동 시작부터 함께 작용한다.</p>
+        <h3 style="font-size:15px;margin:14px 0 4px">2. 정지 시간과 정지 거리</h3>
+        <div class="eq"><i>T</i> = (<i>m</i>/<i>c</i>) ln(1 + <i>c v</i><sub>0</sub> / (<i>m a</i><sub>f</sub>)), &nbsp;&nbsp; <i>x</i><sub>s</sub> = (<i>m</i>/<i>c</i>)(<i>v</i><sub>0</sub> − <i>a</i><sub>f</sub><i>T</i>)</div>
+        <p>위 미분방정식을 풀면 <i>v</i>(<i>t</i>) = (<i>v</i><sub>0</sub> + <i>u</i>)<i>e</i><sup>−<i>ct</i>/<i>m</i></sup> − <i>u</i>이다(<i>u</i> = <i>ma</i><sub>f</sub>/<i>c</i>). <i>v</i> = 0이 되는 시각이 <i>T</i>이고, 이를 적분한 이동 거리가 <i>x</i><sub>s</sub>이다. 발전기가 없으면(<i>c</i> → 0) <i>x</i><sub>s</sub> = <i>v</i><sub>0</sub><sup>2</sup>/(2<i>a</i><sub>f</sub>)가 된다.</p>
+        <h3 style="font-size:15px;margin:14px 0 4px">3. 발전량 (에너지 보존)</h3>
+        <div class="eq"><i>E</i> = <i>R</i>/(<i>R</i>+<i>r</i>) × (½ <i>m v</i><sub>0</sub><sup>2</sup> − <i>F</i><sub>fr</sub> <i>x</i><sub>s</sub>)</div>
+        <p>처음 운동에너지 중 마찰 브레이크가 열로 바꾼 몫(<i>F</i><sub>fr</sub><i>x</i><sub>s</sub>)을 뺀 나머지가 전기에너지가 된다. 그중 <i>R</i>/(<i>R</i>+<i>r</i>)만큼이 부하로 가고, 나머지는 코일 저항에서 열이 된다. 발전기 힘이 마찰보다 훨씬 작을 때는 다음과 같이 근사할 수 있다.</p>
+        <div class="eq"><i>E</i> ≈ <i>R</i>/(<i>R</i>+<i>r</i>)<sup>2</sup> × (<i>N B S G</i> / <i>r</i><sub>w</sub>)<sup>2</sup> × <i>v</i><sub>0</sub><sup>3</sup> / (6<i>a</i><sub>f</sub>)</div>
+        <p>이 범위에서는 <i>B</i>, <i>N</i>, <i>S</i>를 각각 2배로 하면 <i>E</i>는 약 4배, <i>v</i><sub>0</sub>을 2배로 하면 약 8배가 된다. 발전기 힘이 커질수록 정지 거리가 줄어 근사식보다 작아지고, <i>E</i>는 상한 <i>R</i>/(<i>R</i>+<i>r</i>) × ½<i>mv</i><sub>0</sub><sup>2</sup>를 넘지 못한다.</p>
         <dl class="sym">
           <dt>E</dt><dd>제동하는 동안 부하 저항에 전달된 전기에너지 (J)</dd>
           <dt>B</dt><dd>코일이 지나는 자기장의 세기 (T)</dd>
           <dt>N, S</dt><dd>코일 감은 수, 코일 한 바퀴의 면적 (m²)</dd>
-          <dt>v<sub>0</sub></dt><dd>제동을 시작할 때의 속력 (m/s)</dd>
+          <dt>v<sub>0</sub>, v</dt><dd>제동 시작 속력, 시각 <i>t</i>의 속력 (m/s)</dd>
+          <dt>m</dt><dd>차량 질량 (kg)</dd>
+          <dt>F<sub>fr</sub>, a<sub>f</sub></dt><dd>마찰 브레이크 제동력 (N), 마찰만으로 낼 때의 감속도 (m/s²)</dd>
+          <dt>F<sub>gen</sub>, c</dt><dd>발전기 제동력 (N), 발전기 제동 계수 (N·s/m)</dd>
           <dt>G, r<sub>w</sub></dt><dd>바퀴 대비 코일 회전의 기어비, 타이어 반지름 (m)</dd>
-          <dt>a</dt><dd>감속도 (m/s²)</dd>
           <dt>R, r</dt><dd>부하 저항, 코일 저항 (Ω)</dd>
+          <dt>T, x<sub>s</sub></dt><dd>정지 시간 (s), 정지 거리 (m)</dd>
         </dl>
-        <p>유도 과정: 코일이 각속도 <i>ω</i> = <i>Gv</i>/<i>r</i><sub>w</sub>로 돌면 자기선속은 <i>Φ</i> = <i>BS</i> cos <i>ωt</i>이고, 패러데이 법칙에 따라 기전력은 <i>ε</i> = <i>NBSω</i> sin <i>ωt</i>이다. 한 바퀴 동안 평균한 부하 전력은 <i>P</i> = (<i>NBSω</i>)<sup>2</sup><i>R</i> / (2(<i>R</i>+<i>r</i>)<sup>2</sup>)이다. 일정하게 감속하면 <i>v</i> = <i>v</i><sub>0</sub> − <i>at</i>이므로 <i>E</i> = ∫<i>P</i> d<i>t</i>를 정지할 때까지 적분하면 위 식이 나온다(∫<i>v</i><sup>2</sup>d<i>t</i> = <i>v</i><sub>0</sub><sup>3</sup>/(3<i>a</i>)).</p>
-        <p>따라서 <i>B</i>, <i>N</i>, <i>S</i>를 각각 2배로 하면 <i>E</i>는 4배가 되고, <i>v</i><sub>0</sub>을 2배로 하면 8배가 된다. 다만 발전기가 만드는 제동력 <i>F</i> = <i>P</i><sub>전체</sub>/<i>v</i>가 필요한 제동력 <i>ma</i>보다 커지면 차는 발전기만으로 멈추게 된다. 이때는 운동에너지 이상을 얻을 수 없으므로 <i>E</i>는 상한 <i>R</i>/(<i>R</i>+<i>r</i>) × ½<i>mv</i><sub>0</sub><sup>2</sup>에 가까워진다(<i>m</i>: 차량 질량). 이 구간은 시뮬레이터가 따로 계산한다.</p>
-        <p class="note">가정: 균일한 자기장 속에서 도는 단일 코일 교류 발전기이며 코일의 자체 인덕턴스와 기어 손실은 무시한다.</p>
+        <p class="note">가정: 균일한 자기장 속에서 도는 단일 코일 교류 발전기이며, 코일의 자체 인덕턴스, 기어 손실, 타이어 미끄러짐은 무시한다.</p>
       </div>
     </div>
   </div>
@@ -819,16 +831,30 @@ const SM=[
   {id:'N', label:'코일 감은 수', sym:'N', unit:'회', v:200, min:1, max:1000, step:1},
   {id:'S', label:'코일 면적', sym:'S', unit:'cm²', v:40, min:1, max:200, step:1},
 ];
-const SMF={m:1500, a:2, G:10, rw:0.3, r:1, R:1};
+/* af: 마찰 브레이크만으로 낼 때의 감속도 → F_fr = m·af (제동 내내 일정) */
+const SMF={m:1500, af:2, G:10, rw:0.3, r:1, R:1};
 function smRead(){ const q={}; SM.forEach(d=>{ const x=parseFloat($('#sm-'+d.id).value); q[d.id]= isFinite(x)&&x>=0 ? x : d.v; }); return q; }
-/* 해석해: F_gen = c·v (c = (NBSG/r_w)²/(2(R+r))), 필요한 제동력 m·a */
+/* m dv/dt = −(F_fr + c·v),  c = (NBSG/r_w)²/(2(R+r)) */
 function smCalc(q){
-  const f=SMF, v0=q.v0/3.6, K=q.N*q.B*(q.S*1e-4)*f.G/f.rw, c=K*K/(2*(f.R+f.r)), share=f.R/(f.R+f.r);
-  const K0=0.5*f.m*v0*v0, demand=f.m*f.a;
-  let E, sat=false, vs=null;
-  if(c*v0<=demand){ E=share*c*v0*v0*v0/(3*f.a); }
-  else { sat=true; vs=demand/c; E=share*(0.5*f.m*(v0*v0-vs*vs)+c*vs*vs*vs/(3*f.a)); }
-  return {E, sat, vs, K0, c, v0, upper:share*K0, P0:share*c*v0*v0, epsMax:K*v0, F0:c*v0, demand};
+  const f=SMF, m=f.m, v0=q.v0/3.6, K=q.N*q.B*(q.S*1e-4)*f.G/f.rw, c=K*K/(2*(f.R+f.r)), share=f.R/(f.R+f.r);
+  const Ffr=m*f.af, K0=0.5*m*v0*v0, T0=v0/f.af, x0=v0*v0/(2*f.af);
+  const rr=c*v0/Ffr;
+  let T, xs, Eel;
+  if(v0<=0){ T=0; xs=0; Eel=0; }
+  else if(rr<1e-4){ T=T0; xs=x0; Eel=c*v0*v0*v0/(3*f.af); }      /* 발전기 힘이 매우 작을 때의 근사 */
+  else { T=(m/c)*Math.log1p(rr); xs=(m/c)*(v0-f.af*T); Eel=K0-Ffr*xs; }
+  return {E:share*Eel, K0, c, K, v0, T, xs, T0, x0, Ffr, share, upper:share*K0, P0:share*c*v0*v0, epsMax:K*v0, F0:c*v0};
+}
+function smRec(q, withGen){
+  const o=smCalc(q), m=SMF.m, a=SMF.af, v0=o.v0, c=withGen?o.c:0, sh=o.share;
+  const useExp = withGen && o.Ffr>0 && c*v0/o.Ffr>=1e-4;
+  const T = withGen ? o.T : o.T0, u = c>0 ? m*a/c : 0;
+  const st=t=>{ let v,x,E;
+    if(!useExp){ v=v0-a*t; x=v0*t-0.5*a*t*t; const vp=Math.max(v,0); E= c>0 ? sh*c*(v0*v0*v0-vp*vp*vp)/(3*a) : 0; }
+    else { v=(v0+u)*Math.exp(-c*t/m)-u; x=(m/c)*(v0+u)*(-Math.expm1(-c*t/m))-u*t; const vp=Math.max(v,0); E=sh*(o.K0-0.5*m*vp*vp-m*a*x); }
+    if(v<1e-9) v=0; return [v,E,0,0,0,0,x]; };
+  const rec=[]; const n=400; for(let i=0;i<=n;i++){ const t=T*i/n; rec.push({t,s:st(t)}); }
+  return {rec, t:T, s:rec[n].s};
 }
 function eTxt(E){ return E>=1000 ? [fmt(E/1000),'kJ'] : [fmt(E),'J']; }
 let smBase=null;
@@ -850,46 +876,26 @@ function buildSimple(){
   $('#sm-reset').addEventListener('click',()=>{ SM.forEach(d=>{ $('#sm-'+d.id).value=d.v; $('#sm-'+d.id+'-r').value=d.v; }); runSimple(); });
   const q=smRead(); smBase=Object.assign({},q,{E:smCalc(q).E});
 }
-/* 기본 모드 운동: 발전기 제동력 c·v가 m·a 이하이면 감속도 a로 일정, 넘으면 그 구간은 발전기만으로 지수적으로 감속 */
-function smRec(q, withGen){
-  const f=SMF, o=smCalc(q), v0=o.v0, m=f.m, a=f.a, share=f.R/(f.R+f.r), c=withGen?o.c:0;
-  let t1=0, vs=v0, x1=0;
-  if(withGen && o.sat){ vs=o.vs; t1=(m/c)*Math.log(v0/vs); x1=(m*v0/c)*(1-vs/v0); }
-  const T=t1+vs/a;
-  const st=t=>{ let v,x,E;
-    if(t<t1){ const e=Math.exp(-c*t/m); v=v0*e; x=(m*v0/c)*(1-e); E=share*0.5*m*(v0*v0-v*v); }
-    else { const u=Math.min(t-t1, vs/a); v=vs-a*u; if(v<1e-9) v=0; x=x1+vs*u-0.5*a*u*u; E=share*(0.5*m*(v0*v0-vs*vs)+c*(vs*vs*vs-v*v*v)/(3*a)); }
-    return [v,E,0,0,0,0,x]; };
-  const rec=[]; const n=400; for(let i=0;i<=n;i++){ const t=T*i/n; rec.push({t,s:st(t)}); }
-  return {rec, t:T, s:rec[n].s};
-}
 function runSimple(){
   const q=smRead(), o=smCalc(q);
   const [ev,eu]=eTxt(o.E), [pv,pu]= o.P0>=1000?[fmt(o.P0/1000),'kW']:[fmt(o.P0),'W'];
   const ratio = smBase && smBase.E>0 ? o.E/smBase.E : NaN;
+  const dx = o.x0>0 ? (o.x0-o.xs)/o.x0*100 : NaN;
   $('#sm-tiles').innerHTML=
     tile('제동 중 발전량 <i>E</i>', ev, eu, `차의 운동에너지 ${fmt(o.K0/1000)} kJ의 ${pct(o.K0>0?o.E/o.K0*100:NaN)}`)+
     tile('비교 기준 대비', isFinite(ratio)?'×'+(ratio>=100?fmt(ratio):ratio.toFixed(2)):'–', '', smBase?smBaseText(smBase):'')+
-    tile('제동 시작 순간 발전 전력', pv, pu, `최대 기전력 ${fmt(o.epsMax)} V`)+
-    tile('발전기 제동력 (시작 순간)', fmt(o.F0), 'N', o.sat
-      ? `<span class="pill bad">발전기만으로 제동</span> 필요한 ${fmt(o.demand)} N보다 커서 더 키워도 발전량이 거의 늘지 않는다`
-      : `필요한 제동력 ${fmt(o.demand)} N의 ${pct(o.F0/o.demand*100)}, 나머지는 마찰 브레이크`);
-  // E–B
+    tile('정지 거리', fmt(o.xs), 'm', `발전기 없을 때 ${fmt(o.x0)} m보다 ${pct(dx)} 짧음`)+
+    tile('발전기 제동력 (시작 순간)', fmt(o.F0), 'N', `마찰 ${fmt(o.Ffr)} N과 함께 작동, 발전 전력 ${pv} ${pu}`);
   const ptsB=[], upB=[]; for(let i=0;i<=150;i++){ const B=i/100; const r=smCalc(Object.assign({},q,{B})); ptsB.push([B,r.E/1000]); upB.push([B,r.upper/1000]); }
-  const K1=q.N*(q.S*1e-4)*SMF.G/SMF.rw; // K = K1·B
-  const marksB=[{x:Math.min(q.B,1.5), label:`현재 B = ${fmt(q.B)} T`}];
-  if(q.v0>0 && K1>0){ const Bs=Math.sqrt(2*(SMF.R+SMF.r)*SMF.m*SMF.a/(q.v0/3.6))/K1; if(Bs<=1.5) marksB.push({x:Bs, label:`발전기 단독 제동 ${fmt(Bs)} T~`, dash:'1 3'}); }
   lineChart($('#sm-c1'),{xLabel:'자기장 세기 B (T)', yLabel:'발전량 E (kJ)', xName:'B', xUnit:'T', yUnit:'kJ',
-    series:[{name:'발전량', color:'--s1', pts:ptsB},{name:'이론 상한', color:'--s2', dash:'6 4', pts:upB}], marks:marksB});
-  // E–v0
+    series:[{name:'발전량', color:'--s1', pts:ptsB},{name:'이론 상한', color:'--s2', dash:'6 4', pts:upB}],
+    marks:[{x:Math.min(q.B,1.5), label:`현재 B = ${fmt(q.B)} T`}]});
   const ptsV=[], upV=[]; for(let v=0; v<=150; v+=1){ const r=smCalc(Object.assign({},q,{v0:v})); ptsV.push([v,r.E/1000]); upV.push([v,r.upper/1000]); }
-  const marksV=[{x:Math.min(q.v0,150), label:`현재 v₀ = ${fmt(q.v0)} km/h`}];
-  if(o.c>0){ const vs=SMF.m*SMF.a/o.c*3.6; if(vs<=150) marksV.push({x:vs, label:`발전기 단독 제동 ${fmt(vs)} km/h~`, dash:'1 3'}); }
   lineChart($('#sm-c2'),{xLabel:'제동 시작 속력 v₀ (km/h)', yLabel:'발전량 E (kJ)', xName:'v₀', xUnit:'km/h', yUnit:'kJ',
-    series:[{name:'발전량', color:'--s1', pts:ptsV},{name:'이론 상한', color:'--s2', dash:'6 4', pts:upV}], marks:marksV});
-  const Kc=q.N*q.B*(q.S*1e-4)*SMF.G/SMF.rw, sh=SMF.R/(SMF.R+SMF.r);
+    series:[{name:'발전량', color:'--s1', pts:ptsV},{name:'이론 상한', color:'--s2', dash:'6 4', pts:upV}],
+    marks:[{x:Math.min(q.v0,150), label:`현재 v₀ = ${fmt(q.v0)} km/h`}]});
   smAnim.set({on:smRec(q,true), off:smRec(q,false), rw:SMF.rw, iLabel:'발전 전류 (실효값)', eLabel:'누적 발전량 E',
-    forces:v=>({Fgen:o.c*v, Ffr:Math.max(0,SMF.m*SMF.a-o.c*v), I:Kc*v/Math.SQRT2/(SMF.R+SMF.r), PL:sh*o.c*v*v})});
+    forces:v=>({Fgen:o.c*v, Ffr:o.Ffr, I:o.K*v/Math.SQRT2/(SMF.R+SMF.r), PL:o.share*o.c*v*v})});
 }
 
 /* ---------- 탭 ---------- */
