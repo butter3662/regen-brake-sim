@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>브레이크 회생발전 시뮬레이터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* 레이아웃: 상단 탭 → [입력 패널 | 결과 타일·그래프] 2열, 좁은 화면에서는 1열로 쌓는다 */
+  --bg:#f4f6f8; --surface:#ffffff; --ink:#14181c; --ink-2:#4a525b; --ink-3:#78818b;
+  --line:#dde2e7; --grid:#eceff2; --accent:#1d5aa6; --accent-soft:#e7eef8;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4;
+  --good:#0ca30c; --crit:#d03b3b;
+  --car:#c9d2dc; --glass:#eaf1f7; --tire:#262b31; --disc:#9aa3ad; --rim:#e7ebef; --road:#d5dade; --sky:#eef3f7;
+  --f-display:"IBM Plex Sans KR","Noto Sans KR",system-ui,sans-serif;
+  --f-body:"Noto Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121518; --surface:#1b1f23; --ink:#eef1f4; --ink-2:#b5bdc6; --ink-3:#8b949e;
+    --line:#2f353b; --grid:#252a2f; --accent:#80b1ef; --accent-soft:#1d2a3a;
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+    --car:#46505b; --glass:#26313c; --tire:#0d0f11; --disc:#6d7680; --rim:#c3cad1; --road:#2b3137; --sky:#171c21;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121518; --surface:#1b1f23; --ink:#eef1f4; --ink-2:#b5bdc6; --ink-3:#8b949e;
+  --line:#2f353b; --grid:#252a2f; --accent:#80b1ef; --accent-soft:#1d2a3a;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+  --car:#46505b; --glass:#26313c; --tire:#0d0f11; --disc:#6d7680; --rim:#c3cad1; --road:#2b3137; --sky:#171c21;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 20px 64px}
+header h1{font-family:var(--f-display);font-weight:700;font-size:26px;line-height:1.3;margin:0 0 6px;text-wrap:balance}
+header p{margin:0;color:var(--ink-2);max-width:68ch}
+.note{font-size:13px;color:var(--ink-3)}
+nav.tabs{display:flex;gap:6px;margin:20px 0 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+nav.tabs a{padding:9px 14px;color:var(--ink-2);text-decoration:none;font-family:var(--f-display);font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px}
+nav.tabs a[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+nav.tabs a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.layout{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.params h3{font-family:var(--f-display);font-size:13px;font-weight:600;color:var(--ink-3);margin:14px 0 6px;letter-spacing:.02em}
+.params h3:first-child{margin-top:0}
+.prow{display:grid;grid-template-columns:1fr 92px 64px;gap:8px;align-items:center;padding:4px 0}
+.prow label{font-size:14px;color:var(--ink)}
+.prow label i{font-family:var(--f-mono);font-style:italic;color:var(--ink-2);margin-left:4px}
+.prow input{width:100%;font-family:var(--f-mono);font-size:14px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font-variant-numeric:tabular-nums}
+.prow .u{font-size:12px;color:var(--ink-3);font-family:var(--f-mono)}
+.btnrow{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+button{font-family:var(--f-body);font-size:13px;padding:7px 12px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent)}
+.derived{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px;color:var(--ink-2)}
+.derived b{font-family:var(--f-mono);font-weight:500;color:var(--ink)}
+.results{display:flex;flex-direction:column;gap:16px;min-width:0}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile .k{font-size:12.5px;color:var(--ink-3)}
+.tile .v{font-family:var(--f-mono);font-size:22px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.3;margin-top:2px}
+.tile .v small{font-size:13px;color:var(--ink-2);margin-left:3px}
+.tile .s{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+.pill{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:99px;border:1px solid currentColor;margin-left:4px}
+.pill.ok{color:var(--good)} .pill.bad{color:var(--crit)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 14px 10px;min-width:0}
+.card h2{font-family:var(--f-display);font-size:16px;font-weight:600;margin:0 0 2px}
+.card .cap{font-size:13px;color:var(--ink-2);margin:0 0 8px;max-width:75ch}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px;color:var(--ink-2);margin:2px 0 4px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.chart{position:relative;width:100%}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-family:var(--f-mono);font-size:11px;fill:var(--ink-3)}
+.chart .axt{font-family:var(--f-body);font-size:12px;fill:var(--ink-2)}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:12.5px;box-shadow:0 4px 14px rgba(0,0,0,.12);white-space:nowrap;display:none;z-index:2}
+.tip .row{display:flex;align-items:center;gap:6px;font-family:var(--f-mono);color:var(--ink)}
+.tip .hd{color:var(--ink-3);font-family:var(--f-mono);margin-bottom:2px}
+.sw{display:inline-block;width:18px;height:0;border-top:2px solid}
+.sq{display:inline-block;width:10px;height:10px;border-radius:2px}
+.stack{display:flex;gap:2px;height:26px;border-radius:5px;overflow:hidden;margin:6px 0 10px}
+.stack div{height:100%;min-width:2px}
+table.brk{width:100%;border-collapse:collapse;font-size:13.5px}
+table.brk td{padding:4px 6px;border-top:1px solid var(--grid)}
+table.brk td.n{font-family:var(--f-mono);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.brk tr.tot td{font-weight:700;border-top:1px solid var(--line)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:1060px){.two{grid-template-columns:1fr}}
+section.view[hidden]{display:none}
+.model{margin-top:28px}
+.model h2{font-family:var(--f-display);font-size:20px;margin:0 0 4px}
+.model h3{font-family:var(--f-display);font-size:16px;margin:22px 0 6px}
+.model p,.model li{max-width:74ch}
+.eq{font-family:"Times New Roman",Cambria,serif;font-size:18px;padding:8px 14px;margin:8px 0;background:var(--accent-soft);border-radius:8px;overflow-x:auto;white-space:nowrap}
+.eq i{font-style:italic}
+dl.sym{display:grid;grid-template-columns:max-content 1fr;gap:3px 14px;margin:6px 0 10px;font-size:14px}
+dl.sym dt{font-family:"Times New Roman",Cambria,serif;font-style:italic;font-size:16px}
+dl.sym dd{margin:0;color:var(--ink-2)}
+.model ul{padding-left:20px}
+.model a{color:var(--accent)}
+.anim canvas{display:block;width:100%;height:210px;border-radius:8px;background:var(--sky)}
+.hud{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:6px 12px;margin:10px 0 6px}
+.hud div{font-size:12px;color:var(--ink-3)}
+.hud b{display:block;font-family:var(--f-mono);font-weight:500;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-top:4px}
+.ctrl label{font-size:13px;color:var(--ink-2);display:inline-flex;gap:6px;align-items:center}
+.ctrl select{font-family:var(--f-mono);font-size:13px;padding:5px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.ctrl input[type=range]{flex:1 1 180px;accent-color:var(--accent)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>브레이크 회생발전 시뮬레이터</h1>
+  <p>전자기유도 발전기를 회전체에 연결했을 때, 유도전류가 만드는 제동 토크와 회수되는 전기에너지를 계산한다. 입력값은 모두 예시(가정)값이므로 실제 부품의 측정값이나 데이터시트 값으로 바꿔 넣어야 한다.</p>
+</header>
+
+<nav class="tabs" role="tablist">
+  <a href="#experiment" role="tab" id="tab-experiment" aria-selected="true">실험 모형 (회전 원판)</a>
+  <a href="#vehicle" role="tab" id="tab-vehicle" aria-selected="false">실차 모형 (내연기관차)</a>
+</nav>
+
+<section class="view" id="view-experiment">
+  <div class="layout">
+    <div class="panel params" id="exp-params"></div>
+    <div class="results">
+      <div class="tiles" id="exp-tiles"></div>
+      <div class="two">
+        <div class="card">
+          <h2>회전수 변화</h2>
+          <p class="cap">같은 마찰 조건에서 발전기에 부하를 연결했을 때와 회로를 열어 두었을 때(전류 0)를 비교한다.</p>
+          <div class="chart" id="exp-c1"></div>
+        </div>
+        <div class="card">
+          <h2>부하 전력</h2>
+          <p class="cap">부하 저항이 받는 전력 <i>P</i><sub>L</sub> = <i>I</i><sup>2</sup><i>R</i>이다. 기전력이 회전수에 비례하므로 전력은 회전수의 제곱에 비례해 줄어든다.</p>
+          <div class="chart" id="exp-c2"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>초기 운동에너지가 어디로 갔는가</h2>
+        <p class="cap">발전기를 연결한 경우, 원판의 초기 회전 운동에너지 <i>K</i><sub>0</sub>이 각 경로로 나뉜 양이다.</p>
+        <div id="exp-brk"></div>
+      </div>
+      <div class="card">
+        <h2>부하 저항에 따른 회수 에너지</h2>
+        <p class="cap">다른 입력은 그대로 두고 <i>R</i>만 바꿔 계산한 회수 에너지이다. <i>R</i>이 작으면 전류가 커서 제동은 강하지만 내부저항 손실이 크고, <i>R</i>이 크면 제동이 약해 마찰이 에너지를 더 가져간다.</p>
+        <div class="chart" id="exp-c3"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="view-vehicle" hidden>
+  <div class="layout">
+    <div class="panel params" id="veh-params"></div>
+    <div class="results">
+      <div class="tiles" id="veh-tiles"></div>
+      <div class="card anim">
+        <h2>주행 애니메이션</h2>
+        <p class="cap">계산 결과를 실제 시간 비율로 재생한다. 바퀴는 미끄러지지 않고 구른다고 보고 회전각을 <i>x</i>/<i>r</i><sub>w</sub>로 정했다. 디스크가 붉을수록 그 순간의 마찰 브레이크 일률이 크다(최댓값 대비). 전선 위 점선이 빠를수록 발전 전류가 크다. 배터리 칸은 최종 회수량 대비 누적 비율이다. 차 위 화살표는 제동력의 크기이고, 회색 점선 차는 같은 조건에서 발전기가 없는 차이다.</p>
+        <canvas id="veh-anim" role="img" aria-label="감속하는 자동차 애니메이션"></canvas>
+        <div class="hud" id="veh-hud"></div>
+        <div class="ctrl">
+          <button type="button" id="anim-play">일시정지</button>
+          <button type="button" id="anim-restart">처음부터</button>
+          <label for="anim-rate">재생 속도 <select id="anim-rate"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option></select></label>
+          <input type="range" id="anim-scrub" min="0" max="1000" value="0" aria-label="재생 위치">
+        </div>
+      </div>
+      <div class="two">
+        <div class="card">
+          <h2>제동력 분담</h2>
+          <p class="cap">운전자가 요구한 감속도를 맞추기 위해 발전기가 내지 못한 나머지를 마찰 브레이크가 채운다.</p>
+          <div class="chart" id="veh-c1"></div>
+        </div>
+        <div class="card">
+          <h2>회수 전력</h2>
+          <p class="cap">발전기가 부하(축전 장치)로 보내는 전력 <i>P</i><sub>L</sub>이다. 전류 상한에 닿는 구간에서는 평평해진다.</p>
+          <div class="chart" id="veh-c2"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>초기 운동에너지가 어디로 갔는가</h2>
+        <p class="cap">발전기를 연결한 경우의 에너지 분배이다. 표의 마지막 열은 발전기가 없을 때의 값이다.</p>
+        <div id="veh-brk"></div>
+      </div>
+      <div class="card">
+        <h2>등가 부하 저항에 따른 회수 에너지</h2>
+        <p class="cap">다른 입력은 그대로 두고 <i>R</i>만 바꿔 계산한 회수 에너지이다.</p>
+        <div class="chart" id="veh-c3"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="model panel">
+  <h2>계산 모형</h2>
+  <p class="note">아래 식을 4차 룽게-쿠타법으로 수치 적분한다. 결과 타일의 ‘에너지 보존 검산’은 초기 운동에너지와 각 경로 에너지 합의 차이를 초기 운동에너지로 나눈 값이다.</p>
+
+  <h3>1. 발전기 (영구자석 직류 발전기 근사)</h3>
+  <div class="eq"><i>ε</i> = <i>k ω</i><sub>g</sub>, &nbsp;&nbsp; <i>I</i> = <i>ε</i> / (<i>R</i> + <i>r</i>), &nbsp;&nbsp; <i>τ</i><sub>g</sub> = <i>k I</i></div>
+  <dl class="sym">
+    <dt>ε</dt><dd>유도 기전력 (V). 패러데이 법칙 <i>ε</i> = −<i>N</i> d<i>Φ</i>/d<i>t</i>를 회전하는 코일에 적용하면, 정류 후 평균 기전력이 축 각속도에 비례한다.</dd>
+    <dt>k</dt><dd>발전기 상수 (V·s/rad). 코일 감은 수와 자극의 자기선속에 의해 정해지며, 개방 전압을 각속도로 나누어 측정한다.</dd>
+    <dt>ω<sub>g</sub></dt><dd>발전기 축의 각속도 (rad/s)</dd>
+    <dt>I</dt><dd>회로 전류 (A)</dd>
+    <dt>R</dt><dd>부하 저항 (Ω). 실차 모형에서는 축전 장치와 변환기를 하나의 저항으로 본 등가값이다.</dd>
+    <dt>r</dt><dd>발전기 코일의 내부저항 (Ω)</dd>
+    <dt>τ<sub>g</sub></dt><dd>유도전류가 자기장에서 받는 힘이 만드는 토크 (N·m). 렌츠 법칙에 따라 회전을 방해하므로 제동 토크가 된다.</dd>
+  </dl>
+  <p>같은 상수 <i>k</i>가 두 식에 함께 쓰이는 근거는 에너지 보존이다. 제동 토크가 빼앗는 기계적 일률 <i>τ</i><sub>g</sub><i>ω</i><sub>g</sub> = <i>kIω</i><sub>g</sub> = <i>εI</i>가 회로가 받는 전기적 일률과 같아야 하기 때문이다. 이 전력 중 <i>I</i><sup>2</sup><i>R</i>은 부하로, <i>I</i><sup>2</sup><i>r</i>은 코일 발열로 간다. 실차 모형에서 전류 상한 <i>I</i><sub>max</sub>를 두면 <i>I</i> = min(<i>ε</i>/(<i>R</i>+<i>r</i>), <i>I</i><sub>max</sub>)이고, 이때 부하 전력은 <i>P</i><sub>L</sub> = <i>εI</i> − <i>I</i><sup>2</sup><i>r</i>로 계산한다. 이는 제어기가 부하를 조절해 전류를 상한에 맞춘다는 가정이다.</p>
+
+  <h3>2. 실험 모형: 회전 원판</h3>
+  <div class="eq"><i>J</i> d<i>ω</i>/d<i>t</i> = −<i>k I</i> − <i>τ</i><sub>f</sub> − <i>b ω</i>, &nbsp;&nbsp; <i>J</i> = ½ <i>M a</i><sup>2</sup>, &nbsp;&nbsp; <i>K</i><sub>0</sub> = ½ <i>J ω</i><sub>0</sub><sup>2</sup></div>
+  <dl class="sym">
+    <dt>J</dt><dd>원판의 회전 관성 (kg·m²). 균일한 원판으로 가정했고, 발전기 회전자의 관성은 무시한다.</dd>
+    <dt>M, a</dt><dd>원판의 질량 (kg), 반지름 (m)</dd>
+    <dt>ω</dt><dd>원판 각속도 (rad/s). 발전기 축에 직결하므로 <i>ω</i><sub>g</sub> = <i>ω</i>이다. 회전수 <i>n</i>(rpm)과는 <i>ω</i> = 2π<i>n</i>/60의 관계이다.</dd>
+    <dt>τ<sub>f</sub></dt><dd>베어링 등의 쿨롱 마찰 토크 (N·m). 속도와 무관한 일정값으로 둔다.</dd>
+    <dt>b</dt><dd>점성 마찰 계수 (N·m·s/rad). 공기 저항 등 속도에 비례하는 손실을 나타낸다.</dd>
+    <dt>K<sub>0</sub></dt><dd>초기 회전 운동에너지 (J)</dd>
+  </dl>
+  <p>마찰이 전혀 없으면(<i>τ</i><sub>f</sub> = <i>b</i> = 0) 같은 전류가 <i>R</i>과 <i>r</i>을 직렬로 흐르므로, 원판이 멈출 때까지 회수되는 비율은 <i>R</i>/(<i>R</i>+<i>r</i>)로 정확히 정해진다. 마찰이 있으면 <i>R</i>을 키울수록 전기적 제동이 약해져 마찰이 더 많은 에너지를 가져가므로, 회수 에너지가 최대가 되는 <i>R</i>이 존재한다. 위의 세 번째 그래프가 그 최적값을 수치로 찾는다.</p>
+
+  <h3>3. 실차 모형: 내연기관차에 별도 발전기 장착</h3>
+  <div class="eq"><i>m</i> d<i>v</i>/d<i>t</i> = −(<i>F</i><sub>gen</sub> + <i>F</i><sub>fr</sub> + <i>F</i><sub>air</sub> + <i>F</i><sub>roll</sub>)</div>
+  <div class="eq"><i>ω</i><sub>g</sub> = <i>G v</i> / <i>r</i><sub>w</sub>, &nbsp; <i>F</i><sub>gen</sub> = <i>G τ</i><sub>g</sub> / <i>r</i><sub>w</sub>, &nbsp; <i>F</i><sub>air</sub> = ½ <i>ρ C</i><sub>d</sub> <i>A v</i><sup>2</sup>, &nbsp; <i>F</i><sub>roll</sub> = <i>C</i><sub>rr</sub> <i>m g</i></div>
+  <div class="eq"><i>F</i><sub>fr</sub> = max(0, <i>m a</i><sub>t</sub> − <i>F</i><sub>gen</sub> − <i>F</i><sub>air</sub> − <i>F</i><sub>roll</sub>)</div>
+  <dl class="sym">
+    <dt>m, v</dt><dd>차량 질량 (kg), 속력 (m/s)</dd>
+    <dt>G</dt><dd>바퀴 회전 대비 발전기 회전의 기어비 (무차원)</dd>
+    <dt>r<sub>w</sub></dt><dd>타이어 유효 반지름 (m)</dd>
+    <dt>F<sub>gen</sub></dt><dd>발전기 제동 토크를 바퀴 접지면의 힘으로 환산한 값 (N)</dd>
+    <dt>F<sub>fr</sub></dt><dd>마찰 브레이크(패드)가 담당하는 힘 (N)</dd>
+    <dt>a<sub>t</sub></dt><dd>운전자가 요구하는 목표 감속도 (m/s²). 0이면 브레이크를 밟지 않고 발전기와 주행 저항만으로 감속한다.</dd>
+    <dt>ρ, C<sub>d</sub>, A</dt><dd>공기 밀도 (kg/m³), 공기저항계수, 전면 투영 면적 (m²)</dd>
+    <dt>C<sub>rr</sub>, g</dt><dd>구름저항계수, 중력가속도 9.81 m/s²</dd>
+  </dl>
+  <p>가정: 평지이고, 바퀴·축의 회전 관성과 기어 손실은 무시하며, 감속 중 엔진은 동력계에서 분리되어 엔진 브레이크가 없다고 둔다. 실제 차량의 교류발전기는 계자 전류로 출력을 조절하는 권선계자형이므로, 이 모형의 수치는 정성적 경향과 크기 비교용 근사이다.</p>
+
+  <h3>4. 실험에서 입력값을 구하는 방법</h3>
+  <ul>
+    <li><i>k</i>: 발전기(예: 소형 DC 모터)를 일정 회전수로 돌리며 부하 없이 단자 전압 <i>V</i><sub>oc</sub>를 재고, <i>k</i> = <i>V</i><sub>oc</sub> / <i>ω</i>로 구한다. 여러 회전수에서 측정해 기울기로 구하면 더 정확하다.</li>
+    <li><i>r</i>: 멀티미터로 발전기 단자 저항을 재거나, 부하를 연결했을 때 단자 전압 <i>V</i> = <i>ε</i> − <i>Ir</i>의 관계에서 구한다.</li>
+    <li><i>τ</i><sub>f</sub>, <i>b</i>: 회로를 연 상태에서 원판의 감속 곡선 <i>ω</i>(<i>t</i>)를 측정하고, 이 시뮬레이터의 ‘개방 회로’ 곡선이 측정값과 겹치도록 맞춘다.</li>
+  </ul>
+
+  <h3>5. 실제 차량에 쓰이는 비슷한 기술</h3>
+  <ul>
+    <li>마쓰다 i-ELOOP: 12~25 V 가변전압 교류발전기, 전기이중층 커패시터, DC/DC 컨버터로 감속 시 발전한다. 제조사는 정체 구간 연비가 약 10% 개선된다고 발표했다. (<a href="https://www.theengineer.co.uk/mazda-creates-capacitor-based-regenerative-braking-system/">The Engineer</a>)</li>
+    <li>BMW Brake Energy Regeneration: 가속 중에는 발전기를 분리하고 감속·제동 때 주로 발전한다. 제조사 설명 기준 연비 개선은 최대 3%이다. (<a href="https://autobytel.com/what-is-bmw-brake-energy-regeneration">Autobytel</a>)</li>
+    <li>48 V 마일드 하이브리드: 교류발전기 자리에 벨트 구동 시동발전기를 넣는다. 현대 i30는 제동 시 최대 10~12 kW를 회수한다고 밝히고 있다. (<a href="https://org.hyundai.com/worldwide/en/cars/i30/hev">Hyundai</a>, <a href="https://www.valeo.com/en/catalogue/pts/48v-belt-starter-generator-ibsg/">Valeo</a>)</li>
+    <li>와전류 리타더: 버스·트럭에서 전자기유도로 제동하지만 에너지는 열로 버린다. 제동 보조만 하고 발전은 하지 않는 사례이다. (<a href="https://www.army-technology.com/contractors/armoured/ateco-equipment/pressreleases/telma-retarders/">Telma</a>)</li>
+  </ul>
+</section>
+</div>
+
+<script>
+(function(){
+"use strict";
+const G0 = 9.81;
+const $ = s => document.querySelector(s);
+
+/* ---------- 입력 정의 ---------- */
+const EXP = [
+  {g:'원판'},
+  {id:'M', label:'원판 질량', sym:'M', unit:'kg', v:0.5, step:0.05},
+  {id:'a', label:'원판 반지름', sym:'a', unit:'m', v:0.10, step:0.01},
+  {id:'n0', label:'초기 회전수', sym:'n<sub>0</sub>', unit:'rpm', v:600, step:10},
+  {g:'발전기·회로'},
+  {id:'k', label:'발전기 상수', sym:'k', unit:'V·s/rad', v:0.05, step:0.005},
+  {id:'r', label:'내부저항', sym:'r', unit:'Ω', v:2, step:0.1},
+  {id:'R', label:'부하 저항', sym:'R', unit:'Ω', v:5, step:0.5},
+  {g:'마찰'},
+  {id:'tf', label:'마찰 토크', sym:'τ<sub>f</sub>', unit:'N·m', v:0.005, step:0.001},
+  {id:'b', label:'점성 마찰', sym:'b', unit:'N·m·s', v:0, step:0.0001},
+];
+const VEH = [
+  {g:'차량·제동'},
+  {id:'m', label:'차량 질량', sym:'m', unit:'kg', v:1500, step:50},
+  {id:'v0', label:'초기 속력', sym:'v<sub>0</sub>', unit:'km/h', v:60, step:5},
+  {id:'at', label:'목표 감속도', sym:'a<sub>t</sub>', unit:'m/s²', v:2.0, step:0.1},
+  {id:'rw', label:'타이어 반지름', sym:'r<sub>w</sub>', unit:'m', v:0.30, step:0.01},
+  {g:'발전기'},
+  {id:'G', label:'기어비', sym:'G', unit:'', v:10, step:0.5},
+  {id:'k', label:'발전기 상수', sym:'k', unit:'V·s/rad', v:0.05, step:0.005},
+  {id:'r', label:'내부저항', sym:'r', unit:'Ω', v:0.05, step:0.01},
+  {id:'R', label:'등가 부하 저항', sym:'R', unit:'Ω', v:0.20, step:0.01},
+  {id:'Imax', label:'전류 상한', sym:'I<sub>max</sub>', unit:'A', v:150, step:10},
+  {g:'주행 저항'},
+  {id:'Cd', label:'공기저항계수', sym:'C<sub>d</sub>', unit:'', v:0.30, step:0.01},
+  {id:'A', label:'전면 면적', sym:'A', unit:'m²', v:2.2, step:0.1},
+  {id:'rho', label:'공기 밀도', sym:'ρ', unit:'kg/m³', v:1.2, step:0.01},
+  {id:'Crr', label:'구름저항계수', sym:'C<sub>rr</sub>', unit:'', v:0.010, step:0.001},
+];
+
+function buildPanel(el, defs, prefix, onChange){
+  el.innerHTML = '';
+  defs.forEach(d=>{
+    if(d.g){ const h=document.createElement('h3'); h.textContent=d.g; el.appendChild(h); return; }
+    const row=document.createElement('div'); row.className='prow';
+    const id=prefix+'-'+d.id;
+    row.innerHTML = `<label for="${id}">${d.label}<i>${d.sym}</i></label>`+
+      `<input id="${id}" type="number" inputmode="decimal" min="0" step="${d.step}" value="${d.v}">`+
+      `<span class="u">${d.unit}</span>`;
+    el.appendChild(row);
+  });
+  const der=document.createElement('div'); der.className='derived'; der.id=prefix+'-derived'; el.appendChild(der);
+  const br=document.createElement('div'); br.className='btnrow';
+  br.innerHTML=`<button type="button" id="${prefix}-reset">기본값으로 되돌리기</button>`;
+  el.appendChild(br);
+  el.addEventListener('input', onChange);
+  $('#'+prefix+'-reset').addEventListener('click', ()=>{
+    defs.forEach(d=>{ if(!d.g) $('#'+prefix+'-'+d.id).value=d.v; }); onChange();
+  });
+}
+function readParams(defs, prefix){
+  const p={}; let ok=true;
+  defs.forEach(d=>{ if(d.g) return; const x=parseFloat($('#'+prefix+'-'+d.id).value);
+    if(!isFinite(x)||x<0){ ok=false; p[d.id]=d.v; } else p[d.id]=x; });
+  return {p, ok};
+}
+
+/* ---------- 수치 적분 ---------- */
+function rk4(f,s,h){
+  const n=s.length, k1=f(s);
+  const s2=new Array(n); for(let i=0;i<n;i++) s2[i]=s[i]+h/2*k1[i];
+  const k2=f(s2); const s3=new Array(n); for(let i=0;i<n;i++) s3[i]=s[i]+h/2*k2[i];
+  const k3=f(s3); const s4=new Array(n); for(let i=0;i<n;i++) s4[i]=s[i]+h*k3[i];
+  const k4=f(s4); const o=new Array(n);
+  for(let i=0;i<n;i++) o[i]=s[i]+h/6*(k1[i]+2*k2[i]+2*k3[i]+k4[i]);
+  return o;
+}
+/* s[0]은 속력(또는 각속도). 0에 닿으면 마지막 걸음을 잘라 정확히 멈춘다. */
+function integrate(f, s0, dt, tmax, epsStop, nRec){
+  let s=s0.slice(), t=0, step=0, stopped=false;
+  const every=Math.max(1, Math.round((tmax/dt)/nRec));
+  const rec=[{t:0,s:s.slice()}];
+  while(t<tmax){
+    let nx=rk4(f,s,dt);
+    if(nx[0]<=0){
+      const frac=s[0]/(s[0]-nx[0]);
+      nx=rk4(f,s,dt*frac); nx[0]=0; t+=dt*frac; s=nx; stopped=true; rec.push({t,s:s.slice()}); break;
+    }
+    s=nx; t+=dt; step++;
+    if(s[0]<epsStop){ stopped=true; rec.push({t,s:s.slice()}); break; }
+    if(step%every===0) rec.push({t,s:s.slice()});
+  }
+  if(!stopped && rec[rec.length-1].t!==t) rec.push({t,s:s.slice()});
+  return {t,s,rec,stopped};
+}
+
+/* ---------- 실험 모형 ---------- */
+function simExp(p, open, nRec){
+  const J=0.5*p.M*p.a*p.a, w0=p.n0*2*Math.PI/60;
+  const Rt=p.R+p.r, c= open?0:(Rt>0? p.k*p.k/Rt : 0);
+  const Tf = p.tf>0 ? J*w0/p.tf : Infinity;
+  const Td = (c+p.b)>0 ? J/(c+p.b) : Infinity;
+  let Test=Math.min(Tf, 7*Td, 600); if(!isFinite(Test)||Test<=0) Test=600;
+  const dt=Test/4000, tmax=Math.min(600, Test*1.2);
+  const f=s=>{ const w=s[0]; if(w<=0) return [0,0,0,0,0];
+    const I= open||Rt<=0 ? 0 : p.k*w/Rt;
+    return [-(p.k*I+p.tf+p.b*w)/J, I*I*p.R, I*I*p.r, p.tf*w, p.b*w*w]; };
+  const res=integrate(f,[w0,0,0,0,0],dt,tmax,w0*1e-3,nRec||400);
+  res.J=J; res.w0=w0; res.K0=0.5*J*w0*w0; res.Kend=0.5*J*res.s[0]*res.s[0];
+  return res;
+}
+
+/* ---------- 실차 모형 ---------- */
+function vehF(p, v, genOff){
+  const wg=p.G*v/p.rw, eps=p.k*wg, Rt=p.R+p.r;
+  let I = genOff||Rt<=0 ? 0 : eps/Rt;
+  let lim=false; if(p.Imax>0 && I>p.Imax){ I=p.Imax; lim=true; }
+  const Fgen = p.rw>0 ? p.G*p.k*I/p.rw : 0;
+  const Fair=0.5*p.rho*p.Cd*p.A*v*v, Froll= v>0 ? p.Crr*p.m*G0 : 0;
+  const Ffr=Math.max(0, p.m*p.at - Fgen - Fair - Froll);
+  return {eps,I,lim,Fgen,Fair,Froll,Ffr, PL:eps*I-I*I*p.r, Pcu:I*I*p.r};
+}
+function simVeh(p, genOff, nRec){
+  const v0=p.v0/3.6;
+  let Test = p.at>0 ? v0/p.at : (p.Crr>0 ? v0/(p.Crr*G0) : 600);
+  Test=Math.min(Test*1.05, 600); if(!(Test>0)) Test=600;
+  const dt=Test/4000, tmax=Math.min(600, Test*1.3);
+  const f=s=>{ const v=s[0]; if(v<=0) return [0,0,0,0,0,0,0];
+    const F=vehF(p,v,genOff);
+    return [-(F.Fgen+F.Ffr+F.Fair+F.Froll)/p.m, F.PL, F.Pcu, F.Ffr*v, F.Fair*v, F.Froll*v, v]; };
+  const res=integrate(f,[v0,0,0,0,0,0,0],dt,tmax,v0*1e-4,nRec||400);
+  res.v0=v0; res.K0=0.5*p.m*v0*v0; res.Kend=0.5*p.m*res.s[0]*res.s[0];
+  return res;
+}
+
+/* ---------- 서식 ---------- */
+function fmt(x){
+  if(!isFinite(x)) return '–';
+  const a=Math.abs(x);
+  if(a===0) return '0';
+  if(a>=10000) return Math.round(x).toLocaleString('ko-KR');
+  if(a>=100) return x.toFixed(0);
+  if(a>=10) return x.toFixed(1);
+  if(a>=1) return x.toFixed(2);
+  if(a>=0.01) return x.toFixed(3);
+  return x.toExponential(2);
+}
+const pct = x => isFinite(x) ? (Math.abs(x)<0.1 && x!==0 ? x.toFixed(2) : x.toFixed(1))+'%' : '–';
+function tile(k,v,unit,s){ return `<div class="tile"><div class="k">${k}</div><div class="v">${v}<small>${unit||''}</small></div><div class="s">${s||''}</div></div>`; }
+function checkTile(err){
+  const ok=err<0.5;
+  return tile('에너지 보존 검산', pct(err), '', `<span class="pill ${ok?'ok':'bad'}">${ok?'✓ 보존됨':'! 오차 큼'}</span> 초기 운동에너지 대비 차이`);
+}
+
+/* ---------- 선 그래프 ---------- */
+function niceStep(span,n){ const s0=span/n; const mag=Math.pow(10,Math.floor(Math.log10(s0))); const e=s0/mag;
+  return (e>=7.5?10:e>=3.5?5:e>=1.5?2:1)*mag; }
+function lineChart(el, cfg){
+  el._cfg=cfg; drawChart(el);
+  if(!el._ro){ el._ro=new ResizeObserver(()=>drawChart(el)); el._ro.observe(el); }
+}
+function drawChart(el){
+  const cfg=el._cfg; if(!cfg) return;
+  const W=Math.max(260, el.clientWidth); const H= W<480 ? 220 : 260;
+  const m={l:56,r:14,t:10,b:40};
+  const iw=W-m.l-m.r, ih=H-m.t-m.b;
+  const all=cfg.series.flatMap(s=>s.pts);
+  let xmin=Math.min(...all.map(p=>p[0])), xmax=Math.max(...all.map(p=>p[0]));
+  if(cfg.xmax!=null) xmax=cfg.xmax;
+  let ymax=Math.max(...all.map(p=>p[1])); if(!(ymax>0)) ymax=1;
+  const ys=niceStep(ymax,4); ymax=Math.ceil(ymax/ys*1.0000001)*ys;
+  const lx = v=>Math.log10(v);
+  let X, xt=[];
+  if(cfg.xLog){ const a=Math.floor(lx(xmin)), b=Math.ceil(lx(xmax)); xmin=Math.pow(10,a); xmax=Math.pow(10,b);
+    X=v=>m.l+(lx(v)-a)/(b-a)*iw; for(let e=a;e<=b;e++) xt.push(Math.pow(10,e)); }
+  else { if(xmax<=xmin) xmax=xmin+1; const xs=niceStep(xmax-xmin,5); xmax=Math.ceil(xmax/xs-1e-9)*xs;
+    X=v=>m.l+(v-xmin)/(xmax-xmin)*iw; for(let v=Math.ceil(xmin/xs)*xs; v<=xmax+1e-9; v+=xs) xt.push(+v.toPrecision(10)); }
+  const Y=v=>m.t+ih-(v/ymax)*ih;
+  let g='';
+  for(let v=0; v<=ymax+1e-9; v+=ys){ const y=Y(v);
+    g+=`<line x1="${m.l}" x2="${m.l+iw}" y1="${y}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>`;
+    g+=`<text x="${m.l-6}" y="${y+4}" text-anchor="end">${fmt(+v.toPrecision(10))}</text>`; }
+  xt.forEach(v=>{ const x=X(v);
+    g+=`<line x1="${x}" x2="${x}" y1="${m.t+ih}" y2="${m.t+ih+4}" stroke="var(--line)"/>`;
+    g+=`<text x="${x}" y="${m.t+ih+16}" text-anchor="middle">${fmt(v)}</text>`; });
+  g+=`<line x1="${m.l}" x2="${m.l+iw}" y1="${m.t+ih}" y2="${m.t+ih}" stroke="var(--ink-3)"/>`;
+  g+=`<text class="axt" x="${m.l+iw/2}" y="${H-4}" text-anchor="middle">${cfg.xLabel}</text>`;
+  g+=`<text class="axt" x="12" y="${m.t+ih/2}" text-anchor="middle" transform="rotate(-90 12 ${m.t+ih/2})">${cfg.yLabel}</text>`;
+  (cfg.marks||[]).forEach((mk,i)=>{ const x=X(mk.x);
+    g+=`<line x1="${x}" x2="${x}" y1="${m.t}" y2="${m.t+ih}" stroke="var(--ink-3)" stroke-dasharray="${mk.dash||'3 3'}"/>`;
+    const anchor = x > m.l+iw*0.7 ? 'end' : 'start'; const dx = anchor==='end'?-5:5;
+    g+=`<text class="axt" x="${x+dx}" y="${m.t+12+i*15}" text-anchor="${anchor}">${mk.label}</text>`; });
+  cfg.series.forEach(s=>{
+    const d=s.pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join('');
+    g+=`<path d="${d}" fill="none" stroke="var(${s.color})" stroke-width="2" stroke-linejoin="round" ${s.dash?`stroke-dasharray="${s.dash}"`:''}/>`;
+  });
+  const legend = cfg.series.length>1 ? `<div class="legend">${cfg.series.map(s=>`<span><i class="sw" style="border-top-color:var(${s.color});${s.dash?'border-top-style:dashed':''}"></i>${s.name}</span>`).join('')}</div>` : '';
+  el.innerHTML = legend + `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${cfg.yLabel} – ${cfg.xLabel} 그래프">${g}<g class="hov"></g><rect x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent" class="hit"/></svg><div class="tip"></div>`;
+  const svg=el.querySelector('svg'), hov=el.querySelector('.hov'), tip=el.querySelector('.tip'), hit=el.querySelector('.hit');
+  const inv = px => cfg.xLog ? Math.pow(10, lx(xmin)+(px-m.l)/iw*(lx(xmax)-lx(xmin))) : xmin+(px-m.l)/iw*(xmax-xmin);
+  function nearest(pts,x){ let lo=0,hi=pts.length-1; while(hi-lo>1){ const mid=(lo+hi)>>1; if(pts[mid][0]<x) lo=mid; else hi=mid; }
+    return Math.abs(pts[lo][0]-x)<=Math.abs(pts[hi][0]-x)?pts[lo]:pts[hi]; }
+  function move(ev){
+    const r=svg.getBoundingClientRect(); const px=ev.clientX-r.left;
+    const xv=inv(Math.min(Math.max(px,m.l),m.l+iw));
+    let h=`<line x1="${X(xv)}" x2="${X(xv)}" y1="${m.t}" y2="${m.t+ih}" stroke="var(--ink-3)" stroke-width="1"/>`;
+    let rows=`<div class="hd">${cfg.xName} = ${fmt(xv)} ${cfg.xUnit}</div>`;
+    cfg.series.forEach(s=>{ if(xv>s.pts[s.pts.length-1][0]*1.0001 && !cfg.xLog){ rows+=`<div class="row"><i class="sq" style="background:var(${s.color})"></i>${s.name}: 0 ${cfg.yUnit}</div>`; return; }
+      const p=nearest(s.pts,xv);
+      h+=`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="4.5" fill="var(${s.color})" stroke="var(--surface)" stroke-width="2"/>`;
+      rows+=`<div class="row"><i class="sq" style="background:var(${s.color})"></i>${s.name}: ${fmt(p[1])} ${cfg.yUnit}</div>`; });
+    hov.innerHTML=h; tip.innerHTML=rows; tip.style.display='block';
+    const tw=tip.offsetWidth; let left=px+14; if(left+tw>W) left=px-tw-14; tip.style.left=Math.max(0,left)+'px';
+    tip.style.top=(svg.offsetTop+m.t+4)+'px';
+  }
+  hit.addEventListener('pointermove',move); hit.addEventListener('pointerdown',move);
+  hit.addEventListener('pointerleave',()=>{ hov.innerHTML=''; tip.style.display='none'; });
+}
+
+/* ---------- 에너지 분배 막대 ---------- */
+function breakdown(el, rows, K0, unit, extraHead, extraCol){
+  const tot=rows.reduce((a,r)=>a+r.v,0);
+  const bar=rows.filter(r=>r.v>0).map(r=>`<div style="flex:${r.v} 1 0;background:var(${r.c})" title="${r.n}"></div>`).join('');
+  let t=`<table class="brk"><tr><td></td><td class="n">${unit}</td><td class="n">비율</td>${extraHead?`<td class="n">${extraHead}</td>`:''}</tr>`;
+  rows.forEach((r,i)=>{ t+=`<tr><td><i class="sq" style="background:var(${r.c});margin-right:7px"></i>${r.n}</td><td class="n">${fmt(r.v)}</td><td class="n">${pct(r.v/K0*100)}</td>${extraCol?`<td class="n">${fmt(extraCol[i])}</td>`:''}</tr>`; });
+  t+=`<tr class="tot"><td>초기 운동에너지 <i>K</i><sub>0</sub></td><td class="n">${fmt(K0)}</td><td class="n">100%</td>${extraCol?`<td class="n">${fmt(K0)}</td>`:''}</tr></table>`;
+  el.innerHTML=`<div class="stack" role="img" aria-label="에너지 분배 막대">${bar}</div>`+t;
+}
+
+/* ---------- 실험 탭 계산 ---------- */
+function runExp(){
+  const {p}=readParams(EXP,'exp');
+  const on=simExp(p,false,400), off=simExp(p,true,400);
+  const [w,EL,Ecu,Ef,Eb]=on.s;
+  const K0=on.K0, err=Math.abs(K0-(EL+Ecu+Ef+Eb+on.Kend))/K0*100;
+  const Rt=p.R+p.r, eps0=p.k*on.w0, I0=Rt>0?eps0/Rt:0;
+  $('#exp-derived').innerHTML=`회전 관성 <i>J</i> = <b>${fmt(on.J)}</b> kg·m²<br>초기 각속도 <i>ω</i><sub>0</sub> = <b>${fmt(on.w0)}</b> rad/s<br>초기 운동에너지 <i>K</i><sub>0</sub> = <b>${fmt(K0)}</b> J`;
+  const stopTxt=r=> r.stopped ? fmt(r.t) : '600 이상';
+  $('#exp-tiles').innerHTML=
+    tile('정지 시간 (발전기 연결)', stopTxt(on), 's', `회로를 열었을 때 ${stopTxt(off)} s`)+
+    tile('회수 에너지 <i>E</i><sub>L</sub>', fmt(EL), 'J', `<i>K</i><sub>0</sub> 대비 ${pct(EL/K0*100)}`)+
+    tile('초기 부하 전력', fmt(I0*I0*p.R), 'W', `<i>ε</i><sub>0</sub> = ${fmt(eps0)} V, <i>I</i><sub>0</sub> = ${fmt(I0)} A`)+
+    checkTile(err);
+  const toRpm=x=>x*60/(2*Math.PI);
+  lineChart($('#exp-c1'),{xLabel:'시간 t (s)', yLabel:'회전수 n (rpm)', xName:'t', xUnit:'s', yUnit:'rpm',
+    series:[{name:'발전기 연결', color:'--s1', pts:on.rec.map(r=>[r.t,toRpm(r.s[0])])},
+            {name:'회로 개방', color:'--s2', dash:'6 4', pts:off.rec.map(r=>[r.t,toRpm(r.s[0])])}]});
+  lineChart($('#exp-c2'),{xLabel:'시간 t (s)', yLabel:'부하 전력 P (W)', xName:'t', xUnit:'s', yUnit:'W',
+    series:[{name:'부하 전력', color:'--s1', pts:on.rec.map(r=>{ const I=Rt>0?p.k*r.s[0]/Rt:0; return [r.t,I*I*p.R]; })}]});
+  breakdown($('#exp-brk'),[
+    {n:'부하로 회수 (I²R)', v:EL, c:'--s1'},
+    {n:'코일 내부저항 발열 (I²r)', v:Ecu, c:'--s2'},
+    {n:'쿨롱 마찰 열', v:Ef, c:'--s3'},
+    {n:'점성 마찰 열', v:Eb, c:'--s4'},
+    ...(on.Kend>K0*1e-6?[{n:'남은 운동에너지', v:on.Kend, c:'--s5'}]:[])], K0, 'J');
+  // R 스윕
+  const pts=[]; const a=-1, b=3, N=41;
+  for(let i=0;i<N;i++){ const R=Math.pow(10,a+(b-a)*i/(N-1)); const q=Object.assign({},p,{R}); const s=simExp(q,false,10); pts.push([R,s.s[1]]); }
+  let best=pts[0]; pts.forEach(q=>{ if(q[1]>best[1]) best=q; });
+  lineChart($('#exp-c3'),{xLabel:'부하 저항 R (Ω, 로그 눈금)', yLabel:'회수 에너지 (J)', xName:'R', xUnit:'Ω', yUnit:'J', xLog:true,
+    series:[{name:'회수 에너지', color:'--s1', pts}],
+    marks:[{x:Math.min(Math.max(p.R,0.1),1000), label:`현재 R = ${fmt(p.R)} Ω`},{x:best[0], label:`최대 ≈ ${fmt(best[0])} Ω`, dash:'1 3'}]});
+}
+
+/* ---------- 실차 탭 계산 ---------- */
+function runVeh(){
+  const {p}=readParams(VEH,'veh');
+  const on=simVeh(p,false,400), off=simVeh(p,true,400);
+  const [v,EL,Ecu,Efr,Eair,Eroll,xEnd]=on.s;
+  const K0=on.K0, err=Math.abs(K0-(EL+Ecu+Efr+Eair+Eroll+on.Kend))/K0*100;
+  const F0=vehF(p,on.v0,false);
+  const wg0=p.G*on.v0/p.rw;
+  $('#veh-derived').innerHTML=`초기 발전기 회전수 = <b>${fmt(wg0*60/(2*Math.PI))}</b> rpm<br>초기 기전력 <i>ε</i><sub>0</sub> = <b>${fmt(F0.eps)}</b> V<br>초기 운동에너지 <i>K</i><sub>0</sub> = <b>${fmt(K0/1000)}</b> kJ`;
+  const stopTxt=r=> r.stopped ? fmt(r.t) : '600 이상';
+  const dFr = off.s[3]>0 ? (off.s[3]-Efr)/off.s[3]*100 : NaN;
+  const demand=p.m*p.at;
+  $('#veh-tiles').innerHTML=
+    tile('정지 시간', stopTxt(on), 's', `발전기 없을 때 ${stopTxt(off)} s`)+
+    tile('회수 에너지 <i>E</i><sub>L</sub>', fmt(EL/1000), 'kJ', `<i>K</i><sub>0</sub> 대비 ${pct(EL/K0*100)}`)+
+    tile('패드 발열 감소', pct(dFr), '', `마찰 브레이크 열 ${fmt(off.s[3]/1000)} → ${fmt(Efr/1000)} kJ`)+
+    tile('초기 발전기 제동력', fmt(F0.Fgen), 'N', demand>0 ? `요구 제동력 ${fmt(demand)} N의 ${pct(F0.Fgen/demand*100)}${F0.lim?' · 전류 상한 도달':''}` : (F0.lim?'전류 상한 도달':''))+
+    checkTile(err);
+  const kmh=x=>x*3.6;
+  const fpts=key=>on.rec.map(r=>{ const F=vehF(p,r.s[0],false); return [r.t, r.s[0]>0?F[key]:0]; });
+  lineChart($('#veh-c1'),{xLabel:'시간 t (s)', yLabel:'힘 (N)', xName:'t', xUnit:'s', yUnit:'N',
+    series:[{name:'마찰 브레이크', color:'--s2', pts:fpts('Ffr')},
+            {name:'발전기', color:'--s1', dash:'6 4', pts:fpts('Fgen')},
+            {name:'공기·구름 저항', color:'--s3', dash:'2 3', pts:on.rec.map(r=>{ const F=vehF(p,r.s[0],false); return [r.t, r.s[0]>0?F.Fair+F.Froll:0]; })}]});
+  lineChart($('#veh-c2'),{xLabel:'시간 t (s)', yLabel:'회수 전력 (W)', xName:'t', xUnit:'s', yUnit:'W',
+    series:[{name:'회수 전력', color:'--s1', pts:on.rec.map(r=>[r.t, r.s[0]>0?vehF(p,r.s[0],false).PL:0])}]});
+  breakdown($('#veh-brk'),[
+    {n:'부하로 회수', v:EL/1000, c:'--s1'},
+    {n:'발전기 내부저항 발열', v:Ecu/1000, c:'--s2'},
+    {n:'마찰 브레이크 열', v:Efr/1000, c:'--s3'},
+    {n:'공기 저항', v:Eair/1000, c:'--s4'},
+    {n:'구름 저항', v:Eroll/1000, c:'--s5'}], K0/1000, 'kJ', '발전기 없음 (kJ)',
+    [0,0,off.s[3]/1000,off.s[4]/1000,off.s[5]/1000]);
+  const pts=[]; const a=-2, b=1, N=37;
+  for(let i=0;i<N;i++){ const R=Math.pow(10,a+(b-a)*i/(N-1)); const q=Object.assign({},p,{R}); const s=simVeh(q,false,10); pts.push([R,s.s[1]/1000]); }
+  let best=pts[0]; pts.forEach(q=>{ if(q[1]>best[1]) best=q; });
+  lineChart($('#veh-c3'),{xLabel:'등가 부하 저항 R (Ω, 로그 눈금)', yLabel:'회수 에너지 (kJ)', xName:'R', xUnit:'Ω', yUnit:'kJ', xLog:true,
+    series:[{name:'회수 에너지', color:'--s1', pts}],
+    marks:[{x:Math.min(Math.max(p.R,0.01),10), label:`현재 R = ${fmt(p.R)} Ω`},{x:best[0], label:`최대 ≈ ${fmt(best[0])} Ω`, dash:'1 3'}]});
+  animSet(p,on,off);
+}
+
+/* ---------- 주행 애니메이션 ---------- */
+const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const A={p:null,on:null,off:null,t:0,T:0,playing:false,rate:1,last:null,phase:0,raf:0,maxPfr:1,maxI:1,maxF:1};
+function lerpState(rec,t){
+  if(t<=rec[0].t) return rec[0].s;
+  const n=rec.length; if(t>=rec[n-1].t) return rec[n-1].s;
+  let lo=0,hi=n-1; while(hi-lo>1){ const mid=(lo+hi)>>1; if(rec[mid].t<t) lo=mid; else hi=mid; }
+  const a=rec[lo],b=rec[hi],u=(t-a.t)/((b.t-a.t)||1);
+  return a.s.map((v,i)=>v+(b.s[i]-v)*u);
+}
+function hexRGB(h){ h=h.trim().replace('#',''); if(h.length===3) h=h.split('').map(c=>c+c).join(''); return [0,2,4].map(i=>parseInt(h.substr(i,2),16)); }
+function mixC(a,b,u){ const pa=hexRGB(a), pb=hexRGB(b); return 'rgb('+pa.map((v,i)=>Math.round(v+(pb[i]-v)*u)).join(',')+')'; }
+function colors(){ const cs=getComputedStyle(document.documentElement); const g=n=>cs.getPropertyValue(n).trim();
+  return {ink:g('--ink'),ink2:g('--ink-2'),ink3:g('--ink-3'),line:g('--line'),surface:g('--surface'),s1:g('--s1'),s2:g('--s2'),s3:g('--s3'),crit:g('--crit'),
+    car:g('--car'),glass:g('--glass'),tire:g('--tire'),disc:g('--disc'),rim:g('--rim'),road:g('--road'),sky:g('--sky')}; }
+function animSet(p,on,off){
+  A.p=p; A.on=on; A.off=off; A.T=Math.max(on.t,off.t); A.t=0; A.last=null; A.phase=0;
+  A.maxPfr=1e-9; A.maxI=1e-9; A.maxF=1e-9;
+  on.rec.forEach(r=>{ const v=r.s[0]; if(v<=0) return; const F=vehF(p,v,false);
+    A.maxPfr=Math.max(A.maxPfr,F.Ffr*v); A.maxI=Math.max(A.maxI,F.I); A.maxF=Math.max(A.maxF,F.Ffr,F.Fgen); });
+  A.playing=!reduceMotion && !$('#view-vehicle').hidden;
+  syncBtn(); drawAnim(); if(A.playing) startLoop();
+}
+function syncBtn(){ const b=$('#anim-play'); b.textContent = A.playing ? '일시정지' : (A.t>=A.T ? '다시 재생' : '재생'); }
+function startLoop(){ cancelAnimationFrame(A.raf); A.last=null; A.raf=requestAnimationFrame(tick); }
+function tick(ts){
+  if(!A.playing) return;
+  if(A.last!=null){ const dtr=Math.min(0.1,(ts-A.last)/1000);
+    const v=lerpState(A.on.rec,A.t)[0]; const I=v>0?vehF(A.p,v,false).I:0;
+    A.phase += 90*dtr*(I/A.maxI); A.t+=dtr*A.rate; }
+  A.last=ts;
+  if(A.t>=A.T){ A.t=A.T; A.playing=false; syncBtn(); }
+  drawAnim();
+  if(A.playing) A.raf=requestAnimationFrame(tick);
+}
+function arrowL(ctx,x,y,len,col,label,C){
+  ctx.fillStyle=C.ink2; ctx.font='11px "Noto Sans KR",sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText(label,x+6,y);
+  ctx.textBaseline='alphabetic';
+  if(len<2) return;
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=3; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-len+7,y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(x-len,y); ctx.lineTo(x-len+9,y-5); ctx.lineTo(x-len+9,y+5); ctx.closePath(); ctx.fill();
+}
+function drawWheel(ctx,x,y,R,th,heat,ghost,C){
+  ctx.beginPath(); ctx.arc(x,y,R,0,2*Math.PI);
+  if(ghost){ ctx.stroke(); }
+  else { ctx.fillStyle=C.tire; ctx.fill(); }
+  const rd=R*0.64;
+  if(!ghost){
+    ctx.save();
+    if(heat>0.02){ ctx.shadowColor=C.crit; ctx.shadowBlur=22*heat; }
+    ctx.beginPath(); ctx.arc(x,y,rd,0,2*Math.PI); ctx.fillStyle=mixC(C.disc,C.crit,Math.max(0,Math.min(1,heat))); ctx.fill();
+    ctx.restore();
+  }
+  ctx.save(); ctx.strokeStyle=ghost?C.ink3:C.rim; ctx.lineWidth=Math.max(1.5,R*0.09); ctx.lineCap='round';
+  if(ghost) ctx.setLineDash([]);
+  for(let k=0;k<5;k++){ const a=th+k*2*Math.PI/5; ctx.beginPath(); ctx.moveTo(x+Math.cos(a)*R*0.14,y+Math.sin(a)*R*0.14); ctx.lineTo(x+Math.cos(a)*R*0.86,y+Math.sin(a)*R*0.86); ctx.stroke(); }
+  ctx.restore();
+  if(!ghost){ ctx.beginPath(); ctx.arc(x,y,R*0.14,0,2*Math.PI); ctx.fillStyle=C.rim; ctx.fill(); }
+}
+function drawCar(ctx,cx,gy,s,rw,th,o,C){
+  const L=4.4, wb=2.7, R=Math.max(4,rw*s), by=gy-R;
+  const x0=cx-L/2*s, x1=cx+L/2*s, yb=by+0.08*s, ym=by-0.55*s, yt=by-1.2*s;
+  ctx.save();
+  if(o.ghost){ ctx.globalAlpha=0.7; ctx.setLineDash([5,4]); ctx.strokeStyle=C.ink3; ctx.lineWidth=1.5; }
+  ctx.beginPath();
+  ctx.moveTo(x0+0.15*s,yb); ctx.lineTo(x1-0.12*s,yb); ctx.quadraticCurveTo(x1,yb,x1,yb-0.22*s);
+  ctx.lineTo(x1-0.04*s,ym+0.02*s); ctx.quadraticCurveTo(x1-0.25*s,ym-0.08*s,x1-0.9*s,ym-0.08*s);
+  ctx.lineTo(cx+0.75*s,ym-0.08*s); ctx.lineTo(cx+0.12*s,yt); ctx.lineTo(cx-1.15*s,yt); ctx.lineTo(cx-1.8*s,ym-0.08*s);
+  ctx.lineTo(x0+0.1*s,ym); ctx.quadraticCurveTo(x0,ym+0.04*s,x0,yb-0.22*s); ctx.quadraticCurveTo(x0,yb,x0+0.15*s,yb); ctx.closePath();
+  if(o.ghost) ctx.stroke();
+  else { ctx.fillStyle=C.car; ctx.fill(); ctx.strokeStyle=C.ink3; ctx.lineWidth=1; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx+0.62*s,ym-0.16*s); ctx.lineTo(cx+0.08*s,yt+0.1*s); ctx.lineTo(cx-1.08*s,yt+0.1*s); ctx.lineTo(cx-1.62*s,ym-0.16*s); ctx.closePath();
+    ctx.fillStyle=C.glass; ctx.fill(); }
+  const fx=cx+wb/2*s, rx=cx-wb/2*s;
+  if(!o.ghost){
+    /* 발전기(G)·배터리·전선 */
+    const gW=Math.max(14,0.5*s), gx=fx-R-gW*1.1, gyy=by-0.3*s;
+    const bW=Math.max(24,0.85*s), bH=Math.max(11,0.32*s), bx=rx+R*0.7, byy=gyy-bH/2;
+    ctx.strokeStyle=C.ink3; ctx.lineWidth=1.5; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(fx,by); ctx.lineTo(gx+gW/2,gyy); ctx.stroke();
+    ctx.lineWidth=2.5; ctx.strokeStyle=o.I>1e-6?C.s1:C.ink3; ctx.setLineDash([4,6]); ctx.lineDashOffset=o.phase;
+    ctx.beginPath(); ctx.moveTo(gx,gyy); ctx.lineTo(bx+bW,gyy); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset=0;
+    ctx.fillStyle=C.s1; ctx.fillRect(gx,gyy-gW/2,gW,gW);
+    ctx.fillStyle='#ffffff'; ctx.font='bold '+Math.round(gW*0.62)+'px "IBM Plex Mono",monospace'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('G',gx+gW/2,gyy+1);
+    ctx.fillStyle=C.surface; ctx.fillRect(bx,byy,bW,bH);
+    ctx.fillStyle=C.s3; ctx.fillRect(bx,byy,bW*Math.max(0,Math.min(1,o.batt)),bH);
+    ctx.strokeStyle=C.ink2; ctx.lineWidth=1.2; ctx.strokeRect(bx,byy,bW,bH); ctx.fillStyle=C.ink2; ctx.fillRect(bx-3,byy+bH*0.3,3,bH*0.4);
+    ctx.textBaseline='alphabetic';
+  }
+  ctx.restore();
+  ctx.save(); if(o.ghost){ ctx.globalAlpha=0.7; ctx.setLineDash([5,4]); ctx.strokeStyle=C.ink3; ctx.lineWidth=1.5; }
+  drawWheel(ctx,rx,by,R,th,o.ghost?0:o.heat,o.ghost,C);
+  drawWheel(ctx,fx,by,R,th,o.ghost?0:o.heat,o.ghost,C);
+  ctx.restore();
+}
+function drawAnim(){
+  if(!A.on) return;
+  const cv=$('#veh-anim'); const W=cv.clientWidth, H=cv.clientHeight; if(!W||!H) return;
+  const dpr=window.devicePixelRatio||1;
+  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
+  const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); const C=colors();
+  const p=A.p, st=lerpState(A.on.rec,A.t), so=lerpState(A.off.rec,A.t);
+  const v=st[0], x=st[6], xo=so[6];
+  const F= v>0 ? vehF(p,v,false) : {Fgen:0,Ffr:0,Fair:0,Froll:0,I:0,PL:0};
+  const s=Math.max(16,Math.min(34,W/24)), gy=H-46, X0=W*0.42, half=2.2;
+  const X=xw=>X0+(xw-x)*s;
+  ctx.setLineDash([]);
+  ctx.fillStyle=C.sky; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=C.road; ctx.fillRect(0,gy,W,24);
+  ctx.strokeStyle=C.surface; ctx.lineWidth=2;
+  const xl=x-X0/s, xr=x+(W-X0)/s;
+  for(let k=Math.floor(xl/3)*3;k<xr;k+=3){ ctx.beginPath(); ctx.moveTo(X(k),gy+12); ctx.lineTo(X(k+1.5),gy+12); ctx.stroke(); }
+  ctx.font='11px "IBM Plex Mono",monospace'; ctx.textAlign='center'; ctx.fillStyle=C.ink3;
+  for(let d=Math.ceil(xl/10)*10; d<xr; d+=10){ const px=X(d); ctx.strokeStyle=C.ink3; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(px,gy+24); ctx.lineTo(px,gy+30); ctx.stroke(); ctx.fillText(d+' m',px,gy+42); }
+  const xs=A.on.s[6], xso=A.off.s[6];
+  ctx.font='11px "Noto Sans KR",sans-serif';
+  const flag=(xw,col,txt,dash,row)=>{ const px=X(xw); if(px<-60||px>W+60) return; ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.setLineDash(dash); ctx.beginPath(); ctx.moveTo(px,12+row*14); ctx.lineTo(px,gy+24); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle=col; const right=px>W-120; ctx.textAlign=right?'right':'left'; ctx.fillText(txt,px+(right?-4:4),22+row*14); };
+  flag(0,C.ink3,'제동 시작',[3,3],0);
+  if(Math.abs(xso-xs)>0.3) flag(xso,C.ink3,`발전기 없음 정지 ${fmt(xso)} m`,[2,3],1);
+  flag(xs,C.s1,`정지 위치 ${fmt(xs)} m`,[5,3],0);
+  const rw=p.rw>0?p.rw:0.3;
+  drawCar(ctx,X(xo-half),gy,s,rw,xo/rw,{ghost:true},C);
+  drawCar(ctx,X(x-half),gy,s,rw,x/rw,{ghost:false,heat:A.maxPfr>0?F.Ffr*v/A.maxPfr:0,I:F.I,phase:A.phase,batt:A.on.s[1]>0?st[1]/A.on.s[1]:0},C);
+  /* 제동력 화살표: 운동 반대 방향(왼쪽) */
+  const ax=X(x-half)-2.2*s+2, maxLen=Math.min(2.8*s, ax-8), yTop=gy-Math.max(4,rw*s)-1.2*s-16;
+  arrowL(ctx,ax,yTop-15,F.Ffr/A.maxF*maxLen,C.s2,`마찰 ${fmt(F.Ffr)} N`,C);
+  arrowL(ctx,ax,yTop,F.Fgen/A.maxF*maxLen,C.s1,`발전기 ${fmt(F.Fgen)} N`,C);
+  const items=[['시간 t',fmt(A.t)+' s'],['속력 v',fmt(v*3.6)+' km/h'],['이동 거리 x',fmt(x)+' m'],['발전 전류 I',fmt(F.I)+' A'],
+    ['발전기 제동력',fmt(F.Fgen)+' N'],['마찰 제동력',fmt(F.Ffr)+' N'],['회수 전력 P<sub>L</sub>',fmt(F.PL)+' W'],['누적 회수 E<sub>L</sub>',fmt(st[1]/1000)+' kJ']];
+  $('#veh-hud').innerHTML=items.map(i=>`<div>${i[0]}<b>${i[1]}</b></div>`).join('');
+  const sc=$('#anim-scrub'); if(document.activeElement!==sc) sc.value=String(Math.round(A.T>0?A.t/A.T*1000:0));
+}
+$('#anim-play').addEventListener('click',()=>{ if(A.playing){ A.playing=false; } else { if(A.t>=A.T){ A.t=0; A.phase=0; } A.playing=true; startLoop(); } syncBtn(); });
+$('#anim-restart').addEventListener('click',()=>{ A.t=0; A.phase=0; A.playing=true; syncBtn(); startLoop(); });
+$('#anim-rate').addEventListener('change',e=>{ A.rate=parseFloat(e.target.value)||1; });
+$('#anim-scrub').addEventListener('input',e=>{ A.t=parseInt(e.target.value,10)/1000*A.T; if(!A.playing) syncBtn(); drawAnim(); });
+new ResizeObserver(()=>{ if(!A.playing) drawAnim(); }).observe($('#veh-anim'));
+
+/* ---------- 탭 ---------- */
+let raf={};
+const sched=(k,fn)=>()=>{ cancelAnimationFrame(raf[k]); raf[k]=requestAnimationFrame(fn); };
+buildPanel($('#exp-params'),EXP,'exp',sched('e',runExp));
+buildPanel($('#veh-params'),VEH,'veh',sched('v',runVeh));
+let done={};
+function show(){
+  const h=(location.hash||'#experiment').slice(1); const name = h==='vehicle'?'vehicle':'experiment';
+  ['experiment','vehicle'].forEach(n=>{ $('#view-'+n).hidden = n!==name; $('#tab-'+n).setAttribute('aria-selected', n===name?'true':'false'); });
+  if(!done[name]){ done[name]=true; name==='vehicle'?runVeh():runExp(); }
+  else if(name==='vehicle' && A.on){ drawAnim(); }
+  if(name!=='vehicle' && A.playing){ A.playing=false; syncBtn(); }
+}
+window.addEventListener('hashchange',show);
+show();
+})();
+</script>
+</body>
+</html>
