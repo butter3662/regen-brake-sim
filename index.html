@@ -138,6 +138,32 @@ dl.sym dd{margin:0;color:var(--ink-2)}
 .srow .sval input{width:78px;font-family:var(--f-mono);font-size:14px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font-variant-numeric:tabular-nums}
 .srow .u{font-size:12px;color:var(--ink-3);font-family:var(--f-mono);min-width:34px}
 .srow input[type=range]{grid-column:1 / -1;width:100%;accent-color:var(--accent)}
+.subtabs{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 16px;border-bottom:1px solid var(--line)}
+.subtabs button{border:0;border-bottom:2px solid transparent;border-radius:0;background:none;padding:9px 14px;font-family:var(--f-display);font-weight:600;font-size:14px;color:var(--ink-2);margin-bottom:-1px}
+.subtabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+#sv-how,#sv-build{display:flex;flex-direction:column;gap:16px}
+#sv-how[hidden],#sv-build[hidden],#sv-sim[hidden]{display:none}
+.flow{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.frow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.chip{display:inline-block;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);font-size:13.5px}
+.chip.o{border-color:var(--s2)} .chip.b{border-color:var(--s1)} .chip.g{border-color:var(--s3)}
+.arr{color:var(--ink-3);font-size:15px}
+ol.steps{padding-left:22px;margin:4px 0}
+ol.steps li{margin:0 0 14px;max-width:80ch}
+#how-coil{display:block;width:100%;height:260px;border-radius:8px;background:var(--sky)}
+@media (max-width:560px){#how-coil{height:420px}}
+.diagram{overflow-x:auto}
+.diagram svg{display:block;min-width:720px;width:100%;height:auto}
+.diagram svg.circ{min-width:520px;max-width:700px;margin:0 auto}
+.dg text{font-family:var(--f-body);font-size:13px;fill:var(--ink);stroke:none}
+.dg text.small{font-size:11px;fill:var(--ink-2)}
+.dg text.mag{font-family:var(--f-mono);font-weight:700;font-size:16px;fill:#ffffff}
+.tblwrap{overflow-x:auto}
+table.parts{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+table.parts th{text-align:left;font-family:var(--f-display);font-weight:600;color:var(--ink-2);padding:6px 8px;border-bottom:1px solid var(--line)}
+table.parts td{padding:8px;border-top:1px solid var(--grid);vertical-align:top}
+table.parts td:first-child{white-space:nowrap;font-weight:500}
+table.parts td:last-child{white-space:nowrap;font-family:var(--f-mono);font-size:13px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -154,6 +180,12 @@ dl.sym dd{margin:0;color:var(--ink-2)}
 </div>
 
 <section id="simple">
+  <div class="subtabs" role="tablist">
+    <button type="button" role="tab" id="svt-sim" aria-selected="true">시뮬레이션</button>
+    <button type="button" role="tab" id="svt-how" aria-selected="false">작동 원리</button>
+    <button type="button" role="tab" id="svt-build" aria-selected="false">세부 구조</button>
+  </div>
+  <div id="sv-sim">
   <div class="layout">
     <div class="panel params">
       <h3>바꿔 볼 값</h3>
@@ -220,6 +252,175 @@ dl.sym dd{margin:0;color:var(--ink-2)}
         </dl>
         <p class="note">가정: 균일한 자기장 속에서 도는 단일 코일 교류 발전기이며, 코일의 자체 인덕턴스, 기어 손실, 타이어 미끄러짐은 무시한다.</p>
       </div>
+    </div>
+  </div>
+  </div>
+  <div id="sv-how" hidden>
+    <div class="card">
+      <h2>한눈에 보는 흐름</h2>
+      <p class="cap">브레이크를 밟으면 두 가지 제동이 동시에 일어난다. 위 줄은 마찰 제동, 아래 두 줄은 전자기유도 제동과 발전이다.</p>
+      <div class="flow">
+        <div class="frow"><span class="chip">브레이크 페달</span><span class="arr">→</span><span class="chip o">캘리퍼가 패드로 디스크를 누름</span><span class="arr">→</span><span class="chip o">마찰력 <i>F</i><sub>fr</sub>: 운동에너지 → 열</span></div>
+        <div class="frow"><span class="chip">바퀴 회전 <i>ω</i><sub>w</sub> = <i>v</i>/<i>r</i><sub>w</sub></span><span class="arr">→</span><span class="chip b">기어로 <i>G</i>배 빠르게</span><span class="arr">→</span><span class="chip b">자기장 속 코일 회전</span><span class="arr">→</span><span class="chip b">유도 기전력 <i>ε</i></span><span class="arr">→</span><span class="chip b">정류 (교류→직류)</span><span class="arr">→</span><span class="chip g">배터리 충전</span></div>
+        <div class="frow"><span class="chip b">유도전류 <i>I</i></span><span class="arr">→</span><span class="chip b">자기장이 전류에 힘을 줌 (렌츠 법칙)</span><span class="arr">→</span><span class="chip b">코일 회전을 방해: 발전기 제동력 <i>F</i><sub>gen</sub></span></div>
+        <div class="frow"><span class="chip">두 힘 <i>F</i><sub>fr</sub> + <i>F</i><sub>gen</sub>이 함께 차를 감속</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>코일이 돌 때 기전력이 생기는 과정</h2>
+      <p class="cap">발전기 축 방향에서 본 모습이다. 자기장은 N극에서 S극으로 향한다. 코일 면의 법선이 자기장과 나란할 때 자기선속 <i>Φ</i>가 최대이고, 이때 <i>Φ</i>의 변화율이 0이라 기전력 <i>ε</i>는 0이다. 코일 면이 자기장과 나란할 때는 반대로 <i>Φ</i> = 0이고 <i>ε</i>가 최대이다. 코일 양 끝의 ⊙(나오는 방향)와 ⊗(들어가는 방향)는 전류 방향이다. 실제 회전은 너무 빨라서 400배 느리게 보여 준다.</p>
+      <canvas id="how-coil" role="img" aria-label="자기장 속에서 회전하는 코일과 자기선속·기전력 그래프"></canvas>
+      <div class="legend" style="margin-top:6px"><span><i class="sw" style="border-top-color:var(--s1)"></i>자기선속 <i>Φ</i> = <i>BS</i> cos <i>ωt</i></span><span><i class="sw" style="border-top-color:var(--s2);border-top-style:dashed"></i>기전력 <i>ε</i> = <i>NBSω</i> sin <i>ωt</i></span></div>
+      <div class="srow" style="max-width:420px">
+        <label for="how-v">속력 <i>v</i></label>
+        <span class="sval"><input id="how-v" type="number" inputmode="decimal" min="0" step="1" value="60"><span class="u">km/h</span></span>
+        <input id="how-v-r" type="range" min="0" max="150" step="1" value="60" aria-label="속력 슬라이더">
+      </div>
+      <div class="hud" id="how-hud"></div>
+      <p class="note" id="how-src"></p>
+    </div>
+
+    <div class="card">
+      <h2>단계별 원리</h2>
+      <ol class="steps">
+        <li><b>회전 전달.</b> 바퀴는 미끄러지지 않고 구르므로 바퀴 각속도는 <i>ω</i><sub>w</sub> = <i>v</i>/<i>r</i><sub>w</sub>이다. 증속 기어가 이를 <i>G</i>배로 키워 코일은 <i>ω</i> = <i>Gv</i>/<i>r</i><sub>w</sub>로 돈다.
+          <div class="eq"><i>ω</i> = <i>G v</i> / <i>r</i><sub>w</sub></div></li>
+        <li><b>자기선속의 변화.</b> 균일한 자기장 <i>B</i> 속에서 면적 <i>S</i>인 코일의 법선이 자기장과 이루는 각이 <i>ωt</i>이면 코일 한 바퀴를 지나는 자기선속은 다음과 같다.
+          <div class="eq"><i>Φ</i> = <i>B S</i> cos <i>ωt</i></div></li>
+        <li><b>전자기유도 (패러데이 법칙).</b> 감은 수가 <i>N</i>인 코일에 생기는 기전력은 자기선속의 시간 변화율에 비례한다. 최댓값 <i>NBSω</i>는 자기장, 감은 수, 면적, 회전 속도에 각각 비례한다.
+          <div class="eq"><i>ε</i> = −<i>N</i> d<i>Φ</i>/d<i>t</i> = <i>N B S ω</i> sin <i>ωt</i></div></li>
+        <li><b>전류와 전력.</b> 코일 저항 <i>r</i>과 부하 저항 <i>R</i>이 직렬로 연결되어 전류 <i>I</i> = <i>ε</i>/(<i>R</i>+<i>r</i>)가 흐른다. sin<sup>2</sup>의 한 주기 평균이 ½이므로 부하가 받는 평균 전력은 다음과 같다. 정류기는 교류를 직류로 바꿔 배터리에 저장할 수 있게 한다(모델에서는 다이오드 손실을 무시한다).
+          <div class="eq"><i>P</i><sub>L</sub> = (<i>NBSω</i>)<sup>2</sup> <i>R</i> / (2(<i>R</i>+<i>r</i>)<sup>2</sup>)</div></li>
+        <li><b>렌츠 법칙에 의한 제동.</b> 유도전류는 자기장 안에서 힘을 받는데, 그 방향은 언제나 코일의 회전을 방해하는 쪽이다. 이 방해가 기어와 바퀴를 거쳐 차를 감속시킨다. 회로 전체에서 쓰이는 전력 <i>cv</i><sup>2</sup>은 차의 운동에너지에서 나오므로 발전기 제동력은 그 전력을 속력으로 나눈 값이다.
+          <div class="eq"><i>F</i><sub>gen</sub> = <i>c v</i>, &nbsp;&nbsp; <i>c</i> = (<i>NBSG</i>/<i>r</i><sub>w</sub>)<sup>2</sup> / (2(<i>R</i>+<i>r</i>))</div>
+          속력이 빠를수록 발전기 제동력이 크고, 차가 거의 멈추면 0에 가까워진다. 그래서 정지 직전에는 마찰 브레이크가 대부분의 제동을 맡는다.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>운동에너지는 어디로 가는가</h2>
+      <p class="cap">시뮬레이션 탭의 현재 값으로 계산한 에너지 분배이다. 마찰 브레이크가 열로 바꾼 몫을 빼고 남은 에너지가 전기가 되고, 그중 일부는 코일 저항에서 열로 사라진다.</p>
+      <div id="how-brk"></div>
+    </div>
+  </div>
+
+  <div id="sv-build" hidden>
+    <div class="card">
+      <h2>장치 구성도</h2>
+      <p class="cap">바퀴 축에 증속 기어와 발전기를 연결한 구조이다. 브레이크 디스크와 캘리퍼(마찰 제동)는 기존 부품을 그대로 쓴다. 번호는 아래 부품표와 같다.</p>
+      <div class="diagram">
+        <svg viewBox="0 0 860 300" role="img" aria-label="바퀴, 브레이크, 증속 기어, 발전기, 정류기, 배터리로 이어지는 장치 구성도">
+          <g class="dg">
+            <!-- ① 바퀴 / ② 디스크·캘리퍼 -->
+            <circle cx="100" cy="170" r="78" fill="var(--tire)"/>
+            <circle cx="100" cy="170" r="58" fill="var(--rim)"/>
+            <circle cx="100" cy="170" r="44" fill="var(--disc)" stroke="var(--ink-3)"/>
+            <circle cx="100" cy="170" r="10" fill="var(--ink-3)"/>
+            <path d="M 117.1 123 A 50 50 0 0 1 145.3 148.9" fill="none" stroke="var(--s2)" stroke-width="18" stroke-linecap="round"/>
+            <text x="100" y="272" text-anchor="middle">① 바퀴 (반지름 r<tspan baseline-shift="sub" font-size="9">w</tspan>)</text>
+            <line x1="140" y1="122" x2="120" y2="44" stroke="var(--ink-3)"/>
+            <text x="12" y="36">② 브레이크 디스크·캘리퍼 (F<tspan baseline-shift="sub" font-size="9">fr</tspan>)</text>
+            <!-- 바퀴 축 -->
+            <rect x="100" y="165" width="132" height="10" fill="var(--ink-3)"/>
+            <!-- ③ 증속 기어 -->
+            <rect x="232" y="122" width="92" height="96" rx="10" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>
+            <circle cx="262" cy="170" r="26" fill="none" stroke="var(--ink-2)" stroke-width="6" stroke-dasharray="4 4"/>
+            <circle cx="262" cy="170" r="20" fill="var(--grid)" stroke="var(--ink-2)"/>
+            <circle cx="300" cy="170" r="12" fill="none" stroke="var(--ink-2)" stroke-width="6" stroke-dasharray="3 3"/>
+            <circle cx="300" cy="170" r="8" fill="var(--grid)" stroke="var(--ink-2)"/>
+            <text x="278" y="240" text-anchor="middle">③ 증속 기어 1 : G</text>
+            <!-- 발전기 축 -->
+            <rect x="308" y="166" width="104" height="8" fill="var(--ink-3)"/>
+            <!-- ④ 발전기 -->
+            <rect x="380" y="74" width="196" height="192" rx="14" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>
+            <rect x="408" y="86" width="140" height="28" rx="4" fill="var(--s2)"/>
+            <text x="478" y="106" text-anchor="middle" class="mag">N</text>
+            <rect x="408" y="226" width="140" height="28" rx="4" fill="var(--s1)"/>
+            <text x="478" y="246" text-anchor="middle" class="mag">S</text>
+            <g stroke="var(--ink-3)" stroke-dasharray="4 4" fill="none">
+              <line x1="424" y1="118" x2="424" y2="216"/><line x1="532" y1="118" x2="532" y2="216"/>
+            </g>
+            <g fill="var(--ink-3)"><path d="M419 214 L424 222 L429 214 Z"/><path d="M527 214 L532 222 L537 214 Z"/></g>
+            <rect x="436" y="146" width="84" height="48" fill="none" stroke="var(--s3)" stroke-width="3"/>
+            <rect x="441" y="151" width="74" height="38" fill="none" stroke="var(--s3)" stroke-width="2"/>
+            <rect x="520" y="166" width="40" height="8" fill="var(--ink-3)"/>
+            <ellipse cx="548" cy="170" rx="4" ry="12" fill="var(--rim)" stroke="var(--ink-2)"/>
+            <ellipse cx="558" cy="170" rx="4" ry="12" fill="var(--rim)" stroke="var(--ink-2)"/>
+            <text x="478" y="58" text-anchor="middle">④ 발전기: 자석(B) 사이에서 코일(N, S, r) 회전</text>
+            <text x="453" y="140" class="small">코일</text>
+            <!-- 전선 → ⑤ 정류기 -->
+            <polyline points="548,158 548,128 610,128 610,150" fill="none" stroke="var(--ink-2)" stroke-width="2"/>
+            <polyline points="558,182 558,212 610,212 610,190" fill="none" stroke="var(--ink-2)" stroke-width="2"/>
+            <rect x="596" y="140" width="80" height="60" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>
+            <path d="M622 160 L644 170 L622 180 Z" fill="var(--ink-2)"/><line x1="646" y1="159" x2="646" y2="181" stroke="var(--ink-2)" stroke-width="2.5"/>
+            <text x="636" y="230" text-anchor="middle">⑤ 정류기</text>
+            <text x="636" y="246" text-anchor="middle" class="small">교류 → 직류</text>
+            <!-- ⑥ 배터리 -->
+            <polyline points="676,160 720,160" fill="none" stroke="var(--ink-2)" stroke-width="2"/>
+            <polyline points="676,180 720,180" fill="none" stroke="var(--ink-2)" stroke-width="2"/>
+            <rect x="720" y="140" width="96" height="60" rx="6" fill="var(--surface)" stroke="var(--ink-2)" stroke-width="2"/>
+            <rect x="816" y="158" width="7" height="24" fill="var(--ink-2)"/>
+            <rect x="726" y="146" width="56" height="48" rx="3" fill="var(--s3)"/>
+            <text x="768" y="230" text-anchor="middle">⑥ 부하·배터리 (R)</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>회로도</h2>
+      <p class="cap">발전 코일은 기전력 <i>ε</i>와 내부저항 <i>r</i>을 가진 교류 전원으로 볼 수 있다. 다이오드 4개로 된 브리지 정류기를 거치면, 코일 전류의 방향이 바뀌어도 부하 <i>R</i>에는 한 방향으로 전류가 흐른다.</p>
+      <div class="diagram">
+        <svg viewBox="0 0 640 240" class="circ" role="img" aria-label="교류 전원, 내부저항, 브리지 정류기, 부하 저항으로 된 회로도">
+          <g class="dg" fill="none" stroke="var(--ink-2)" stroke-width="2">
+            <circle cx="80" cy="120" r="28" fill="var(--surface)"/>
+            <path d="M66 120 q7 -12 14 0 t14 0" />
+            <polyline points="80,92 80,40 150,40"/>
+            <polyline points="150,40 158,30 170,50 182,30 194,50 206,30 218,50 226,40"/>
+            <polyline points="226,40 330,40 330,60"/>
+            <polyline points="80,148 80,190 330,190 330,180"/>
+            <polygon points="330,60 390,120 330,180 270,120" fill="var(--surface)"/>
+            <polyline points="390,120 540,120 540,134"/>
+            <polyline points="540,134 528,142 552,154 528,166 552,178 540,186"/>
+            <polyline points="540,186 540,216 250,216 250,120 270,120"/>
+          </g>
+          <g fill="var(--ink-2)" stroke="var(--ink-2)" stroke-width="2">
+            <g transform="translate(360,90) rotate(45)"><path d="M-7,-7 L7,0 L-7,7 Z"/><line x1="7" y1="-7" x2="7" y2="7"/></g>
+            <g transform="translate(360,150) rotate(-45)"><path d="M-7,-7 L7,0 L-7,7 Z"/><line x1="7" y1="-7" x2="7" y2="7"/></g>
+            <g transform="translate(300,90) rotate(-45)"><path d="M-7,-7 L7,0 L-7,7 Z"/><line x1="7" y1="-7" x2="7" y2="7"/></g>
+            <g transform="translate(300,150) rotate(45)"><path d="M-7,-7 L7,0 L-7,7 Z"/><line x1="7" y1="-7" x2="7" y2="7"/></g>
+          </g>
+          <g class="dg">
+            <text x="80" y="235" text-anchor="middle">코일 (기전력 ε)</text>
+            <text x="190" y="22" text-anchor="middle">r (코일 저항)</text>
+            <text x="330" y="140" text-anchor="middle" class="small">정류기</text>
+            <text x="400" y="112">+</text>
+            <text x="258" y="112">−</text>
+            <text x="526" y="206" text-anchor="end">R (부하·배터리)</text>
+            <path d="M455 112 L475 112" stroke="var(--s1)" stroke-width="2"/><path d="M475 107 L484 112 L475 117 Z" fill="var(--s1)"/>
+            <text x="468" y="102" text-anchor="middle" class="small">I</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>부품표</h2>
+      <div class="tblwrap">
+      <table class="parts">
+        <thead><tr><th>부품</th><th>하는 일</th><th>시뮬레이터 변수</th></tr></thead>
+        <tbody>
+          <tr><td>① 바퀴</td><td>차와 함께 구르며 회전한다. 바퀴 각속도는 <i>ω</i><sub>w</sub> = <i>v</i>/<i>r</i><sub>w</sub>이다.</td><td><i>r</i><sub>w</sub> = 0.3 m</td></tr>
+          <tr><td>② 브레이크 디스크·캘리퍼</td><td>캘리퍼가 패드로 디스크를 눌러 마찰력으로 제동하고, 운동에너지를 열로 바꾼다.</td><td><i>F</i><sub>fr</sub> = 3000 N</td></tr>
+          <tr><td>③ 증속 기어</td><td>코일을 바퀴보다 <i>G</i>배 빠르게 돌린다. 기전력이 회전 속도에 비례하므로 기전력이 <i>G</i>배 커진다.</td><td><i>G</i> = 10</td></tr>
+          <tr><td>④ 발전기</td><td>영구자석 사이에서 코일이 돌며 자기선속 변화로 기전력을 만든다. 유도전류가 받는 힘이 회전을 방해해 제동력이 된다. 코일의 전류는 슬립링과 브러시로 꺼낸다.</td><td><i>B</i>, <i>N</i>, <i>S</i> (조절), <i>r</i> = 1 Ω</td></tr>
+          <tr><td>⑤ 정류기</td><td>다이오드 브리지로 코일의 교류를 직류로 바꾼다. 모델에서는 다이오드 전압 강하를 무시한다.</td><td>–</td></tr>
+          <tr><td>⑥ 부하·배터리</td><td>전기에너지를 받아 저장한다. 모델에서는 저항 <i>R</i> 하나로 나타낸다.</td><td><i>R</i> = 1 Ω</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="note">실제 차량의 교류발전기는 영구자석 대신 전류로 세기를 조절하는 전자석(계자 코일)을 쓰는 경우가 많다. 이 시뮬레이터는 원리를 보이기 위해 영구자석 하나와 코일 하나로 단순화했다.</p>
     </div>
   </div>
 </section>
@@ -897,7 +1098,94 @@ function runSimple(){
     marks:[{x:Math.min(q.v0,150), label:`현재 v₀ = ${fmt(q.v0)} km/h`}]});
   smAnim.set({on:smRec(q,true), off:smRec(q,false), rw:SMF.rw, iLabel:'발전 전류 (실효값)', eLabel:'누적 발전량 E',
     forces:v=>({Fgen:o.c*v, Ffr:o.Ffr, I:o.K*v/Math.SQRT2/(SMF.R+SMF.r), PL:o.share*o.c*v*v})});
+  howEnergy(o);
+  if(smView==='how' && !coil.on) drawCoil();
 }
+
+/* ---------- 기본 모드 하위 탭 · 작동 원리 ---------- */
+const COIL_SLOW=400;
+const coil={on:false,raf:0,last:null,th:Math.PI/5,
+  omega(){ const v=parseFloat($('#how-v').value); return SMF.G*((isFinite(v)&&v>0?v:0)/3.6)/SMF.rw; },
+  start(){ if(this.on) return; drawCoil(); if(reduceMotion) return; this.on=true; this.last=null;
+    const loop=ts=>{ if(!this.on) return; if(this.last!=null){ this.th+=this.omega()/COIL_SLOW*Math.min(0.1,(ts-this.last)/1000); } this.last=ts; drawCoil(); this.raf=requestAnimationFrame(loop); };
+    this.raf=requestAnimationFrame(loop); },
+  stop(){ this.on=false; cancelAnimationFrame(this.raf); }
+};
+function drawCoil(){
+  const cv=$('#how-coil'); const W=cv.clientWidth, H=cv.clientHeight; if(!W||!H) return;
+  const dpr=window.devicePixelRatio||1;
+  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
+  const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); const C=colors();
+  const q=smRead(), th=coil.th, w=coil.omega(), S=q.S*1e-4, Phimax=q.B*S, Emax=q.N*q.B*S*w;
+  const Phi=Phimax*Math.cos(th), E=Emax*Math.sin(th);
+  ctx.fillStyle=C.sky; ctx.fillRect(0,0,W,H);
+  const narrow=W<560, lw= narrow? W : W*0.44;
+  const lh= narrow? H*0.55 : H;
+  /* 왼쪽: 축 방향에서 본 자석과 코일 */
+  const cx=lw/2, cy=lh/2, mw=Math.min(34,lw*0.09), gap=Math.min(lw*0.36, lh*0.62);
+  ctx.fillStyle=C.s2; ctx.fillRect(cx-gap-mw,cy-lh*0.36,mw,lh*0.72);
+  ctx.fillStyle=C.s1; ctx.fillRect(cx+gap,cy-lh*0.36,mw,lh*0.72);
+  ctx.fillStyle='#ffffff'; ctx.font='bold 16px "IBM Plex Mono",monospace'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('N',cx-gap-mw/2,cy); ctx.fillText('S',cx+gap+mw/2,cy);
+  ctx.strokeStyle=C.ink3; ctx.lineWidth=1; ctx.setLineDash([4,5]);
+  for(const dy of [-0.26,-0.09,0.09,0.26]){ const y=cy+dy*lh; ctx.beginPath(); ctx.moveTo(cx-gap+4,y); ctx.lineTo(cx+gap-6,y); ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle=C.ink3; ctx.beginPath(); ctx.moveTo(cx+gap-6,y-4); ctx.lineTo(cx+gap-1,y); ctx.lineTo(cx+gap-6,y+4); ctx.fill(); ctx.setLineDash([4,5]); }
+  ctx.setLineDash([]);
+  ctx.fillStyle=C.ink3; ctx.font='11px "Noto Sans KR",sans-serif'; ctx.fillText('자기장 B',cx,cy-lh*0.42);
+  const L=Math.min(gap*0.8, lh*0.34), nx=Math.cos(th), ny=-Math.sin(th), px=-ny, py=nx;
+  ctx.strokeStyle=C.s3; ctx.lineWidth=6; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(cx-px*L,cy-py*L); ctx.lineTo(cx+px*L,cy+py*L); ctx.stroke();
+  ctx.fillStyle=C.ink; ctx.beginPath(); ctx.arc(cx,cy,4,0,2*Math.PI); ctx.fill();
+  /* 법선 화살표 */
+  ctx.strokeStyle=C.ink2; ctx.lineWidth=2; const ax=cx+nx*L*0.7, ay=cy+ny*L*0.7;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(ax,ay); ctx.stroke();
+  const hx=Math.atan2(ny,nx); ctx.fillStyle=C.ink2; ctx.beginPath(); ctx.moveTo(ax+Math.cos(hx)*8,ay+Math.sin(hx)*8); ctx.lineTo(ax+Math.cos(hx+2.5)*8,ay+Math.sin(hx+2.5)*8); ctx.lineTo(ax+Math.cos(hx-2.5)*8,ay+Math.sin(hx-2.5)*8); ctx.fill();
+  ctx.font='11px "Noto Sans KR",sans-serif'; ctx.fillText('법선',ax+nx*18,ay+ny*18);
+  /* 코일 양 끝 전류 방향 */
+  const mark=(x,y,out)=>{ ctx.fillStyle=C.surface; ctx.strokeStyle=C.ink; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(x,y,9,0,2*Math.PI); ctx.fill(); ctx.stroke();
+    if(out){ ctx.fillStyle=C.ink; ctx.beginPath(); ctx.arc(x,y,2.5,0,2*Math.PI); ctx.fill(); }
+    else { ctx.beginPath(); ctx.moveTo(x-5,y-5); ctx.lineTo(x+5,y+5); ctx.moveTo(x+5,y-5); ctx.lineTo(x-5,y+5); ctx.stroke(); } };
+  const sgn=Math.sin(th);
+  if(Math.abs(sgn)>0.08 && Emax>0){ mark(cx-px*L,cy-py*L,sgn>0); mark(cx+px*L,cy+py*L,sgn<0); }
+  /* 오른쪽: 한 주기 그래프 */
+  const gx0= narrow? 44 : lw+40, gx1=W-14, gy0= narrow? lh+14 : 22, gy1=H-26, gm=(gy0+gy1)/2, ga=(gy1-gy0)/2-6;
+  ctx.strokeStyle=C.line; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(gx0,gm); ctx.lineTo(gx1,gm); ctx.moveTo(gx0,gy0); ctx.lineTo(gx0,gy1); ctx.stroke();
+  ctx.fillStyle=C.ink3; ctx.font='11px "IBM Plex Mono",monospace'; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  [['0',0],['π/2',0.25],['π',0.5],['3π/2',0.75],['2π',1]].forEach(([t,f])=>{ ctx.fillText(t,gx0+(gx1-gx0)*f,gy1+16); });
+  ctx.textAlign='right'; ctx.fillText('+최대',gx0-4,gm-ga+4); ctx.fillText('0',gx0-4,gm+4); ctx.fillText('−최대',gx0-4,gm+ga+4);
+  const plot=(fn,col,dash)=>{ ctx.strokeStyle=col; ctx.lineWidth=2; ctx.setLineDash(dash); ctx.beginPath();
+    for(let i=0;i<=120;i++){ const a=2*Math.PI*i/120, x=gx0+(gx1-gx0)*i/120, y=gm-fn(a)*ga; i?ctx.lineTo(x,y):ctx.moveTo(x,y); } ctx.stroke(); ctx.setLineDash([]); };
+  plot(Math.cos,C.s1,[]); plot(Math.sin,C.s2,[6,4]);
+  const ph=((th%(2*Math.PI))+2*Math.PI)%(2*Math.PI), cxg=gx0+(gx1-gx0)*ph/(2*Math.PI);
+  ctx.strokeStyle=C.ink3; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(cxg,gy0); ctx.lineTo(cxg,gy1); ctx.stroke();
+  const dot=(y,col)=>{ ctx.fillStyle=col; ctx.strokeStyle=C.surface; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(cxg,y,5,0,2*Math.PI); ctx.fill(); ctx.stroke(); };
+  dot(gm-Math.cos(ph)*ga,C.s1); dot(gm-Math.sin(ph)*ga,C.s2);
+  ctx.textAlign='left'; ctx.fillStyle=C.ink3; ctx.font='11px "Noto Sans KR",sans-serif'; ctx.fillText('각 ωt',gx1-34,gm-6);
+  const rpm=w*60/(2*Math.PI);
+  $('#how-hud').innerHTML=[['코일 각속도 ω',fmt(w)+' rad/s'],['코일 회전수',fmt(rpm)+' rpm'],['자기선속 최댓값 BS',fmt(Phimax)+' Wb'],['지금 자기선속 Φ',fmt(Phi)+' Wb'],
+    ['기전력 최댓값 NBSω',fmt(Emax)+' V'],['지금 기전력 ε',fmt(E)+' V'],['기전력 실효값',fmt(Emax/Math.SQRT2)+' V']].map(i=>`<div>${i[0]}<b>${i[1]}</b></div>`).join('');
+  $('#how-src').innerHTML=`시뮬레이션 탭의 값 <i>B</i> = ${fmt(q.B)} T, <i>N</i> = ${fmt(q.N)}, <i>S</i> = ${fmt(q.S)} cm²와 기어비 <i>G</i> = ${SMF.G}, 타이어 반지름 ${SMF.rw} m로 계산한다.`;
+}
+function howEnergy(o){
+  const fr=o.Ffr*o.xs, el=Math.max(0,o.K0-fr);
+  breakdown($('#how-brk'),[
+    {n:'마찰 브레이크 열', v:fr/1000, c:'--s2'},
+    {n:'부하로 간 전기에너지 (발전량 E)', v:o.share*el/1000, c:'--s1'},
+    {n:'코일 저항 열', v:(1-o.share)*el/1000, c:'--s3'}], o.K0/1000, 'kJ');
+}
+let smView='sim';
+function setSmView(v){
+  smView=v;
+  ['sim','how','build'].forEach(k=>{ $('#sv-'+k).hidden=k!==v; $('#svt-'+k).setAttribute('aria-selected',k===v?'true':'false'); });
+  if(v==='sim') smAnim.wake(); else smAnim.pause();
+  if(v==='how') coil.start(); else coil.stop();
+}
+['sim','how','build'].forEach(k=>$('#svt-'+k).addEventListener('click',()=>setSmView(k)));
+(function(){ const n=$('#how-v'), r=$('#how-v-r');
+  r.addEventListener('input',()=>{ n.value=r.value; if(!coil.on) drawCoil(); });
+  n.addEventListener('input',()=>{ const x=parseFloat(n.value); if(isFinite(x)) r.value=String(Math.min(150,Math.max(0,x))); if(!coil.on) drawCoil(); });
+  new ResizeObserver(()=>{ if(!coil.on) drawCoil(); }).observe($('#how-coil'));
+})();
 
 /* ---------- 탭 ---------- */
 let raf={};
@@ -917,7 +1205,7 @@ window.addEventListener('hashchange',show);
 function applyMode(){
   $('#adv-toggle').checked=adv; $('#advanced').hidden=!adv; $('#simple').hidden=adv;
   $('#mode-note').textContent = adv ? '고급 모드: 회전 원판 실험 모형, 실차 모형(제동력 분담·주행 애니메이션)을 자세히 계산한다.' : '기본 모드: 자기장 세기, 속력, 코일 조건에 따라 발전량이 어떻게 달라지는지 본다.';
-  if(adv){ smAnim.pause(); show(); } else { vehAnim.pause(); smAnim.wake(); }
+  if(adv){ smAnim.pause(); coil.stop(); show(); } else { vehAnim.pause(); setSmView(smView); }
 }
 $('#adv-toggle').addEventListener('change',e=>{ adv=e.target.checked; try{ localStorage.setItem('rbs-adv',adv?'1':'0'); }catch(err){} applyMode(); });
 buildSimple(); runSimple(); applyMode();
