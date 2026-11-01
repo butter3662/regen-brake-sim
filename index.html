@@ -159,7 +159,7 @@ dl.sym dd{margin:0;color:var(--ink-2)}
       <h3>바꿔 볼 값</h3>
       <div id="sm-params"></div>
       <div class="derived">
-        고정 조건: 차량 질량 1500 kg. 마찰 브레이크는 제동 시작부터 정지까지 3000 N으로 작동한다(마찰만 쓰면 2 m/s²로 감속). 발전기 제동력은 여기에 더해진다. 바퀴→코일 기어비 10, 타이어 반지름 0.3 m, 코일 저항 <i>r</i> = 1 Ω, 부하 저항 <i>R</i> = 1 Ω이다. 공기저항과 구름저항은 무시한다.
+        고정 조건: 마찰 브레이크는 제동 시작부터 정지까지 3000 N으로 작동한다(질량 1500 kg이면 마찰만으로 2 m/s² 감속). 발전기 제동력은 여기에 더해진다. 바퀴→코일 기어비 10, 타이어 반지름 0.3 m, 코일 저항 <i>r</i> = 1 Ω, 부하 저항 <i>R</i> = 1 Ω이다. 공기저항과 구름저항은 무시한다.
       </div>
       <div class="btnrow">
         <button type="button" id="sm-base">지금 값을 비교 기준으로 저장</button>
@@ -195,7 +195,7 @@ dl.sym dd{margin:0;color:var(--ink-2)}
       <div class="card">
         <h2>계산 방법</h2>
         <h3 style="font-size:15px;margin:6px 0 4px">1. 운동 방정식</h3>
-        <div class="eq"><i>m</i> d<i>v</i>/d<i>t</i> = −(<i>F</i><sub>fr</sub> + <i>F</i><sub>gen</sub>), &nbsp;&nbsp; <i>F</i><sub>fr</sub> = <i>m a</i><sub>f</sub> (일정), &nbsp;&nbsp; <i>F</i><sub>gen</sub> = <i>c v</i></div>
+        <div class="eq"><i>m</i> d<i>v</i>/d<i>t</i> = −(<i>F</i><sub>fr</sub> + <i>F</i><sub>gen</sub>), &nbsp;&nbsp; <i>F</i><sub>fr</sub> = 3000 N (일정), &nbsp;&nbsp; <i>F</i><sub>gen</sub> = <i>c v</i></div>
         <div class="eq"><i>c</i> = (<i>N B S G</i> / <i>r</i><sub>w</sub>)<sup>2</sup> / (2(<i>R</i>+<i>r</i>))</div>
         <p>코일이 각속도 <i>ω</i> = <i>Gv</i>/<i>r</i><sub>w</sub>로 돌면 자기선속은 <i>Φ</i> = <i>BS</i> cos <i>ωt</i>이고, 패러데이 법칙에 따라 기전력은 <i>ε</i> = <i>NBSω</i> sin <i>ωt</i>이다. 회로 전체에서 쓰이는 평균 전력은 (<i>NBSω</i>)<sup>2</sup>/(2(<i>R</i>+<i>r</i>)) = <i>cv</i><sup>2</sup>이다. 이 전력은 차의 운동에너지에서 나오므로 발전기 제동력은 <i>F</i><sub>gen</sub> = <i>cv</i><sup>2</sup>/<i>v</i> = <i>cv</i>이다(렌츠 법칙). 마찰 브레이크는 패드를 미는 힘이 일정하므로 일정한 힘 <i>F</i><sub>fr</sub>를 낸다고 두었다. 두 힘은 제동 시작부터 함께 작용한다.</p>
         <h3 style="font-size:15px;margin:14px 0 4px">2. 정지 시간과 정지 거리</h3>
@@ -205,14 +205,14 @@ dl.sym dd{margin:0;color:var(--ink-2)}
         <div class="eq"><i>E</i> = <i>R</i>/(<i>R</i>+<i>r</i>) × (½ <i>m v</i><sub>0</sub><sup>2</sup> − <i>F</i><sub>fr</sub> <i>x</i><sub>s</sub>)</div>
         <p>처음 운동에너지 중 마찰 브레이크가 열로 바꾼 몫(<i>F</i><sub>fr</sub><i>x</i><sub>s</sub>)을 뺀 나머지가 전기에너지가 된다. 그중 <i>R</i>/(<i>R</i>+<i>r</i>)만큼이 부하로 가고, 나머지는 코일 저항에서 열이 된다. 발전기 힘이 마찰보다 훨씬 작을 때는 다음과 같이 근사할 수 있다.</p>
         <div class="eq"><i>E</i> ≈ <i>R</i>/(<i>R</i>+<i>r</i>)<sup>2</sup> × (<i>N B S G</i> / <i>r</i><sub>w</sub>)<sup>2</sup> × <i>v</i><sub>0</sub><sup>3</sup> / (6<i>a</i><sub>f</sub>)</div>
-        <p>이 범위에서는 <i>B</i>, <i>N</i>, <i>S</i>를 각각 2배로 하면 <i>E</i>는 약 4배, <i>v</i><sub>0</sub>을 2배로 하면 약 8배가 된다. 발전기 힘이 커질수록 정지 거리가 줄어 근사식보다 작아지고, <i>E</i>는 상한 <i>R</i>/(<i>R</i>+<i>r</i>) × ½<i>mv</i><sub>0</sub><sup>2</sup>를 넘지 못한다.</p>
+        <p>이 범위에서는 <i>B</i>, <i>N</i>, <i>S</i>를 각각 2배로 하면 <i>E</i>는 약 4배, <i>v</i><sub>0</sub>을 2배로 하면 약 8배가 된다. 질량 <i>m</i>은 근사 범위와 상관없이 <i>E</i>에 정확히 비례한다. 운동 방정식에서 <i>t</i> = <i>mτ</i>로 바꾸면 d<i>v</i>/d<i>τ</i> = −(<i>F</i><sub>fr</sub> + <i>cv</i>)가 되어 <i>m</i>이 사라지기 때문이다. 속력이 줄어드는 모양은 같고 걸리는 시간만 <i>m</i>배가 되므로, 정지 거리와 발전량(<i>E</i> = <i>R</i>/(<i>R</i>+<i>r</i>) × ∫<i>cv</i><sup>2</sup>d<i>t</i>)이 모두 <i>m</i>배가 된다. 발전기 힘이 커질수록 정지 거리가 줄어 근사식보다 작아지고, <i>E</i>는 상한 <i>R</i>/(<i>R</i>+<i>r</i>) × ½<i>mv</i><sub>0</sub><sup>2</sup>를 넘지 못한다.</p>
         <dl class="sym">
           <dt>E</dt><dd>제동하는 동안 부하 저항에 전달된 전기에너지 (J)</dd>
           <dt>B</dt><dd>코일이 지나는 자기장의 세기 (T)</dd>
           <dt>N, S</dt><dd>코일 감은 수, 코일 한 바퀴의 면적 (m²)</dd>
           <dt>v<sub>0</sub>, v</dt><dd>제동 시작 속력, 시각 <i>t</i>의 속력 (m/s)</dd>
           <dt>m</dt><dd>차량 질량 (kg)</dd>
-          <dt>F<sub>fr</sub>, a<sub>f</sub></dt><dd>마찰 브레이크 제동력 (N), 마찰만으로 낼 때의 감속도 (m/s²)</dd>
+          <dt>F<sub>fr</sub>, a<sub>f</sub></dt><dd>마찰 브레이크 제동력 (N), 마찰만으로 낼 때의 감속도 <i>a</i><sub>f</sub> = <i>F</i><sub>fr</sub>/<i>m</i> (m/s²)</dd>
           <dt>F<sub>gen</sub>, c</dt><dd>발전기 제동력 (N), 발전기 제동 계수 (N·s/m)</dd>
           <dt>G, r<sub>w</sub></dt><dd>바퀴 대비 코일 회전의 기어비, 타이어 반지름 (m)</dd>
           <dt>R, r</dt><dd>부하 저항, 코일 저항 (Ω)</dd>
@@ -828,25 +828,26 @@ const vehAnim=makeAnim('veh'), smAnim=makeAnim('sm');
 const SM=[
   {id:'B', label:'자기장 세기', sym:'B', unit:'T', v:0.4, min:0, max:1.5, step:0.01},
   {id:'v0', label:'제동 시작 속력', sym:'v<sub>0</sub>', unit:'km/h', v:60, min:0, max:150, step:1},
+  {id:'m', label:'차량 질량', sym:'m', unit:'kg', v:1500, min:100, max:3000, step:10},
   {id:'N', label:'코일 감은 수', sym:'N', unit:'회', v:200, min:1, max:1000, step:1},
   {id:'S', label:'코일 면적', sym:'S', unit:'cm²', v:40, min:1, max:200, step:1},
 ];
-/* af: 마찰 브레이크만으로 낼 때의 감속도 → F_fr = m·af (제동 내내 일정) */
-const SMF={m:1500, af:2, G:10, rw:0.3, r:1, R:1};
+/* Ffr: 마찰 브레이크 제동력 (제동 내내 일정). 마찰만의 감속도 af = Ffr/m */
+const SMF={Ffr:3000, G:10, rw:0.3, r:1, R:1};
 function smRead(){ const q={}; SM.forEach(d=>{ const x=parseFloat($('#sm-'+d.id).value); q[d.id]= isFinite(x)&&x>=0 ? x : d.v; }); return q; }
 /* m dv/dt = −(F_fr + c·v),  c = (NBSG/r_w)²/(2(R+r)) */
 function smCalc(q){
-  const f=SMF, m=f.m, v0=q.v0/3.6, K=q.N*q.B*(q.S*1e-4)*f.G/f.rw, c=K*K/(2*(f.R+f.r)), share=f.R/(f.R+f.r);
-  const Ffr=m*f.af, K0=0.5*m*v0*v0, T0=v0/f.af, x0=v0*v0/(2*f.af);
+  const f=SMF, m=Math.max(q.m,1e-6), v0=q.v0/3.6, K=q.N*q.B*(q.S*1e-4)*f.G/f.rw, c=K*K/(2*(f.R+f.r)), share=f.R/(f.R+f.r);
+  const Ffr=f.Ffr, af=Ffr/m, K0=0.5*m*v0*v0, T0=v0/af, x0=v0*v0/(2*af);
   const rr=c*v0/Ffr;
   let T, xs, Eel;
   if(v0<=0){ T=0; xs=0; Eel=0; }
-  else if(rr<1e-4){ T=T0; xs=x0; Eel=c*v0*v0*v0/(3*f.af); }      /* 발전기 힘이 매우 작을 때의 근사 */
-  else { T=(m/c)*Math.log1p(rr); xs=(m/c)*(v0-f.af*T); Eel=K0-Ffr*xs; }
-  return {E:share*Eel, K0, c, K, v0, T, xs, T0, x0, Ffr, share, upper:share*K0, P0:share*c*v0*v0, epsMax:K*v0, F0:c*v0};
+  else if(rr<1e-4){ T=T0; xs=x0; Eel=c*v0*v0*v0/(3*af); }      /* 발전기 힘이 매우 작을 때의 근사 */
+  else { T=(m/c)*Math.log1p(rr); xs=(m/c)*(v0-af*T); Eel=K0-Ffr*xs; }
+  return {E:share*Eel, K0, c, K, v0, m, af, T, xs, T0, x0, Ffr, share, upper:share*K0, P0:share*c*v0*v0, epsMax:K*v0, F0:c*v0};
 }
 function smRec(q, withGen){
-  const o=smCalc(q), m=SMF.m, a=SMF.af, v0=o.v0, c=withGen?o.c:0, sh=o.share;
+  const o=smCalc(q), m=o.m, a=o.af, v0=o.v0, c=withGen?o.c:0, sh=o.share;
   const useExp = withGen && o.Ffr>0 && c*v0/o.Ffr>=1e-4;
   const T = withGen ? o.T : o.T0, u = c>0 ? m*a/c : 0;
   const st=t=>{ let v,x,E;
@@ -858,7 +859,7 @@ function smRec(q, withGen){
 }
 function eTxt(E){ return E>=1000 ? [fmt(E/1000),'kJ'] : [fmt(E),'J']; }
 let smBase=null;
-function smBaseText(b){ return `기준: <i>B</i> ${fmt(b.B)} T, <i>v</i><sub>0</sub> ${fmt(b.v0)} km/h, <i>N</i> ${fmt(b.N)}, <i>S</i> ${fmt(b.S)} cm²`; }
+function smBaseText(b){ return `기준: <i>B</i> ${fmt(b.B)} T, <i>v</i><sub>0</sub> ${fmt(b.v0)} km/h, <i>m</i> ${fmt(b.m)} kg, <i>N</i> ${fmt(b.N)}, <i>S</i> ${fmt(b.S)} cm²`; }
 function buildSimple(){
   const box=$('#sm-params');
   box.innerHTML=SM.map(d=>`<div class="srow">
