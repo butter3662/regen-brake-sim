@@ -164,6 +164,15 @@ table.parts th{text-align:left;font-family:var(--f-display);font-weight:600;colo
 table.parts td{padding:8px;border-top:1px solid var(--grid);vertical-align:top}
 table.parts td:first-child{white-space:nowrap;font-weight:500}
 table.parts td:last-child{white-space:nowrap;font-family:var(--f-mono);font-size:13px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:2px 0 8px}
+.seg button{border:0;border-radius:0;padding:7px 14px;background:var(--surface);color:var(--ink-2);font-weight:500}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#ffffff}
+.chk{display:flex;gap:8px;align-items:center;font-size:13.5px;margin:6px 0 2px;cursor:pointer}
+.chk input{accent-color:var(--accent);width:16px;height:16px}
+.srow input[readonly]{color:var(--ink-2);background:var(--grid)}
+.srow input[type=range]:disabled{opacity:.45}
+#sm-em h3{margin-top:12px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -189,9 +198,19 @@ table.parts td:last-child{white-space:nowrap;font-family:var(--f-mono);font-size
   <div class="layout">
     <div class="panel params">
       <h3>바꿔 볼 값</h3>
+      <div class="seg" role="group" aria-label="자석 종류">
+        <button type="button" id="mag-pm" aria-pressed="true">영구자석</button>
+        <button type="button" id="mag-em" aria-pressed="false">전자석</button>
+      </div>
       <div id="sm-params"></div>
+      <div id="sm-em" hidden>
+        <h3>전자석 (계자 코일)</h3>
+        <p class="note" id="sm-bnote" style="margin:0 0 4px"></p>
+        <div id="sm-em-params"></div>
+        <label class="chk" for="sm-autooff"><input type="checkbox" id="sm-autooff" checked> 손익분기 속력 아래에서 전자석 끄기</label>
+      </div>
       <div class="derived">
-        고정 조건: 마찰 브레이크는 제동 시작부터 정지까지 3000 N으로 작동한다(질량 1500 kg이면 마찰만으로 2 m/s² 감속). 발전기 제동력은 여기에 더해진다. 바퀴→코일 기어비 10, 타이어 반지름 0.3 m, 코일 저항 <i>r</i> = 1 Ω, 부하 저항 <i>R</i> = 1 Ω이다. 공기저항과 구름저항은 무시한다.
+        고정 조건: 마찰 브레이크는 제동 시작부터 정지까지 3000 N으로 작동한다(질량 1500 kg이면 마찰만으로 2 m/s² 감속). 발전기 제동력은 여기에 더해진다. 바퀴→코일 기어비 10, 타이어 반지름 0.3 m, 코일 저항 <i>r</i> = 1 Ω, 부하 저항 <i>R</i> = 1 Ω이다. 공기저항과 구름저항은 무시한다.<span id="sm-em-fixed" hidden> 전자석: 공극 길이 <i>g</i> = 2 mm, 철심 포화 자기장 1.5 T(가정)이며 철심의 자기저항과 누설 자속은 무시한다.</span>
       </div>
       <div class="btnrow">
         <button type="button" id="sm-base">지금 값을 비교 기준으로 저장</button>
@@ -214,8 +233,8 @@ table.parts td:last-child{white-space:nowrap;font-family:var(--f-mono);font-size
       </div>
       <div class="two">
         <div class="card">
-          <h2>자기장 세기와 발전량</h2>
-          <p class="cap">다른 값은 그대로 두고 <i>B</i>만 바꾼 결과이다. <i>B</i>가 작을 때는 <i>B</i><sup>2</sup>에 비례해 늘어난다. <i>B</i>가 커지면 발전기가 제동을 많이 도와 차가 빨리 서기 때문에 늘어나는 폭이 줄고, 점선(이론 상한)을 넘지 못한다.</p>
+          <h2 id="sm-c1-h">자기장 세기와 발전량</h2>
+          <p class="cap" id="sm-c1-cap">다른 값은 그대로 두고 <i>B</i>만 바꾼 결과이다. <i>B</i>가 작을 때는 <i>B</i><sup>2</sup>에 비례해 늘어난다. <i>B</i>가 커지면 발전기가 제동을 많이 도와 차가 빨리 서기 때문에 늘어나는 폭이 줄고, 점선(이론 상한)을 넘지 못한다.</p>
           <div class="chart" id="sm-c1"></div>
         </div>
         <div class="card">
@@ -223,6 +242,28 @@ table.parts td:last-child{white-space:nowrap;font-family:var(--f-mono);font-size
           <p class="cap">다른 값은 그대로 두고 <i>v</i><sub>0</sub>만 바꾼 결과이다. 발전기 힘이 마찰보다 작은 범위에서는 발전량이 대략 <i>v</i><sub>0</sub><sup>3</sup>에 비례한다. 전력이 속력의 제곱에 비례하고, 제동 시간이 속력에 비례하기 때문이다.</p>
           <div class="chart" id="sm-c2"></div>
         </div>
+      </div>
+      <div class="card" id="sm-em-card" hidden>
+        <h2>전자석 계산</h2>
+        <h3 style="font-size:15px;margin:6px 0 4px">1. 전자석이 만드는 자기장</h3>
+        <div class="eq"><i>B</i> = <i>μ</i><sub>0</sub> <i>N</i><sub>f</sub> <i>I</i><sub>f</sub> / <i>g</i> &nbsp;&nbsp; (<i>B</i> ≤ 1.5 T)</div>
+        <p>철심에 감은 계자 코일과 좁은 공극으로 된 자기 회로에 앙페르 법칙을 적용한 결과이다. 철심의 투자율이 매우 커서 자기 회로의 저항은 대부분 공극에 있다고 보았다. 철심이 포화되면 전류를 늘려도 <i>B</i>가 거의 커지지 않으므로, 이 시뮬레이터에서는 1.5 T에서 멈추게 했다(가정값).</p>
+        <h3 style="font-size:15px;margin:14px 0 4px">2. 전자석이 쓰는 에너지</h3>
+        <div class="eq"><i>P</i><sub>f</sub> = <i>I</i><sub>f</sub><sup>2</sup> <i>R</i><sub>f</sub>, &nbsp;&nbsp; <i>E</i><sub>f</sub> = <i>P</i><sub>f</sub> <i>t</i><sub>on</sub></div>
+        <p>일정한 자기장을 유지하는 데에는 일이 들지 않는다. 전자석의 소비는 전류가 계자 코일 저항을 지나며 생기는 열이 전부이다. 자기장을 처음 만들 때 코일에 저장되는 에너지는 무시했다. 발전된 전기에너지는 전자석에서 나오는 것이 아니라 차의 운동에너지에서 나온다.</p>
+        <h3 style="font-size:15px;margin:14px 0 4px">3. 손익분기 속력</h3>
+        <div class="eq"><i>v</i><sub>be</sub> = √( <i>P</i><sub>f</sub> / ( <i>R</i>/(<i>R</i>+<i>r</i>) · <i>c</i> ) )</div>
+        <p>부하로 가는 발전 전력은 <i>R</i>/(<i>R</i>+<i>r</i>) · <i>cv</i><sup>2</sup>이다. 속력이 <i>v</i><sub>be</sub>보다 느려지면 이 값이 <i>P</i><sub>f</sub>보다 작아져 손해이므로, 그 아래에서는 전자석을 끄는 것이 유리하다. 전자석을 끄면 그 뒤로는 마찰 브레이크만으로 멈춘다. 철심이 포화되기 전에는 <i>c</i> ∝ <i>B</i><sup>2</sup> ∝ <i>I</i><sub>f</sub><sup>2</sup>이고 <i>P</i><sub>f</sub> ∝ <i>I</i><sub>f</sub><sup>2</sup>이다. 따라서 <i>v</i><sub>be</sub>는 계자 전류와 상관없이 장치 구조(<i>R</i><sub>f</sub>, <i>N</i><sub>f</sub>, <i>g</i>, <i>N</i>, <i>S</i>, <i>G</i> 등)로 정해진다.</p>
+        <h3 style="font-size:15px;margin:14px 0 4px">4. 순이득</h3>
+        <div class="eq">순이득 = <i>E</i> − <i>E</i><sub>f</sub></div>
+        <dl class="sym">
+          <dt>μ<sub>0</sub></dt><dd>진공의 투자율 4π × 10<sup>−7</sup> T·m/A</dd>
+          <dt>N<sub>f</sub>, I<sub>f</sub>, R<sub>f</sub></dt><dd>계자 코일 감은 수, 계자 전류 (A), 계자 코일 저항 (Ω)</dd>
+          <dt>g</dt><dd>자기 회로의 공극 길이 (m)</dd>
+          <dt>P<sub>f</sub>, E<sub>f</sub></dt><dd>전자석 소비 전력 (W), 소비 에너지 (J)</dd>
+          <dt>t<sub>on</sub></dt><dd>제동 중 전자석이 켜져 있던 시간 (s)</dd>
+          <dt>v<sub>be</sub></dt><dd>발전 전력과 전자석 소비 전력이 같아지는 속력 (m/s)</dd>
+        </dl>
       </div>
       <div class="card">
         <h2>계산 방법</h2>
@@ -737,23 +778,23 @@ function drawChart(el){
   const all=cfg.series.flatMap(s=>s.pts);
   let xmin=Math.min(...all.map(p=>p[0])), xmax=Math.max(...all.map(p=>p[0]));
   if(cfg.xmax!=null) xmax=cfg.xmax;
-  let ymax=Math.max(...all.map(p=>p[1])); if(!(ymax>0)) ymax=1;
-  const ys=niceStep(ymax,4); ymax=Math.ceil(ymax/ys*1.0000001)*ys;
+  let ymax=Math.max(...all.map(p=>p[1])), ymin=Math.min(0,...all.map(p=>p[1])); if(!(ymax>0)) ymax= ymin<0 ? 0 : 1;
+  const ys=niceStep(ymax-ymin,4); ymax=Math.ceil(ymax/ys*1.0000001)*ys; ymin=Math.floor(ymin/ys*1.0000001)*ys;
   const lx = v=>Math.log10(v);
   let X, xt=[];
   if(cfg.xLog){ const a=Math.floor(lx(xmin)), b=Math.ceil(lx(xmax)); xmin=Math.pow(10,a); xmax=Math.pow(10,b);
     X=v=>m.l+(lx(v)-a)/(b-a)*iw; for(let e=a;e<=b;e++) xt.push(Math.pow(10,e)); }
   else { if(xmax<=xmin) xmax=xmin+1; const xs=niceStep(xmax-xmin,5); xmax=Math.ceil(xmax/xs-1e-9)*xs;
     X=v=>m.l+(v-xmin)/(xmax-xmin)*iw; for(let v=Math.ceil(xmin/xs)*xs; v<=xmax+1e-9; v+=xs) xt.push(+v.toPrecision(10)); }
-  const Y=v=>m.t+ih-(v/ymax)*ih;
+  const Y=v=>m.t+ih-((v-ymin)/(ymax-ymin))*ih;
   let g='';
-  for(let v=0; v<=ymax+1e-9; v+=ys){ const y=Y(v);
+  for(let k=0, v=ymin; v<=ymax+ys*1e-6; k++, v=ymin+k*ys){ const y=Y(v);
     g+=`<line x1="${m.l}" x2="${m.l+iw}" y1="${y}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>`;
     g+=`<text x="${m.l-6}" y="${y+4}" text-anchor="end">${fmt(+v.toPrecision(10))}</text>`; }
   xt.forEach(v=>{ const x=X(v);
     g+=`<line x1="${x}" x2="${x}" y1="${m.t+ih}" y2="${m.t+ih+4}" stroke="var(--line)"/>`;
     g+=`<text x="${x}" y="${m.t+ih+16}" text-anchor="middle">${fmt(v)}</text>`; });
-  g+=`<line x1="${m.l}" x2="${m.l+iw}" y1="${m.t+ih}" y2="${m.t+ih}" stroke="var(--ink-3)"/>`;
+  g+=`<line x1="${m.l}" x2="${m.l+iw}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--ink-3)"/>`;
   g+=`<text class="axt" x="${m.l+iw/2}" y="${H-4}" text-anchor="middle">${cfg.xLabel}</text>`;
   g+=`<text class="axt" x="12" y="${m.t+ih/2}" text-anchor="middle" transform="rotate(-90 12 ${m.t+ih/2})">${cfg.yLabel}</text>`;
   (cfg.marks||[]).forEach((mk,i)=>{ const x=X(mk.x);
@@ -1033,71 +1074,136 @@ const SM=[
   {id:'N', label:'코일 감은 수', sym:'N', unit:'회', v:200, min:1, max:1000, step:1},
   {id:'S', label:'코일 면적', sym:'S', unit:'cm²', v:40, min:1, max:200, step:1},
 ];
+const SM_EM=[
+  {id:'If', label:'계자 전류', sym:'I<sub>f</sub>', unit:'A', v:1.3, min:0, max:5, step:0.05},
+  {id:'Nf', label:'계자 코일 감은 수', sym:'N<sub>f</sub>', unit:'회', v:500, min:10, max:2000, step:10},
+  {id:'Rf', label:'계자 코일 저항', sym:'R<sub>f</sub>', unit:'Ω', v:4, min:0.1, max:20, step:0.1},
+];
 /* Ffr: 마찰 브레이크 제동력 (제동 내내 일정). 마찰만의 감속도 af = Ffr/m */
 const SMF={Ffr:3000, G:10, rw:0.3, r:1, R:1};
-function smRead(){ const q={}; SM.forEach(d=>{ const x=parseFloat($('#sm-'+d.id).value); q[d.id]= isFinite(x)&&x>=0 ? x : d.v; }); return q; }
-/* m dv/dt = −(F_fr + c·v),  c = (NBSG/r_w)²/(2(R+r)) */
+/* 전자석: 공극 g, 철심 포화 자기장(가정) */
+const MU0=4e-7*Math.PI, EMF={g:0.002, Bsat:1.5};
+let smMag='pm';
+function smRead(){ const q={}; [...SM,...SM_EM].forEach(d=>{ const x=parseFloat($('#sm-'+d.id).value); q[d.id]= isFinite(x)&&x>=0 ? x : d.v; }); return q; }
+/* 화면 입력 + 자석 종류를 합친 계산용 값. 전자석이면 B = μ0·Nf·If/g (포화 이하) */
+function smParams(){
+  const q=smRead(); q.em = smMag==='em'; q.autoOff=$('#sm-autooff').checked;
+  if(q.em){ q.Braw=MU0*q.Nf*q.If/EMF.g; q.B=Math.min(q.Braw,EMF.Bsat); q.Pf=q.If*q.If*q.Rf; }
+  return q;
+}
+function emB(q,If){ return Math.min(MU0*q.Nf*If/EMF.g, EMF.Bsat); }
+/* 구간 1 (v0 → v1): m dv/dt = −(F_fr + c·v),  구간 2 (v1 → 0): 마찰만.  c = (NBSG/r_w)²/(2(R+r))
+   영구자석은 v1 = 0. 전자석을 손익분기 속도에서 끄면 v1 = √(P_f /(R/(R+r)·c)). */
 function smCalc(q){
   const f=SMF, m=Math.max(q.m,1e-6), v0=q.v0/3.6, K=q.N*q.B*(q.S*1e-4)*f.G/f.rw, c=K*K/(2*(f.R+f.r)), share=f.R/(f.R+f.r);
   const Ffr=f.Ffr, af=Ffr/m, K0=0.5*m*v0*v0, T0=v0/af, x0=v0*v0/(2*af);
-  const rr=c*v0/Ffr;
-  let T, xs, Eel;
-  if(v0<=0){ T=0; xs=0; Eel=0; }
-  else if(rr<1e-4){ T=T0; xs=x0; Eel=c*v0*v0*v0/(3*af); }      /* 발전기 힘이 매우 작을 때의 근사 */
-  else { T=(m/c)*Math.log1p(rr); xs=(m/c)*(v0-af*T); Eel=K0-Ffr*xs; }
-  return {E:share*Eel, K0, c, K, v0, m, af, T, xs, T0, x0, Ffr, share, upper:share*K0, P0:share*c*v0*v0, epsMax:K*v0, F0:c*v0};
+  const em=!!q.em, Pf=em?q.Pf:0;
+  const vBE = em ? (share*c>0 ? Math.sqrt(Pf/(share*c)) : Infinity) : 0;
+  const v1 = Math.min(v0, (em && q.autoOff) ? vBE : 0);
+  let t1, x1, El;
+  if(v0<=0 || c<=0 || v1>=v0){ t1=0; x1=0; El=0; }
+  else if(c*v0/Ffr<1e-4){ t1=(v0-v1)/af; x1=(v0*v0-v1*v1)/(2*af); El=c*(v0*v0*v0-v1*v1*v1)/(3*af); }   /* 발전기 힘이 매우 작을 때의 근사 */
+  else { const u=Ffr/c; t1=(m/c)*Math.log((v0+u)/(v1+u)); x1=(m/c)*(v0-v1)-u*t1; El=0.5*m*(v0*v0-v1*v1)-Ffr*x1; }
+  if(em && c<=0 && !q.autoOff) t1=T0;   /* 자기장이 0이어도 전자석은 켜져 있음 */
+  const t2=v1/af, x2=v1*v1/(2*af);
+  const E=share*El, Ef= em ? Pf*(c>0||!q.autoOff ? t1 : 0) : 0;
+  return {E, Ef, net:E-Ef, vBE, v1, t1, x1, T:t1+t2, xs:x1+x2, K0, c, K, v0, m, af, T0, x0, Ffr, share, Pf, em,
+    upper:share*K0, P0: v0>v1 ? share*c*v0*v0 : 0, epsMax:K*v0, F0: v0>v1 ? c*v0 : 0};
 }
 function smRec(q, withGen){
-  const o=smCalc(q), m=o.m, a=o.af, v0=o.v0, c=withGen?o.c:0, sh=o.share;
-  const useExp = withGen && o.Ffr>0 && c*v0/o.Ffr>=1e-4;
-  const T = withGen ? o.T : o.T0, u = c>0 ? m*a/c : 0;
+  const o=smCalc(q), m=o.m, a=o.af, v0=o.v0, sh=o.share;
+  const c= withGen?o.c:0, v1= withGen?o.v1:v0, t1= withGen?o.t1:0, x1= withGen?o.x1:0, E1= withGen?o.E:0;
+  const useExp = withGen && c>0 && t1>0 && c*v0/o.Ffr>=1e-4, u= c>0 ? o.Ffr/c : 0;
+  const T = withGen ? o.T : o.T0;
   const st=t=>{ let v,x,E;
-    if(!useExp){ v=v0-a*t; x=v0*t-0.5*a*t*t; const vp=Math.max(v,0); E= c>0 ? sh*c*(v0*v0*v0-vp*vp*vp)/(3*a) : 0; }
-    else { v=(v0+u)*Math.exp(-c*t/m)-u; x=(m/c)*(v0+u)*(-Math.expm1(-c*t/m))-u*t; const vp=Math.max(v,0); E=sh*(o.K0-0.5*m*vp*vp-m*a*x); }
+    if(t<t1){
+      if(useExp){ v=(v0+u)*Math.exp(-c*t/m)-u; x=(m/c)*(v0+u)*(-Math.expm1(-c*t/m))-u*t; const vp=Math.max(v,0); E=sh*(o.K0-0.5*m*vp*vp-o.Ffr*x); }
+      else { v=v0-a*t; x=v0*t-0.5*a*t*t; const vp=Math.max(v,0); E= c>0 ? sh*c*(v0*v0*v0-vp*vp*vp)/(3*a) : 0; }
+    } else { const tau=Math.min(t-t1, v1/a); v=v1-a*tau; x=x1+v1*tau-0.5*a*tau*tau; E=E1; }
     if(v<1e-9) v=0; return [v,E,0,0,0,0,x]; };
   const rec=[]; const n=400; for(let i=0;i<=n;i++){ const t=T*i/n; rec.push({t,s:st(t)}); }
   return {rec, t:T, s:rec[n].s};
 }
-function eTxt(E){ return E>=1000 ? [fmt(E/1000),'kJ'] : [fmt(E),'J']; }
+function eTxt(E){ const a=Math.abs(E); return a>=1000 ? [fmt(E/1000),'kJ'] : [fmt(E),'J']; }
 let smBase=null;
-function smBaseText(b){ return `기준: <i>B</i> ${fmt(b.B)} T, <i>v</i><sub>0</sub> ${fmt(b.v0)} km/h, <i>m</i> ${fmt(b.m)} kg, <i>N</i> ${fmt(b.N)}, <i>S</i> ${fmt(b.S)} cm²`; }
-function buildSimple(){
-  const box=$('#sm-params');
-  box.innerHTML=SM.map(d=>`<div class="srow">
+function smBaseText(b){ return `기준: ${b.em?'전자석, ':''}<i>B</i> ${fmt(b.B)} T, <i>v</i><sub>0</sub> ${fmt(b.v0)} km/h, <i>m</i> ${fmt(b.m)} kg, <i>N</i> ${fmt(b.N)}, <i>S</i> ${fmt(b.S)} cm²`; }
+function srowHTML(d){ return `<div class="srow" id="row-${d.id}">
       <label for="sm-${d.id}">${d.label}<i>${d.sym}</i></label>
       <span class="sval"><input id="sm-${d.id}" type="number" inputmode="decimal" min="${d.min}" step="${d.step}" value="${d.v}"><span class="u">${d.unit}</span></span>
       <input id="sm-${d.id}-r" type="range" min="${d.min}" max="${d.max}" step="${d.step}" value="${d.v}" aria-label="${d.label} 슬라이더">
-    </div>`).join('');
+    </div>`; }
+let smPmB=null;
+function setMag(k){
+  if(k===smMag){ return; }
+  if(k==='em') smPmB=$('#sm-B').value;
+  smMag=k; $('#mag-pm').setAttribute('aria-pressed',k==='pm'?'true':'false'); $('#mag-em').setAttribute('aria-pressed',k==='em'?'true':'false');
+  $('#sm-em').hidden = k!=='em'; $('#sm-em-card').hidden = k!=='em'; $('#sm-em-fixed').hidden = k!=='em';
+  $('#sm-B').readOnly = k==='em'; $('#sm-B-r').disabled = k==='em';
+  if(k==='pm' && smPmB!=null){ $('#sm-B').value=smPmB; $('#sm-B-r').value=smPmB; }
+  runSimple();
+}
+function buildSimple(){
+  $('#sm-params').innerHTML=SM.map(srowHTML).join('');
+  $('#sm-em-params').innerHTML=SM_EM.map(srowHTML).join('');
   const go=sched('s',runSimple);
-  SM.forEach(d=>{
+  [...SM,...SM_EM].forEach(d=>{
     const n=$('#sm-'+d.id), r=$('#sm-'+d.id+'-r');
     r.addEventListener('input',()=>{ n.value=r.value; go(); });
     n.addEventListener('input',()=>{ const x=parseFloat(n.value); if(isFinite(x)) r.value=String(Math.min(d.max,Math.max(d.min,x))); go(); });
   });
-  $('#sm-base').addEventListener('click',()=>{ const q=smRead(); smBase=Object.assign({},q,{E:smCalc(q).E}); runSimple(); });
-  $('#sm-reset').addEventListener('click',()=>{ SM.forEach(d=>{ $('#sm-'+d.id).value=d.v; $('#sm-'+d.id+'-r').value=d.v; }); runSimple(); });
-  const q=smRead(); smBase=Object.assign({},q,{E:smCalc(q).E});
+  $('#sm-autooff').addEventListener('change',go);
+  $('#mag-pm').addEventListener('click',()=>setMag('pm'));
+  $('#mag-em').addEventListener('click',()=>setMag('em'));
+  $('#sm-base').addEventListener('click',()=>{ const q=smParams(); smBase=Object.assign({},q,{E:smCalc(q).E}); runSimple(); });
+  $('#sm-reset').addEventListener('click',()=>{ [...SM,...SM_EM].forEach(d=>{ $('#sm-'+d.id).value=d.v; $('#sm-'+d.id+'-r').value=d.v; }); $('#sm-autooff').checked=true; runSimple(); });
+  const q=smParams(); smBase=Object.assign({},q,{E:smCalc(q).E});
 }
 function runSimple(){
-  const q=smRead(), o=smCalc(q);
+  const q=smParams(), o=smCalc(q);
+  if(q.em){ $('#sm-B').value=q.B.toFixed(3); $('#sm-B-r').value=String(q.B);
+    $('#sm-bnote').innerHTML=`<i>B</i> = <i>μ</i><sub>0</sub><i>N</i><sub>f</sub><i>I</i><sub>f</sub>/<i>g</i> = ${fmt(q.Braw)} T${q.Braw>EMF.Bsat?` → 철심 포화로 ${EMF.Bsat} T에서 멈춤`:''}`; }
   const [ev,eu]=eTxt(o.E), [pv,pu]= o.P0>=1000?[fmt(o.P0/1000),'kW']:[fmt(o.P0),'W'];
   const ratio = smBase && smBase.E>0 ? o.E/smBase.E : NaN;
   const dx = o.x0>0 ? (o.x0-o.xs)/o.x0*100 : NaN;
-  $('#sm-tiles').innerHTML=
+  let tiles=
     tile('제동 중 발전량 <i>E</i>', ev, eu, `차의 운동에너지 ${fmt(o.K0/1000)} kJ의 ${pct(o.K0>0?o.E/o.K0*100:NaN)}`)+
-    tile('비교 기준 대비', isFinite(ratio)?'×'+(ratio>=100?fmt(ratio):ratio.toFixed(2)):'–', '', smBase?smBaseText(smBase):'')+
+    tile('비교 기준 대비 (발전량)', isFinite(ratio)?'×'+(ratio>=100?fmt(ratio):ratio.toFixed(2)):'–', '', smBase?smBaseText(smBase):'')+
     tile('정지 거리', fmt(o.xs), 'm', `발전기 없을 때 ${fmt(o.x0)} m보다 ${pct(dx)} 짧음`)+
     tile('발전기 제동력 (시작 순간)', fmt(o.F0), 'N', `마찰 ${fmt(o.Ffr)} N과 함께 작동, 발전 전력 ${pv} ${pu}`);
-  const ptsB=[], upB=[]; for(let i=0;i<=150;i++){ const B=i/100; const r=smCalc(Object.assign({},q,{B})); ptsB.push([B,r.E/1000]); upB.push([B,r.upper/1000]); }
-  lineChart($('#sm-c1'),{xLabel:'자기장 세기 B (T)', yLabel:'발전량 E (kJ)', xName:'B', xUnit:'T', yUnit:'kJ',
-    series:[{name:'발전량', color:'--s1', pts:ptsB},{name:'이론 상한', color:'--s2', dash:'6 4', pts:upB}],
-    marks:[{x:Math.min(q.B,1.5), label:`현재 B = ${fmt(q.B)} T`}]});
-  const ptsV=[], upV=[]; for(let v=0; v<=150; v+=1){ const r=smCalc(Object.assign({},q,{v0:v})); ptsV.push([v,r.E/1000]); upV.push([v,r.upper/1000]); }
-  lineChart($('#sm-c2'),{xLabel:'제동 시작 속력 v₀ (km/h)', yLabel:'발전량 E (kJ)', xName:'v₀', xUnit:'km/h', yUnit:'kJ',
-    series:[{name:'발전량', color:'--s1', pts:ptsV},{name:'이론 상한', color:'--s2', dash:'6 4', pts:upV}],
-    marks:[{x:Math.min(q.v0,150), label:`현재 v₀ = ${fmt(q.v0)} km/h`}]});
+  if(q.em){
+    const [nv,nu]=eTxt(o.net), [fv,fu]=eTxt(o.Ef), ok=o.net>=0;
+    tiles+= tile('순이득 <i>E</i> − <i>E</i><sub>f</sub>', nv, nu, `<span class="pill ${ok?'ok':'bad'}">${ok?'✓ 이득':'! 손해'}</span> 발전량 ${ev} ${eu} − 전자석 ${fv} ${fu}`)+
+      tile('전자석 소비 전력 <i>P</i><sub>f</sub>', fmt(o.Pf), 'W', `켜져 있던 시간 ${fmt(o.t1)} s, 소비 에너지 ${fv} ${fu}`)+
+      tile('손익분기 속력', isFinite(o.vBE)?fmt(o.vBE*3.6):'–', 'km/h', q.autoOff ? '이 속력 아래에서는 전자석을 끈다' : '이 속력 아래에서는 전자석 소비가 발전보다 크다 (지금은 계속 켜 둠)');
+  }
+  $('#sm-tiles').innerHTML=tiles;
+  /* 그래프 1 */
+  if(q.em){
+    $('#sm-c1-h').textContent='계자 전류와 에너지';
+    $('#sm-c1-cap').innerHTML='다른 값은 그대로 두고 계자 전류 <i>I</i><sub>f</sub>만 바꾼 결과이다. 철심이 포화되기 전에는 발전량과 전자석 소비가 모두 <i>I</i><sub>f</sub><sup>2</sup>에 비례해 함께 커진다. 포화 뒤에는 자기장이 더 커지지 않아 발전량은 그대로인데 소비만 늘어 순이득이 줄어든다.';
+    const pE=[],pF=[],pN=[];
+    for(let i=0;i<=100;i++){ const If=5*i/100; const qq=Object.assign({},q,{If,B:emB(q,If),Pf:If*If*q.Rf}); const r=smCalc(qq); pE.push([If,r.E/1000]); pF.push([If,r.Ef/1000]); pN.push([If,r.net/1000]); }
+    const marks=[{x:Math.min(q.If,5), label:`현재 I<tspan baseline-shift="sub" font-size="9">f</tspan> = ${fmt(q.If)} A`}];
+    const Isat=EMF.Bsat*EMF.g/(MU0*q.Nf); if(Isat<=5) marks.push({x:Isat, label:`철심 포화 ${fmt(Isat)} A`, dash:'1 3'});
+    lineChart($('#sm-c1'),{xLabel:'계자 전류 If (A)', yLabel:'에너지 (kJ)', xName:'If', xUnit:'A', yUnit:'kJ',
+      series:[{name:'발전량 E', color:'--s1', pts:pE},{name:'전자석 소비 Ef', color:'--s2', dash:'6 4', pts:pF},{name:'순이득', color:'--s3', dash:'2 3', pts:pN}], marks});
+  } else {
+    $('#sm-c1-h').textContent='자기장 세기와 발전량';
+    $('#sm-c1-cap').innerHTML='다른 값은 그대로 두고 <i>B</i>만 바꾼 결과이다. <i>B</i>가 작을 때는 <i>B</i><sup>2</sup>에 비례해 늘어난다. <i>B</i>가 커지면 발전기가 제동을 많이 도와 차가 빨리 서기 때문에 늘어나는 폭이 줄고, 점선(이론 상한)을 넘지 못한다.';
+    const ptsB=[], upB=[]; for(let i=0;i<=150;i++){ const B=i/100; const r=smCalc(Object.assign({},q,{B})); ptsB.push([B,r.E/1000]); upB.push([B,r.upper/1000]); }
+    lineChart($('#sm-c1'),{xLabel:'자기장 세기 B (T)', yLabel:'발전량 E (kJ)', xName:'B', xUnit:'T', yUnit:'kJ',
+      series:[{name:'발전량', color:'--s1', pts:ptsB},{name:'이론 상한', color:'--s2', dash:'6 4', pts:upB}],
+      marks:[{x:Math.min(q.B,1.5), label:`현재 B = ${fmt(q.B)} T`}]});
+  }
+  /* 그래프 2 */
+  const ptsV=[], upV=[], netV=[]; for(let v=0; v<=150; v+=1){ const r=smCalc(Object.assign({},q,{v0:v})); ptsV.push([v,r.E/1000]); upV.push([v,r.upper/1000]); netV.push([v,r.net/1000]); }
+  const s2=[{name:'발전량', color:'--s1', pts:ptsV}];
+  if(q.em) s2.push({name:'순이득', color:'--s3', dash:'2 3', pts:netV});
+  s2.push({name:'이론 상한', color:'--s2', dash:'6 4', pts:upV});
+  lineChart($('#sm-c2'),{xLabel:'제동 시작 속력 v₀ (km/h)', yLabel:'에너지 (kJ)', xName:'v₀', xUnit:'km/h', yUnit:'kJ',
+    series:s2, marks:[{x:Math.min(q.v0,150), label:`현재 v₀ = ${fmt(q.v0)} km/h`}]});
   smAnim.set({on:smRec(q,true), off:smRec(q,false), rw:SMF.rw, iLabel:'발전 전류 (실효값)', eLabel:'누적 발전량 E',
-    forces:v=>({Fgen:o.c*v, Ffr:o.Ffr, I:o.K*v/Math.SQRT2/(SMF.R+SMF.r), PL:o.share*o.c*v*v})});
+    forces:v=>{ const on=v>o.v1; return {Fgen:on?o.c*v:0, Ffr:o.Ffr, I:on?o.K*v/Math.SQRT2/(SMF.R+SMF.r):0, PL:on?o.share*o.c*v*v:0}; }});
   howEnergy(o);
   if(smView==='how' && !coil.on) drawCoil();
 }
@@ -1116,7 +1222,7 @@ function drawCoil(){
   const dpr=window.devicePixelRatio||1;
   if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
   const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); const C=colors();
-  const q=smRead(), th=coil.th, w=coil.omega(), S=q.S*1e-4, Phimax=q.B*S, Emax=q.N*q.B*S*w;
+  const q=smParams(), th=coil.th, w=coil.omega(), S=q.S*1e-4, Phimax=q.B*S, Emax=q.N*q.B*S*w;
   const Phi=Phimax*Math.cos(th), E=Emax*Math.sin(th);
   ctx.fillStyle=C.sky; ctx.fillRect(0,0,W,H);
   const narrow=W<560, lw= narrow? W : W*0.44;
