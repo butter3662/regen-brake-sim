@@ -762,7 +762,7 @@ function makeAnim(pre){
     if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
     const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); const C=colors();
     const st=lerpState(A.on.rec,A.t), so=lerpState(A.off.rec,A.t);
-    const v=st[0], x=st[6], xo=so[6];
+    const v=st[0]>1e-6?st[0]:0, x=st[6], xo=so[6];
     const F= v>0 ? A.forces(v) : {Fgen:0,Ffr:0,I:0,PL:0};
     const s=Math.max(16,Math.min(34,W/24)), gy=H-46, X0=W*0.42, half=2.2;
     const X=xw=>X0+(xw-x)*s;
@@ -858,7 +858,7 @@ function smRec(q, withGen){
   const T=t1+vs/a;
   const st=t=>{ let v,x,E;
     if(t<t1){ const e=Math.exp(-c*t/m); v=v0*e; x=(m*v0/c)*(1-e); E=share*0.5*m*(v0*v0-v*v); }
-    else { const u=Math.min(t-t1, vs/a); v=Math.max(0,vs-a*u); x=x1+vs*u-0.5*a*u*u; E=share*(0.5*m*(v0*v0-vs*vs)+c*(vs*vs*vs-v*v*v)/(3*a)); }
+    else { const u=Math.min(t-t1, vs/a); v=vs-a*u; if(v<1e-9) v=0; x=x1+vs*u-0.5*a*u*u; E=share*(0.5*m*(v0*v0-vs*vs)+c*(vs*vs*vs-v*v*v)/(3*a)); }
     return [v,E,0,0,0,0,x]; };
   const rec=[]; const n=400; for(let i=0;i<=n;i++){ const t=T*i/n; rec.push({t,s:st(t)}); }
   return {rec, t:T, s:rec[n].s};
