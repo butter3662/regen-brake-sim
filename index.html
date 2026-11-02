@@ -1798,6 +1798,17 @@ function applyMode(){
 }
 $('#adv-toggle').addEventListener('change',e=>{ adv=e.target.checked; try{ localStorage.setItem('rbs-adv',adv?'1':'0'); }catch(err){} applyMode(); });
 buildSimple(); runSimple(); applyMode();
+/* 모바일: 숫자 입력칸 밖을 누르면 키보드를 닫는다. iOS Safari는 입력칸이 아닌 곳을 눌러도 포커스를 유지하기 때문이다. */
+(function(){
+  const typing=el=>el && el.matches && el.matches('input[type=number],input[type=text],input:not([type]),textarea');
+  document.querySelectorAll('input[type=number]').forEach(i=>i.setAttribute('enterkeyhint','done'));
+  const off=e=>{ const a=document.activeElement; if(!typing(a)) return;
+    const t=e.target; if(t===a || typing(t) || (t.closest && t.closest('label')===a.labels?.[0])) return;
+    a.blur(); };
+  document.addEventListener('touchstart',off,{capture:true,passive:true});
+  document.addEventListener('mousedown',off,{capture:true});
+  document.addEventListener('keydown',e=>{ if(e.key==='Enter' && typing(e.target)){ e.preventDefault(); e.target.blur(); } });
+})();
 })();
 </script>
 </body>
