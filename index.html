@@ -178,6 +178,13 @@ table.parts td:last-child{white-space:nowrap;font-family:var(--f-mono);font-size
 ul.plain{padding-left:20px;margin:4px 0}
 ul.plain li{margin:0 0 8px;max-width:80ch}
 #sm-bnote:empty{display:none}
+.rangewrap{position:relative;grid-column:1 / -1}
+.rangewrap input[type=range]{width:100%;display:block}
+.optmark{position:absolute;top:-7px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid var(--s3);transform:translateX(-6px);pointer-events:none}
+.opttext{font-size:12.5px;color:var(--ink-2);margin:-2px 0 6px;display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+.opttext b{font-family:var(--f-mono);font-weight:500;color:var(--ink)}
+.opttext button{padding:2px 8px;font-size:12px}
+.optdot{display:inline-block;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid var(--s3)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -363,6 +370,9 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <p>부하로 가는 발전 전력은 <i>R</i>/(<i>R</i>+<i>r</i>) · <i>cv</i><sup>2</sup>이다. 속력이 <i>v</i><sub>be</sub>보다 느려지면 이 값이 <i>P</i><sub>f</sub>보다 작아져 손해이므로, 그 아래에서는 전자석을 끄는 것이 유리하다. 전자석을 끄면 그 뒤로는 마찰 브레이크만으로 멈춘다. 철심이 포화되기 전에는 <i>c</i> ∝ <i>B</i><sup>2</sup> ∝ <i>I</i><sub>f</sub><sup>2</sup>이고 <i>P</i><sub>f</sub> ∝ <i>I</i><sub>f</sub><sup>2</sup>이다. 따라서 <i>v</i><sub>be</sub>는 계자 전류와 상관없이 장치 구조(<i>R</i><sub>f</sub>, <i>N</i><sub>f</sub>, <i>g</i>, <i>N</i>, <i>S</i>, <i>G</i> 등)로 정해진다.</p>
         <h3 style="font-size:15px;margin:14px 0 4px">4. 순이득</h3>
         <div class="eq">순이득 = <i>E</i> − <i>E</i><sub>f</sub></div>
+        <h3 style="font-size:15px;margin:14px 0 4px">5. 순이득이 가장 큰 계자 전류</h3>
+        <div class="eq"><i>I</i><sub>sat</sub> = <i>B</i><sub>sat</sub> <i>g</i> / (<i>μ</i><sub>0</sub> <i>N</i><sub>f</sub>)</div>
+        <p>계자 전류 슬라이더 위의 초록 삼각형은 다른 값을 그대로 둘 때 순이득이 가장 큰 계자 전류이다. 0~5 A를 촘촘히 계산해 가장 큰 값을 찾는다. 철심이 포화되기 전에는 발전량이 전자석 소비보다 훨씬 빠르게 늘어 순이득이 계속 커진다. 포화된 뒤에는 자기장이 1.5 T에서 멈춰 발전량은 그대로인데 소비(<i>I</i><sub>f</sub><sup>2</sup><i>R</i><sub>f</sub>)만 늘어난다. 그래서 최적값은 포화가 시작되는 전류 <i>I</i><sub>sat</sub>와 같아지고, 계자 코일 감은 수 <i>N</i><sub>f</sub>에 반비례한다. <i>I</i><sub>sat</sub>이 5 A보다 크면 슬라이더 끝(5 A)이 최적으로 표시된다. 이 결과는 포화를 1.5 T에서 딱 멈추는 것으로 단순화한 모델에서 나온 것이다. 실제 철심은 포화 전부터 서서히 자기장 증가가 둔해지므로, 실제 최적값은 이보다 조금 작을 수 있다.</p>
         <dl class="sym">
           <dt>μ<sub>0</sub></dt><dd>진공의 투자율 4π × 10<sup>−7</sup> T·m/A</dd>
           <dt>N<sub>f</sub>, I<sub>f</sub>, R<sub>f</sub></dt><dd>계자 코일 감은 수, 계자 전류 (A), 계자 코일 저항 (Ω)</dd>
@@ -1120,8 +1130,18 @@ const SM_EM=[
 const SMF={G:10, rw:0.3, r:1, R:1};
 /* 전자석: 공극 g, 철심 포화 자기장(가정) */
 const MU0=4e-7*Math.PI, EMF={g:0.002, Bsat:1.5};
-let smMag='pm';
+let smMag='pm', smOptCache=null;
 function smRead(){ const q={}; [...SM,...SM_EM].forEach(d=>{ const x=parseFloat($('#sm-'+d.id).value); q[d.id]= isFinite(x)&&x>=0 ? x : d.v; }); return q; }
+/* 주어진 조건(계자 코일 감은 수 등)에서 순이득 E − E_f가 가장 큰 계자 전류 (0~5 A) */
+function smOptIf(q){
+  const net=If=>smCalc(Object.assign({},q,{If,B:emB(q,If),Pf:If*If*q.Rf})).net;
+  let best=0, bn=-Infinity;
+  for(let i=0;i<=500;i++){ const If=5*i/500, n=net(If); if(n>bn){ bn=n; best=If; } }
+  let lo=Math.max(0,best-0.01), hi=Math.min(5,best+0.01);
+  for(let k=0;k<40;k++){ const a=lo+(hi-lo)/3, b=hi-(hi-lo)/3; if(net(a)<net(b)) lo=a; else hi=b; }
+  const If=(lo+hi)/2, n=net(If);
+  return n>=bn ? {If, net:n} : {If:best, net:bn};
+}
 /* 화면 입력 + 자석 종류를 합친 계산용 값. 전자석이면 B = μ0·Nf·If/g (포화 이하) */
 function smParams(){
   const q=smRead(); q.em = smMag==='em'; q.autoOff=$('#sm-autooff').checked;
@@ -1191,6 +1211,11 @@ function setMag(k){
 function buildSimple(){
   $('#sm-params').innerHTML=SM.map(srowHTML).join('');
   $('#sm-em-params').innerHTML=SM_EM.map(srowHTML).join('');
+  /* 계자 전류 슬라이더에 '최대 순이득' 위치 표시 */
+  { const r=$('#sm-If-r'), w=document.createElement('div'); w.className='rangewrap'; r.parentNode.insertBefore(w,r); w.appendChild(r);
+    const mk=document.createElement('span'); mk.className='optmark'; mk.id='if-opt-mark'; mk.setAttribute('aria-hidden','true'); w.appendChild(mk);
+    const t=document.createElement('div'); t.className='opttext'; t.id='if-opt'; $('#row-If').after(t);
+    t.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const v=b.dataset.v; $('#sm-If').value=v; $('#sm-If-r').value=v; runSimple(); }); }
   const go=sched('s',runSimple);
   [...SM,...SM_EM].forEach(d=>{
     const n=$('#sm-'+d.id), r=$('#sm-'+d.id+'-r');
@@ -1207,7 +1232,11 @@ function buildSimple(){
 function runSimple(){
   const q=smParams(), o=smCalc(q);
   if(q.em){ $('#sm-B').value=q.B.toFixed(3); $('#sm-B-r').value=String(q.B);
-    $('#sm-bnote').textContent= q.Braw>EMF.Bsat ? `철심 포화: B = ${EMF.Bsat} T에서 멈춤` : ''; }
+    $('#sm-bnote').textContent= q.Braw>EMF.Bsat ? `철심 포화: B = ${EMF.Bsat} T에서 멈춤` : '';
+    const op=smOptIf(q), [nv2,nu2]=eTxt(op.net), edge=op.If>4.999;
+    $('#if-opt-mark').style.left=`calc(9px + (100% - 18px) * ${op.If/5})`;
+    $('#if-opt').innerHTML=`<span class="optdot" aria-hidden="true"></span>최대 순이득 계자 전류 ≈ <b>${op.If.toFixed(2)} A</b> (순이득 ${nv2} ${nu2})${edge?' · 범위 끝':''} <button type="button" data-v="${op.If.toFixed(2)}">적용</button>`;
+    smOptCache=op; }
   const [ev,eu]=eTxt(o.E), [pv,pu]= o.P0>=1000?[fmt(o.P0/1000),'kW']:[fmt(o.P0),'W'];
   const ratio = smBase && smBase.E>0 ? o.E/smBase.E : NaN;
   const dx = (o.x0>0 && isFinite(o.x0)) ? (o.x0-o.xs)/o.x0*100 : NaN;
@@ -1233,6 +1262,7 @@ function runSimple(){
     for(let i=0;i<=100;i++){ const If=5*i/100; const qq=Object.assign({},q,{If,B:emB(q,If),Pf:If*If*q.Rf}); const r=smCalc(qq); pE.push([If,r.E/1000]); pF.push([If,r.Ef/1000]); pN.push([If,r.net/1000]); }
     const marks=[{x:Math.min(q.If,5), label:`현재 I<tspan baseline-shift="sub" font-size="9">f</tspan> = ${fmt(q.If)} A`}];
     const Isat=EMF.Bsat*EMF.g/(MU0*q.Nf); if(Isat<=5) marks.push({x:Isat, label:`철심 포화 ${fmt(Isat)} A`, dash:'1 3'});
+    if(smOptCache) marks.push({x:smOptCache.If, label:`최대 순이득 ${smOptCache.If.toFixed(2)} A`, dash:'6 2'});
     lineChart($('#sm-c1'),{xLabel:'계자 전류 If (A)', yLabel:'에너지 (kJ)', xName:'If', xUnit:'A', yUnit:'kJ',
       series:[{name:'발전량 E', color:'--s1', pts:pE},{name:'전자석 소비 Ef', color:'--s2', dash:'6 4', pts:pF},{name:'순이득', color:'--s3', dash:'2 3', pts:pN}], marks});
   } else {
