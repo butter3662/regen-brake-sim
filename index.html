@@ -142,7 +142,7 @@ dl.sym dd{margin:0;color:var(--ink-2)}
 .subtabs button{border:0;border-bottom:2px solid transparent;border-radius:0;background:none;padding:9px 14px;font-family:var(--f-display);font-weight:600;font-size:14px;color:var(--ink-2);margin-bottom:-1px}
 .subtabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
 #sv-how,#sv-build{display:flex;flex-direction:column;gap:16px}
-#sv-how[hidden],#sv-build[hidden],#sv-sim[hidden]{display:none}
+#sv-how[hidden],#sv-build[hidden],#sv-sim[hidden],#sv-m3[hidden]{display:none}
 .flow{display:flex;flex-direction:column;gap:10px;margin-top:6px}
 .frow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .chip{display:inline-block;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);font-size:13.5px}
@@ -186,6 +186,42 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
 .opttext button{padding:2px 8px;font-size:12px}
 .optdot{display:inline-block;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid var(--s3)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* ---------- 3D 모형 ---------- */
+.m3{--m3-stage:#e9eef3; --m3-phiA:#d85a30; --m3-phiB:#378add; --m3-sum:#78818b}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .m3{--m3-stage:#171c21; --m3-phiA:#e8794f; --m3-phiB:#5ea2ea; --m3-sum:#9aa3ad} }
+:root[data-theme="dark"] .m3{--m3-stage:#171c21; --m3-phiA:#e8794f; --m3-phiB:#5ea2ea; --m3-sum:#9aa3ad}
+.m3 .m3-sub{color:var(--ink-2);margin:0 0 12px;max-width:72ch}
+.m3 .m3-stage{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--m3-stage)}
+.m3 canvas{display:block;width:100%;height:min(64vh,620px);min-height:360px;touch-action:none;cursor:grab}
+.m3 canvas:active{cursor:grabbing}
+.m3 .m3-views{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:6px;flex-wrap:wrap}
+.m3 .m3-views button,.m3 .m3-ctrl button{font-family:var(--f-body);font-size:13px;padding:6px 11px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.m3 .m3-views button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);font-weight:500}
+.m3 .m3-views button:hover,.m3 .m3-ctrl button:hover{border-color:var(--accent);color:var(--accent)}
+.m3 .m3-hint{position:absolute;bottom:8px;right:12px;font-size:12px;color:var(--ink-3)}
+.m3 .m3-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+@media (max-width:760px){.m3 .m3-grid{grid-template-columns:1fr}}
+.m3 .m3-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.m3 .m3-card h2{font-family:var(--f-display);font-size:15px;font-weight:600;margin:0 0 10px}
+.m3 .m3-ctrl{display:flex;flex-direction:column;gap:10px}
+.m3 .m3-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px}
+.m3 .m3-row label.lb{min-width:86px;color:var(--ink-2)}
+.m3 .m3-row input[type=range]{flex:1 1 140px;accent-color:var(--accent)}
+.m3 .m3-row output{font-family:var(--f-mono);min-width:72px;text-align:right;font-variant-numeric:tabular-nums}
+.m3 select{font-family:var(--f-body);font-size:13px;padding:5px 6px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink)}
+.m3 .m3-chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;cursor:pointer}
+.m3 .m3-chk input{accent-color:var(--accent);width:16px;height:16px}
+.m3 .m3-meter{display:grid;grid-template-columns:110px 1fr 86px;align-items:center;gap:8px;font-size:13.5px;margin-bottom:8px}
+.m3 .m3-bar{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.m3 .m3-bar i{display:block;height:100%;width:0}
+.m3 .m3-meter b{font-family:var(--f-mono);font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+.m3 .m3-big{display:flex;gap:18px;flex-wrap:wrap;margin-top:6px}
+.m3 .m3-big div{font-size:12.5px;color:var(--ink-3)}
+.m3 .m3-big b{display:block;font-family:var(--f-mono);font-weight:500;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums}
+.m3 .m3-note{font-size:12.5px;color:var(--ink-3);margin:12px 0 0;max-width:90ch}
+.m3 .m3-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--ink-2);margin-top:10px}
+.m3 .m3-legend span{display:inline-flex;align-items:center;gap:6px}
+.m3 .m3-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 </style>
 </head>
 <body>
@@ -204,6 +240,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
   <div class="subtabs" role="tablist">
     <button type="button" role="tab" id="svt-sim" aria-selected="true">시뮬레이션</button>
     <button type="button" role="tab" id="svt-how" aria-selected="false">작동 원리</button>
+    <button type="button" role="tab" id="svt-m3" aria-selected="false">3D 모형</button>
     <button type="button" role="tab" id="svt-build" aria-selected="false">세부 내용</button>
   </div>
   <div id="sv-sim">
@@ -296,6 +333,61 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
       <p class="cap">시뮬레이션 탭의 현재 값으로 계산한 에너지 분배이다. 마찰 브레이크가 열로 바꾼 몫을 빼고 남은 에너지가 전기가 되고, 그중 일부는 코일 저항에서 열로 사라진다.</p>
       <div id="how-brk"></div>
     </div>
+  </div>
+
+  <div id="sv-m3" hidden>
+<div class="m3">
+  <p class="m3-sub">최종 설계안(쇳조각 원판 + 고정 U자 철심)의 3D 모형이다. 화면을 끌어서 돌려 보고, 두 손가락이나 마우스 휠로 확대한다. ‘U자 철심 확대’를 누르면 철심 하나의 구조와 자속 경로를 가까이서 본다.</p>
+  <div class="m3-stage">
+    <canvas id="m3-cv" aria-label="회생제동 발전 장치 3D 모형"></canvas>
+    <div class="m3-views">
+      <button type="button" data-m3view="in" aria-pressed="true">안쪽에서</button>
+      <button type="button" data-m3view="out" aria-pressed="false">바깥쪽에서</button>
+      <button type="button" data-m3view="side" aria-pressed="false">옆에서</button>
+      <button type="button" data-m3view="top" aria-pressed="false">위에서</button>
+      <button type="button" data-m3view="core" aria-pressed="false">U자 철심 확대</button>
+    </div>
+    <div class="m3-hint">끌기: 회전 · 휠/두 손가락: 확대</div>
+  </div>
+  <div class="m3-grid">
+    <div class="m3-card">
+      <h2>조작</h2>
+      <div class="m3-ctrl">
+        <div class="m3-row"><button type="button" id="m3-play">일시정지</button>
+          <label class="m3-chk" for="m3-labels"><input type="checkbox" id="m3-labels" checked> 이름표</label>
+          <label class="m3-chk" for="m3-brake"><input type="checkbox" id="m3-brake" checked> 브레이크</label>
+          <label class="m3-chk" for="m3-flux"><input type="checkbox" id="m3-flux" checked> 자속 경로</label></div>
+        <div class="m3-row"><label class="lb" for="m3-spd">차량 속력</label><input type="range" id="m3-spd" min="0" max="150" step="1" value="50"><output id="m3-spdo">50 km/h</output></div>
+        <div class="m3-row"><label class="lb" for="m3-slow">느리게 보기</label>
+          <select id="m3-slow"><option value="0.02">1/50배</option><option value="0.05" selected>1/20배</option><option value="0.2">1/5배</option><option value="1">실제 속도</option></select></div>
+        <div class="m3-row"><label class="lb" for="m3-tire">타이어·휠</label>
+          <select id="m3-tire"><option value="1">보이기</option><option value="0.22" selected>반투명</option><option value="0">숨기기</option></select></div>
+      </div>
+      <div class="m3-legend">
+        <span><i style="background:#6b6a65"></i>쇳조각</span>
+        <span><i style="background:#d3d1c7"></i>원판 (비자성)</span>
+        <span><i style="background:#b4b2a9"></i>U자 철심</span>
+        <span><i style="background:#afa9ec"></i>계자 코일</span>
+        <span><i style="background:#ef9f27"></i>발전 코일</span>
+        <span><i style="background:#e24b4a"></i>자속이 클수록 붉게</span>
+      </div>
+    </div>
+    <div class="m3-card">
+      <h2>철심 속 자속과 기전력 (실제 속력 기준)</h2>
+      <div class="m3-meter"><span>Φ<sub>A</sub> (철심 A)</span><div class="m3-bar"><i id="m3-barA" style="background:var(--m3-phiA)"></i></div><b id="m3-valA">–</b></div>
+      <div class="m3-meter"><span>Φ<sub>B</sub> (철심 B)</span><div class="m3-bar"><i id="m3-barB" style="background:var(--m3-phiB)"></i></div><b id="m3-valB">–</b></div>
+      <div class="m3-meter"><span>Φ<sub>A</sub> + Φ<sub>B</sub></span><div class="m3-bar"><i id="m3-barS" style="background:var(--m3-sum)"></i></div><b id="m3-valS">–</b></div>
+      <div class="m3-big">
+        <div>발전 기전력 ε<b id="m3-emf">–</b></div>
+        <div>자속 변화 빈도<b id="m3-freq">–</b></div>
+        <div>바퀴 회전수<b id="m3-rps">–</b></div>
+      </div>
+      <p class="m3-note">A 철심(0°, 180°)과 B 철심(45°, 225°)은 쇳조각 간격의 반 칸만큼 어긋나 있어서, 한쪽 자속이 커지면 다른 쪽은 작아진다. 계자 코일은 Φ<sub>A</sub> + Φ<sub>B</sub>(거의 일정)를, 반대로 이은 발전 코일은 Φ<sub>A</sub> − Φ<sub>B</sub>를 느낀다.</p>
+    </div>
+  </div>
+  <p class="m3-note">이 모형은 시뮬레이션 탭의 계산 모형(기어로 돌리는 회전 코일)과 다른, 최종 설계안이다. 치수와 수치는 설계 가정값이다. 타이어 235/45R18(반지름 0.33 m), 쇳조각 12개(39 × 50 × 16 mm, 반지름 0.15 m), 틈은 쇳조각이 있을 때 1 mm × 2, 없을 때 약 18 mm로 두었다. 계자는 철심마다 500회 × 3 A이고, 발전 코일은 철심마다 48회이다. 자속은 쇳조각과 철심이 겹치는 면적에 비례한다고 근사했고, 틈이 넓을 때 자속이 옆으로 퍼지는 효과는 무시했다.</p>
+</div>
+
   </div>
 
   <div id="sv-build" hidden>
@@ -662,6 +754,300 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
 </div>
 </div>
 
+<script>
+/* ---------- 3D 모형 (쇳조각 원판 + 고정 U자 철심) ---------- */
+window.M3D=(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+/* 물리 상수와 설계값 */
+const MU0=4e-7*Math.PI, NF=500, IF=3, AREA=0.039*0.05, NARM=48, RW=0.33, Z=12;
+const PHI_MAX=MU0*NF*IF/0.002*AREA, PHI_MIN=MU0*NF*IF/0.018*AREA, DPHI=PHI_MAX-PHI_MIN;
+const TOOTH=2*Math.PI/Z, HALF=TOOTH/2;      /* 쇳조각 폭 = 반 칸(15°) */
+const Z0=-0.17;                              /* 발전 원판 위치 (안쪽, m) */
+const CORE_ANG=[0,45,180,225].map(d=>d*Math.PI/180);
+
+/* 도형 */
+const meshes=[];
+function rotZ(p,a){ const c=Math.cos(a), s=Math.sin(a); return [p[0]*c+p[1]*s, -p[0]*s+p[1]*c, p[2]]; } /* a: 위(+y)에서 시계 방향 */
+function addMesh(o){ const m=Object.assign({glow:null, group:'static', kind:null, core:null},o); m.rgb=hex(m.color); meshes.push(m); return m; }
+function radialBox(a,w,r1,r2,z1,z2){
+  const v=[]; for(const x of [-w/2,w/2]) for(const y of [r1,r2]) for(const z of [z1,z2]) v.push(rotZ([x,y,z],a));
+  return {verts:v, faces:[[0,1,3,2],[4,6,7,5],[0,4,5,1],[2,3,7,6],[0,2,6,4],[1,5,7,3]]};
+}
+function lathe(profile,n){
+  const v=[], f=[], m=profile.length;
+  for(let j=0;j<n;j++){ const a=2*Math.PI*j/n; for(const [r,z] of profile) v.push([r*Math.sin(a), r*Math.cos(a), z]); }
+  for(let j=0;j<n;j++){ const j2=(j+1)%n;
+    for(let i=0;i<m;i++){ const i2=(i+1)%m; if(profile[i][0]===0 && profile[i2][0]===0) continue;
+      f.push([j*m+i, j*m+i2, j2*m+i2, j2*m+i]); } }
+  return {verts:v, faces:f};
+}
+const rect=(r1,r2,z1,z2)=>[[r1,z1],[r2,z1],[r2,z2],[r1,z2]];
+function hex(h){ return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]; }
+const GLOW=hex('#e24b4a');
+
+/* 회전하는 부분 */
+addMesh(Object.assign(lathe(rect(0.229,0.334,-0.1175,0.1175),48),{color:'#2c2c2a', group:'wheel', kind:'tire'}));
+addMesh(Object.assign(lathe(rect(0.215,0.229,-0.10,0.10),48),{color:'#b4b2a9', group:'wheel', kind:'tire'}));
+for(let k=0;k<5;k++) addMesh(Object.assign(radialBox(k*2*Math.PI/5,0.035,0.05,0.215,0.075,0.095),{color:'#b4b2a9', group:'wheel', kind:'tire'}));
+addMesh(Object.assign(lathe(rect(0,0.06,0.07,0.10),24),{color:'#888780', group:'wheel', kind:'tire'}));
+addMesh(Object.assign(lathe(rect(0,0.04,-0.21,0.07),20),{color:'#5f5e5a', group:'wheel', kind:'axle'}));
+addMesh(Object.assign(lathe(rect(0.04,0.07,-0.04,-0.025),24),{color:'#888780', group:'wheel', kind:'brake'}));
+addMesh(Object.assign(lathe(rect(0.07,0.16,-0.045,-0.02),48),{color:'#a9a8a0', group:'wheel', kind:'brake'}));
+addMesh(Object.assign(lathe(rect(0.04,0.19,Z0-0.008,Z0+0.008),48),{color:'#d3d1c7', group:'wheel', kind:'disc'}));
+for(let k=0;k<Z;k++) addMesh(Object.assign(radialBox(k*TOOTH,0.039,0.125,0.175,Z0-0.0085,Z0+0.0085),{color:'#6b6a65', group:'wheel', kind:'tooth'}));
+/* 고정된 부분 */
+addMesh(Object.assign(radialBox(Math.PI/3,0.06,0.12,0.175,-0.065,0.0),{color:'#d85a30', kind:'brake'}));
+addMesh(Object.assign(lathe(rect(0.255,0.27,Z0-0.006,Z0+0.006),48),{color:'#888780', kind:'ring'}));
+CORE_ANG.forEach((a,i)=>{
+  addMesh(Object.assign(radialBox(a,0.039,0.125,0.235,Z0+0.009,Z0+0.023),{color:'#b4b2a9', glow:i, core:i}));   /* 바깥쪽 다리 */
+  addMesh(Object.assign(radialBox(a,0.039,0.125,0.235,Z0-0.023,Z0-0.009),{color:'#b4b2a9', glow:i, core:i}));   /* 안쪽 다리 */
+  addMesh(Object.assign(radialBox(a,0.039,0.235,0.255,Z0-0.023,Z0+0.023),{color:'#b4b2a9', glow:i, core:i}));   /* 등 */
+  addMesh(Object.assign(radialBox(a,0.058,0.198,0.232,Z0+0.003,Z0+0.030),{color:'#afa9ec', core:i}));            /* 계자 코일 */
+  addMesh(Object.assign(radialBox(a,0.058,0.198,0.232,Z0-0.030,Z0-0.003),{color:'#ef9f27', core:i}));            /* 발전 코일 */
+});
+
+/* 카메라 */
+let cv, ctx, W=0, H=0, dpr=1;
+const cam={yaw:2.45, pitch:0.38, dist:1.05, tx:0, ty:0, tz:-0.07};
+const VIEWS={
+  in:{yaw:2.45,pitch:0.38,dist:1.05,t:[0,0,-0.07]}, out:{yaw:0.55,pitch:0.3,dist:1.15,t:[0,0,-0.07]},
+  side:{yaw:Math.PI/2,pitch:0.05,dist:1.0,t:[0,0,-0.07]}, top:{yaw:Math.PI/2,pitch:1.35,dist:1.1,t:[0,0,-0.07]},
+  core:{yaw:Math.PI/2+0.55,pitch:0.28,dist:0.36,t:[0,0.19,Z0]}
+};
+let mode='in';
+function resize(){ if(!cv) return; W=cv.clientWidth; H=cv.clientHeight; }
+/* 깊이 버퍼 렌더러: 픽셀마다 가장 가까운 면만 남긴다 */
+let img=null, u32=null, zb=null, bw=0, bh=0, sc=1;
+function ensureBuf(){
+  sc=Math.min(window.devicePixelRatio||1, 1.5);
+  let w=Math.max(1,Math.round(W*sc)), h=Math.max(1,Math.round(H*sc));
+  const maxPx=1.0e6; if(w*h>maxPx){ const f=Math.sqrt(maxPx/(w*h)); w=Math.round(w*f); h=Math.round(h*f); }
+  sc=w/W;
+  if(w!==bw||h!==bh){ bw=w; bh=h; cv.width=bw; cv.height=bh; img=ctx.createImageData(bw,bh); u32=new Uint32Array(img.data.buffer); zb=new Float32Array(bw*bh); }
+}
+function pack(r,g,b){ return (255<<24)|((b&255)<<16)|((g&255)<<8)|(r&255); }
+/* 삼각형 래스터화. w = 1/z (클수록 가까움) */
+function tri(x0,y0,w0,x1,y1,w1,x2,y2,w2,r,g,b,a){
+  let area=(x1-x0)*(y2-y0)-(x2-x0)*(y1-y0);
+  if(area===0) return;
+  if(area<0){ let t; t=x1;x1=x2;x2=t; t=y1;y1=y2;y2=t; t=w1;w1=w2;w2=t; area=-area; }
+  const minX=Math.max(0,Math.floor(Math.min(x0,x1,x2))), maxX=Math.min(bw-1,Math.ceil(Math.max(x0,x1,x2)));
+  const minY=Math.max(0,Math.floor(Math.min(y0,y1,y2))), maxY=Math.min(bh-1,Math.ceil(Math.max(y0,y1,y2)));
+  if(minX>maxX||minY>maxY) return;
+  const A0=-(y2-y1), B0=(x2-x1), A1=-(y0-y2), B1=(x0-x2), A2=-(y1-y0), B2=(x1-x0);
+  const inv=1/area, opaque=a>=1, col=pack(r,g,b), ia=1-a;
+  for(let y=minY;y<=maxY;y++){
+    const py=y+0.5, px=minX+0.5;
+    let e0=(x2-x1)*(py-y1)-(y2-y1)*(px-x1), e1=(x0-x2)*(py-y2)-(y0-y2)*(px-x2), e2=(x1-x0)*(py-y0)-(y1-y0)*(px-x0);
+    let idx=y*bw+minX;
+    for(let x=minX;x<=maxX;x++,idx++,e0+=A0,e1+=A1,e2+=A2){
+      if(e0<0||e1<0||e2<0) continue;
+      const w=(e0*w0+e1*w1+e2*w2)*inv;
+      if(w<=zb[idx]) continue;
+      if(opaque){ zb[idx]=w; u32[idx]=col; }
+      else { const d=u32[idx]; u32[idx]=pack((d&255)*ia+r*a, ((d>>8)&255)*ia+g*a, ((d>>16)&255)*ia+b*a); }
+    }
+  }
+}
+function toCam(p){
+  const x=p[0]-cam.tx, y=p[1]-cam.ty, z=p[2]-cam.tz;
+  const cy=Math.cos(cam.yaw), sy=Math.sin(cam.yaw), cp=Math.cos(cam.pitch), sp=Math.sin(cam.pitch);
+  const x1=x*cy - z*sy, z1=x*sy + z*cy;
+  return [x1, y*cp - z1*sp, cam.dist - (y*sp + z1*cp)];
+}
+function proj(c){ const f=Math.min(W,H)*1.15; return [W/2 + f*c[0]/c[2], H/2 - f*c[1]/c[2]]; }
+
+/* 상태 */
+let alpha=0, last=null, raf=0, running=false, lastUI=0;
+let playing=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+const st={speed:50, slow:0.05, tire:0.22, brake:true, labels:true, flux:true};
+function phase(coreA){ let d=((coreA - alpha) % TOOTH + TOOTH) % TOOTH; if(d>TOOTH/2) d-=TOOTH; return d; }
+function overlap(coreA){ return Math.max(0, 1-Math.abs(phase(coreA))/HALF); }               /* 겹침 비율 0~1 */
+function dOverlap(coreA){ const d=phase(coreA); return Math.abs(d)>=HALF ? 0 : (d>0?1:-1)/HALF; } /* d(겹침)/dα */
+
+/* 모드별 투명도 */
+function alphaOf(m){
+  const focus = mode==='core';
+  if(m.kind==='tire') return focus ? 0 : st.tire;
+  if(m.kind==='brake') return (focus || !st.brake) ? 0 : 1;
+  if(focus){
+    if(m.kind==='disc') return 0.4;
+    if(m.kind==='ring') return 0.18;
+    if(m.kind==='axle') return 0.3;
+    if(m.core!=null && m.core!==0) return 0.1;
+  }
+  return 1;
+}
+function css(n){ return getComputedStyle(cv).getPropertyValue(n).trim() || getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+function draw(){
+  ensureBuf();
+  const bg=css('--m3-stage'); const bgc=hex(bg.length===7?bg:'#e9eef3');
+  u32.fill(pack(bgc[0],bgc[1],bgc[2])); zb.fill(0);
+  const glowE=CORE_ANG.map(overlap);
+  const L=[-0.35,0.55,-0.75], Ln=Math.hypot(...L); L[0]/=Ln; L[1]/=Ln; L[2]/=Ln;   /* 표면에서 빛 쪽 방향 (카메라 좌표) */
+  const f=Math.min(W,H)*1.15*sc, hx=bw/2, hy=bh/2;
+  const trans=[];
+  for(const m of meshes){
+    const alp=alphaOf(m); if(alp<=0) continue;
+    const a = m.group==='wheel' ? alpha : 0;
+    const cvx=m.verts.map(p=>toCam(a? rotZ(p,a) : p));
+    const sx=cvx.map(c=>hx+f*c[0]/c[2]), sy=cvx.map(c=>hy-f*c[1]/c[2]), sw=cvx.map(c=>1/c[2]);
+    let rgb=m.rgb;
+    if(m.glow!=null){ const e=glowE[m.glow]*0.85; rgb=[0,1,2].map(i=>m.rgb[i]+(GLOW[i]-m.rgb[i])*e); }
+    for(const fc of m.faces){
+      let skip=false; for(const i of fc) if(cvx[i][2]<0.03){ skip=true; break; } if(skip) continue;
+      const P0=cvx[fc[0]], P1=cvx[fc[1]], P2=cvx[fc[2]];
+      const u=[P1[0]-P0[0],P1[1]-P0[1],P1[2]-P0[2]], w=[P2[0]-P0[0],P2[1]-P0[1],P2[2]-P0[2]];
+      let n=[u[1]*w[2]-u[2]*w[1], u[2]*w[0]-u[0]*w[2], u[0]*w[1]-u[1]*w[0]]; const nl=Math.hypot(...n)||1; n=n.map(x=>x/nl);
+      if(n[0]*P0[0]+n[1]*P0[1]+n[2]*P0[2]>0) n=n.map(x=>-x);   /* 법선이 카메라 쪽을 향하게 */
+      const k=0.42+0.62*Math.max(0, n[0]*L[0]+n[1]*L[1]+n[2]*L[2]);
+      const r=Math.min(255,rgb[0]*k), g=Math.min(255,rgb[1]*k), b=Math.min(255,rgb[2]*k);
+      if(alp>=1){
+        for(let t=1;t+1<fc.length;t++){ const i0=fc[0], i1=fc[t], i2=fc[t+1];
+          tri(sx[i0],sy[i0],sw[i0], sx[i1],sy[i1],sw[i1], sx[i2],sy[i2],sw[i2], r,g,b,1); }
+      } else {
+        let d=0; for(const i of fc) d+=cvx[i][2]; trans.push({fc, sx, sy, sw, r,g,b, alp, d:d/fc.length});
+      }
+    }
+  }
+  trans.sort((p,q)=>q.d-p.d);
+  for(const t of trans){ const fc=t.fc;
+    for(let k=1;k+1<fc.length;k++){ const i0=fc[0], i1=fc[k], i2=fc[k+1];
+      tri(t.sx[i0],t.sy[i0],t.sw[i0], t.sx[i1],t.sy[i1],t.sw[i1], t.sx[i2],t.sy[i2],t.sw[i2], t.r,t.g,t.b,t.alp); } }
+  ctx.putImageData(img,0,0);
+  ctx.setTransform(sc,0,0,sc,0,0);
+  if(st.flux) drawFlux(glowE);
+  if(st.labels) drawLabels();
+}
+/* 자속 경로: 바깥 다리 → 등 → 안쪽 다리 → 쇳조각(틈) → 바깥 다리 */
+function drawFlux(glowE){
+  CORE_ANG.forEach((a,i)=>{
+    if(mode==='core' && i!==0) return;
+    const e=glowE[i];
+    const pts=[[0,0.15,Z0+0.016],[0,0.245,Z0+0.016],[0,0.245,Z0-0.016],[0,0.15,Z0-0.016]].map(p=>rotZ(p,a)).map(toCam);
+    if(pts.some(p=>p[2]<0.03)) return;
+    const s=pts.map(proj);
+    ctx.save(); ctx.globalAlpha=0.25+0.75*e; ctx.strokeStyle='#e24b4a'; ctx.lineWidth=(mode==='core'?2:1.2)+(mode==='core'?5:2.5)*e; ctx.setLineDash([6,4]);
+    ctx.beginPath(); ctx.moveTo(s[0][0],s[0][1]); for(let k=1;k<4;k++) ctx.lineTo(s[k][0],s[k][1]); ctx.closePath(); ctx.stroke(); ctx.setLineDash([]);
+    const mx=(s[1][0]+s[2][0])/2, my=(s[1][1]+s[2][1])/2, ang=Math.atan2(s[2][1]-s[1][1], s[2][0]-s[1][0]), h=6+4*e;
+    ctx.fillStyle='#e24b4a'; ctx.beginPath(); ctx.moveTo(mx+Math.cos(ang)*h,my+Math.sin(ang)*h); ctx.lineTo(mx+Math.cos(ang+2.5)*h,my+Math.sin(ang+2.5)*h); ctx.lineTo(mx+Math.cos(ang-2.5)*h,my+Math.sin(ang-2.5)*h); ctx.fill();
+    ctx.restore();
+  });
+}
+const LABELS_ALL=[
+  {t:'U자 철심 A', p:()=>rotZ([0,0.255,Z0],CORE_ANG[0])},
+  {t:'U자 철심 B', p:()=>rotZ([0,0.255,Z0],CORE_ANG[1])},
+  {t:'계자 코일', p:()=>rotZ([0,0.2325,Z0+0.0265],CORE_ANG[2]), sy:-1},
+  {t:'발전 코일', p:()=>rotZ([0,0.2325,Z0-0.0265],CORE_ANG[2]), sy:1},
+  {t:'쇳조각 원판', p:()=>[-0.12,-0.02,Z0]},
+  {t:'고정 링 (차체에 고정)', p:()=>rotZ([0,0.27,Z0],-1.2)},
+  {t:'브레이크 디스크', p:()=>rotZ([0,0.13,-0.03],-2.5), need:'brake'},
+  {t:'캘리퍼', p:()=>rotZ([0,0.15,-0.03],Math.PI/3), need:'brake'},
+  {t:'타이어·휠', p:()=>[0,-0.3,0.1], need:'tire'},
+];
+const LABELS_CORE=[
+  {t:'등 (자속이 돌아가는 길)', p:()=>[0,0.255,Z0], sy:-1},
+  {t:'바깥쪽 다리 + 계자 코일', p:()=>[0,0.2325,Z0+0.0265], sy:-1},
+  {t:'안쪽 다리 + 발전 코일', p:()=>[0,0.2325,Z0-0.0265], sy:-1},
+  {t:'쇳조각 (원판과 함께 회전)', p:()=>rotZ([0,0.15,Z0+0.0085],alpha+TOOTH), sy:1},
+  {t:'틈 1 mm (양쪽)', p:()=>[0,0.135,Z0+0.009], sx:1, sy:1},
+  {t:'원판 (비자성)', p:()=>rotZ([0,0.18,Z0],0.5), sx:-1, sy:1},
+];
+function drawLabels(){
+  ctx.font='12.5px "Noto Sans KR", sans-serif'; ctx.textBaseline='middle'; ctx.textAlign='left';
+  const surf=css('--surface'), ink=css('--ink'), line=css('--ink-3');
+  const list = mode==='core' ? LABELS_CORE : LABELS_ALL;
+  const placed=[];
+  for(const l of list){
+    if(l.need==='brake' && !st.brake) continue;
+    if(l.need==='tire' && st.tire<=0) continue;
+    const c=toCam(l.p()); if(c[2]<0.03) continue;
+    const [x,y]=proj(c); if(x<2||y<2||x>W-2||y>H-2) continue;
+    /* 가려짐 판정: 깊이 버퍼에 더 가까운 면이 있으면 점을 속이 빈 원으로 그린다 */
+    let hid=false; const px=Math.floor(x*sc), py=Math.floor(y*sc);
+    if(px>=0&&py>=0&&px<bw&&py<bh){ hid = zb[py*bw+px] > (1/c[2])*1.004; }
+    const sxn=(l.sx!=null ? l.sx : (x>W/2?1:-1)), syn=(l.sy!=null ? l.sy : (y>H/2?1:-1));
+    const dx=sxn*34, tw=ctx.measureText(l.t).width+12;
+    let lx=x+dx, ly=y+syn*24, bx= dx>0 ? lx : lx-tw;
+    /* 다른 라벨과 겹치면 같은 방향으로 밀어낸다 */
+    for(let k=0;k<12;k++){
+      const hit=placed.find(b=> bx<b.x+b.w+4 && bx+tw+4>b.x && ly-10<b.y+b.h+3 && ly+10+3>b.y);
+      if(!hit) break; ly = syn>0 ? hit.y+hit.h+13 : hit.y-13;
+    }
+    bx=Math.max(4,Math.min(W-tw-4,bx)); ly=Math.max(14,Math.min(H-14,ly)); lx = Math.max(bx,Math.min(bx+tw,lx));
+    placed.push({x:bx,y:ly-10,w:tw,h:20});
+    ctx.globalAlpha = hid ? 0.55 : 1;
+    ctx.strokeStyle=line; ctx.lineWidth=1; ctx.setLineDash(hid?[3,3]:[]); ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(lx,ly); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(x,y,2.6,0,2*Math.PI);
+    if(hid){ ctx.fillStyle=surf; ctx.fill(); ctx.strokeStyle=ink; ctx.stroke(); } else { ctx.fillStyle=ink; ctx.fill(); }
+    ctx.globalAlpha=1;
+    ctx.fillStyle=surf; ctx.globalAlpha=0.92; ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(bx,ly-10,tw,20,5); else ctx.rect(bx,ly-10,tw,20); ctx.fill(); ctx.globalAlpha=1;
+    ctx.strokeStyle=line; ctx.stroke(); ctx.fillStyle=ink; ctx.fillText(l.t,bx+6,ly+0.5);
+  }
+}
+
+/* 측정값 */
+function updateUI(){
+  const omega=(st.speed/3.6)/RW;            /* 실제 바퀴 각속도 rad/s */
+  const pA=PHI_MIN+DPHI*overlap(CORE_ANG[0]), pB=PHI_MIN+DPHI*overlap(CORE_ANG[1]);
+  /* 바퀴는 α가 줄어드는 방향으로 돈다(dα/dt = −ω). ε = −N·d(ΦA−ΦB)/dt, 두 짝 직렬 */
+  const emf=-2*NARM*DPHI*(dOverlap(CORE_ANG[0])-dOverlap(CORE_ANG[1]))*(-omega);
+  const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
+  $('#m3-barA').style.width=(pA/PHI_MAX*100)+'%'; set('#m3-valA',(pA*1000).toFixed(2)+' mWb');
+  $('#m3-barB').style.width=(pB/PHI_MAX*100)+'%'; set('#m3-valB',(pB*1000).toFixed(2)+' mWb');
+  $('#m3-barS').style.width=((pA+pB)/(2*PHI_MAX)*100)+'%'; set('#m3-valS',((pA+pB)*1000).toFixed(2)+' mWb');
+  set('#m3-emf',(emf>=0?'+':'−')+Math.abs(emf).toFixed(1)+' V');
+  set('#m3-freq',(omega/(2*Math.PI)*Z).toFixed(1)+' Hz');
+  set('#m3-rps',(omega/(2*Math.PI)).toFixed(2)+' 회/s');
+}
+function frame(ts){
+  if(!running) return;
+  if(last!=null && playing){ alpha -= (st.speed/3.6)/RW*st.slow*Math.min(0.05,(ts-last)/1000); }
+  last=ts;
+  if(W>0 && H>0) draw();
+  if(ts-lastUI>80){ updateUI(); lastUI=ts; }
+  raf=requestAnimationFrame(frame);
+}
+function setView(name){
+  const v=VIEWS[name]; mode=name; cam.yaw=v.yaw; cam.pitch=v.pitch; cam.dist=v.dist; [cam.tx,cam.ty,cam.tz]=v.t;
+  document.querySelectorAll('[data-m3view]').forEach(b=>b.setAttribute('aria-pressed', b.dataset.m3view===name?'true':'false'));
+}
+let inited=false;
+function init(){
+  if(inited) return; inited=true;
+  cv=$('#m3-cv'); ctx=cv.getContext('2d');
+  new ResizeObserver(resize).observe(cv); resize();
+  const ptrs=new Map(); let pinch0=null;
+  cv.addEventListener('pointerdown',e=>{ cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(ptrs.size===2){ const [a,b]=[...ptrs.values()]; pinch0={d:Math.hypot(a.x-b.x,a.y-b.y), dist:cam.dist}; } });
+  cv.addEventListener('pointermove',e=>{
+    if(!ptrs.has(e.pointerId)) return;
+    const prev=ptrs.get(e.pointerId), cur={x:e.clientX,y:e.clientY}; ptrs.set(e.pointerId,cur);
+    /* 끄는 방향과 반대로 돌린다 (상하좌우 반전) */
+    if(ptrs.size===1){ cam.yaw-= (cur.x-prev.x)*0.008; cam.pitch=Math.max(-1.45,Math.min(1.45,cam.pitch-(cur.y-prev.y)*0.008)); }
+    else if(ptrs.size===2 && pinch0){ const [a,b]=[...ptrs.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); cam.dist=Math.max(0.15,Math.min(3,pinch0.dist*pinch0.d/d)); }
+  });
+  const up=e=>{ ptrs.delete(e.pointerId); if(ptrs.size<2) pinch0=null; };
+  cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+  cv.addEventListener('wheel',e=>{ e.preventDefault(); cam.dist=Math.max(0.15,Math.min(3,cam.dist*Math.exp(e.deltaY*0.001))); },{passive:false});
+  document.querySelectorAll('[data-m3view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.m3view)));
+  const pb=$('#m3-play'); pb.textContent=playing?'일시정지':'재생';
+  pb.addEventListener('click',()=>{ playing=!playing; pb.textContent=playing?'일시정지':'재생'; });
+  $('#m3-spd').addEventListener('input',e=>{ st.speed=+e.target.value; $('#m3-spdo').textContent=st.speed+' km/h'; });
+  $('#m3-slow').addEventListener('change',e=>{ st.slow=+e.target.value; });
+  $('#m3-tire').addEventListener('change',e=>{ st.tire=+e.target.value; });
+  $('#m3-brake').addEventListener('change',e=>{ st.brake=e.target.checked; });
+  $('#m3-labels').addEventListener('change',e=>{ st.labels=e.target.checked; });
+  $('#m3-flux').addEventListener('change',e=>{ st.flux=e.target.checked; });
+}
+return {
+  start(){ init(); resize(); if(running) return; running=true; last=null; raf=requestAnimationFrame(frame); },
+  stop(){ running=false; cancelAnimationFrame(raf); }
+};
+})();
+
+</script>
 <script>
 (function(){
 "use strict";
@@ -1382,11 +1768,12 @@ function howEnergy(o){
 let smView='sim';
 function setSmView(v){
   smView=v;
-  ['sim','how','build'].forEach(k=>{ $('#sv-'+k).hidden=k!==v; $('#svt-'+k).setAttribute('aria-selected',k===v?'true':'false'); });
+  ['sim','how','m3','build'].forEach(k=>{ $('#sv-'+k).hidden=k!==v; $('#svt-'+k).setAttribute('aria-selected',k===v?'true':'false'); });
   if(v==='sim') smAnim.wake(); else smAnim.pause();
   if(v==='how') coil.start(); else coil.stop();
+  if(v==='m3') M3D.start(); else M3D.stop();
 }
-['sim','how','build'].forEach(k=>$('#svt-'+k).addEventListener('click',()=>setSmView(k)));
+['sim','how','m3','build'].forEach(k=>$('#svt-'+k).addEventListener('click',()=>setSmView(k)));
 (function(){ const n=$('#how-v'), r=$('#how-v-r');
   r.addEventListener('input',()=>{ n.value=r.value; if(!coil.on) drawCoil(); });
   n.addEventListener('input',()=>{ const x=parseFloat(n.value); if(isFinite(x)) r.value=String(Math.min(150,Math.max(0,x))); if(!coil.on) drawCoil(); });
@@ -1411,7 +1798,7 @@ window.addEventListener('hashchange',show);
 function applyMode(){
   $('#adv-toggle').checked=adv; $('#advanced').hidden=!adv; $('#simple').hidden=adv;
   $('#mode-note').textContent = adv ? '고급 모드: 회전 원판 실험 모형, 실차 모형(제동력 분담·주행 애니메이션)을 자세히 계산한다.' : '기본 모드: 자기장 세기, 속력, 코일 조건에 따라 발전량이 어떻게 달라지는지 본다.';
-  if(adv){ smAnim.pause(); coil.stop(); show(); } else { vehAnim.pause(); setSmView(smView); }
+  if(adv){ smAnim.pause(); coil.stop(); M3D.stop(); show(); } else { vehAnim.pause(); setSmView(smView); }
 }
 $('#adv-toggle').addEventListener('change',e=>{ adv=e.target.checked; try{ localStorage.setItem('rbs-adv',adv?'1':'0'); }catch(err){} applyMode(); });
 buildSimple(); runSimple(); applyMode();
