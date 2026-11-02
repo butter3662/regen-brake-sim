@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>브레이크 회생발전 시뮬레이터</title>
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
@@ -47,6 +47,7 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0}
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
 .wrap{max-width:1180px;margin:0 auto;padding:24px 20px 64px}
 header h1{font-family:var(--f-display);font-weight:700;font-size:26px;line-height:1.3;margin:0 0 6px;text-wrap:balance}
@@ -1855,6 +1856,24 @@ function applyMode(){
 }
 $('#adv-toggle').addEventListener('change',e=>{ adv=e.target.checked; try{ localStorage.setItem('rbs-adv',adv?'1':'0'); }catch(err){} applyMode(); });
 buildSimple(); runSimple(); applyMode();
+/* 확대 금지: 두 손가락 확대, 두 번 탭 확대, Ctrl+휠·Ctrl+(+/−) 확대를 막는다.
+   3D 모형 화면(#m3-cv)은 자체 확대(휠·두 손가락)를 쓰므로 제외한다. */
+(function(){
+  const in3d=t=>!!(t && t.closest && t.closest('#m3-cv'));
+  const block=e=>{ if(!in3d(e.target)) e.preventDefault(); };
+  document.addEventListener('gesturestart',block,{passive:false});   /* iOS Safari 두 손가락 */
+  document.addEventListener('gesturechange',block,{passive:false});
+  document.addEventListener('touchmove',e=>{ if(e.touches.length>1 && !in3d(e.target)) e.preventDefault(); },{passive:false});
+  let lastTap=0;
+  document.addEventListener('touchend',e=>{
+    if(in3d(e.target) || e.touches.length>0) return;
+    const now=Date.now();
+    if(now-lastTap<320 && !(e.target.closest && e.target.closest('input,select,textarea,button,label,a'))) e.preventDefault();   /* 두 번 탭 확대 */
+    lastTap=now;
+  },{passive:false});
+  document.addEventListener('wheel',e=>{ if(e.ctrlKey && !in3d(e.target)) e.preventDefault(); },{passive:false});   /* 트랙패드 집기·Ctrl+휠 */
+  document.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey) && ['+','-','=','_','0'].includes(e.key)) e.preventDefault(); });
+})();
 /* 모바일: 숫자 입력칸 밖을 누르면 키보드를 닫는다. iOS Safari는 입력칸이 아닌 곳을 눌러도 포커스를 유지하기 때문이다. */
 (function(){
   const typing=el=>el && el.matches && el.matches('input[type=number],input[type=text],input:not([type]),textarea');
