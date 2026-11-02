@@ -173,6 +173,8 @@ table.parts td:last-child{white-space:nowrap;font-family:var(--f-mono);font-size
 .srow input[readonly]{color:var(--ink-2);background:var(--grid)}
 .srow input[type=range]:disabled{opacity:.45}
 #sm-em h3{margin-top:12px}
+.hud .hud-sep{grid-column:1 / -1;font-size:12px;font-weight:600;color:var(--ink-2);border-top:1px dashed var(--line);padding-top:8px;margin-top:2px}
+.hud .e-net b{color:var(--accent)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -221,7 +223,7 @@ table.parts td:last-child{white-space:nowrap;font-family:var(--f-mono);font-size
       <div class="tiles" id="sm-tiles"></div>
       <div class="card anim">
         <h2>주행 애니메이션</h2>
-        <p class="cap">위 조건으로 제동하는 모습을 실제 시간 비율로 재생하며, 값을 바꾸면 처음부터 다시 재생된다. 차 위 화살표는 마찰 브레이크(주황)와 발전기(파랑)의 제동력이다. 전선 위 점선이 빠를수록 발전 전류가 크고, 배터리 칸은 최종 발전량 대비 누적 비율이다. 회색 점선 차는 발전기 없이 마찰 브레이크만으로 서는 차이므로, 두 차의 정지 위치 차이가 발전기가 제동을 도운 정도이다.</p>
+        <p class="cap">아래 ‘누적 에너지’에서 사용 에너지는 전자석이 쓴 에너지이고, 순 생산은 발전량에서 이를 뺀 값이다. 손실된 에너지는 차의 운동에너지 중 전기로 저장되지 못하고 열이 된 몫으로, 마찰 브레이크 열과 발전 코일 저항 열을 더한 것이다. 위 조건으로 제동하는 모습을 실제 시간 비율로 재생하며, 값을 바꾸면 처음부터 다시 재생된다. 차 위 화살표는 마찰 브레이크(주황)와 발전기(파랑)의 제동력이다. 전선 위 점선이 빠를수록 발전 전류가 크고, 배터리 칸은 최종 발전량 대비 누적 비율이다. 회색 점선 차는 발전기 없이 마찰 브레이크만으로 서는 차이므로, 두 차의 정지 위치 차이가 발전기가 제동을 도운 정도이다.</p>
         <canvas id="sm-anim" role="img" aria-label="감속하는 자동차 애니메이션"></canvas>
         <div class="hud" id="sm-hud"></div>
         <div class="ctrl">
@@ -1049,9 +1051,10 @@ function makeAnim(pre){
     arrowL(ctx,ax,yTop,F.Fgen/A.maxF*maxLen,C.s1,`발전기 ${fmt(F.Fgen)} N`,C);
     const E=st[1], Et= E>=1000 ? fmt(E/1000)+' kJ' : fmt(E)+' J';
     const P=F.PL, Pt= P>=1000 ? fmt(P/1000)+' kW' : fmt(P)+' W';
-    const items=[['시간 t',fmt(A.t)+' s'],['속력 v',fmt(v*3.6)+' km/h'],['이동 거리 x',fmt(x)+' m'],[A.iLabel,fmt(F.I)+' A'],
-      ['발전기 제동력',fmt(F.Fgen)+' N'],['마찰 제동력',fmt(F.Ffr)+' N'],['발전 전력 P',Pt],[A.eLabel,Et]];
-    el('hud').innerHTML=items.map(i=>`<div>${i[0]}<b>${i[1]}</b></div>`).join('');
+    const items= A.hudItems ? A.hudItems({t:A.t,st,v,x,F})
+      : [['시간 t',fmt(A.t)+' s'],['속력 v',fmt(v*3.6)+' km/h'],['이동 거리 x',fmt(x)+' m'],[A.iLabel,fmt(F.I)+' A'],
+         ['발전기 제동력',fmt(F.Fgen)+' N'],['마찰 제동력',fmt(F.Ffr)+' N'],['발전 전력 P',Pt],[A.eLabel,Et]];
+    el('hud').innerHTML=items.map(i=> i.sep ? `<div class="hud-sep">${i.sep}</div>` : `<div class="${i[2]||''}">${i[0]}<b>${i[1]}</b></div>`).join('');
     const sc=el('scrub'); if(document.activeElement!==sc) sc.value=String(A.T>0?Math.min(1000,Math.round(A.t/A.T*1000)):(A.endless?1000:0));
   }
   A.set=o=>{
@@ -1226,7 +1229,20 @@ function runSimple(){
     series:s2, marks:[{x:Math.min(q.v0,150), label:`현재 v₀ = ${fmt(q.v0)} km/h`}]});
   const Tcap = isFinite(o.T) ? Math.max(o.T,1) : (isFinite(o.T0) ? o.T0 : 30);
   smAnim.set({on:smRec(q,true,Tcap), off:smRec(q,false,Tcap), rw:SMF.rw, iLabel:'발전 전류 (실효값)', eLabel:'누적 발전량 E',
-    forces:v=>{ const on=v>o.v1; return {Fgen:on?o.c*v:0, Ffr:o.Ffr, I:on?o.K*v/Math.SQRT2/(SMF.R+SMF.r):0, PL:on?o.share*o.c*v*v:0}; }});
+    forces:v=>{ const on=v>o.v1; return {Fgen:on?o.c*v:0, Ffr:o.Ffr, I:on?o.K*v/Math.SQRT2/(SMF.R+SMF.r):0, PL:on?o.share*o.c*v*v:0}; },
+    hudItems:({t,st,v,x,F})=>{
+      const E=st[1], tOn= q.em ? Math.min(t,o.t1) : 0, Eu= (q.em && o.Pf>0) ? o.Pf*tOn : 0;
+      const fr=o.Ffr*x, coil= o.share>0 ? E*(1-o.share)/o.share : 0, emOn= q.em && o.Pf>0 && t<o.t1;
+      const eF=e=>{ const [a,b]=eTxt(e); return a+' '+b; }, pF=p=> p>=1000 ? fmt(p/1000)+' kW' : fmt(p)+' W';
+      const it=[['시간 t',fmt(t)+' s'],['속력 v',fmt(v*3.6)+' km/h'],['이동 거리 x',fmt(x)+' m'],['발전 전류 (실효값)',fmt(F.I)+' A'],
+        ['발전기 제동력',fmt(F.Fgen)+' N'],['마찰 제동력',fmt(F.Ffr)+' N'],['발전 전력 P',pF(F.PL)]];
+      if(q.em) it.push(['전자석 소비 전력',pF(emOn?o.Pf:0)]);
+      it.push({sep:'누적 에너지 (제동 시작부터 지금까지)'},
+        ['누적 발전량 E',eF(E),'e-gen'],
+        ['누적 사용 에너지 (전자석)', q.em ? eF(Eu) : '0 J (영구자석)','e-use'],
+        ['순 생산 에너지 (발전 − 사용)',eF(E-Eu),'e-net'],
+        ['손실된 에너지 (마찰 + 코일 열)',eF(fr+coil),'e-loss']);
+      return it; }});
   howEnergy(o);
   if(smView==='how' && !coil.on) drawCoil();
 }
