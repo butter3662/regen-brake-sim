@@ -517,6 +517,14 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <h3 style="font-size:15px;margin:14px 0 4px">3. 전류 상한</h3>
         <div class="eq"><i>I</i><sub>ref</sub> = min( <i>B</i><sub>sat</sub> <i>g</i> / (<i>μ</i><sub>0</sub> <i>N</i><sub>a</sub>), <i>I</i><sub>max</sub> )</div>
         <p>앞쪽은 쇳조각이 정렬했을 때 틈이 포화(1.5 T)에 이르는 전류이고, <i>I</i><sub>max</sub> = 150 A는 스위치와 배선이 견디는 전류(가정)이다. 감은 수를 줄이면 포화 전류가 커지지만 150 A에서 막힌다. 그래서 전력 변환기 방식의 최적 감은 수는 포화 전류가 150 A 근처가 되는 감은 수(약 16회)이다. 공간이 정해져 있으면 저항이 <i>N</i><sub>a</sub><sup>2</sup>, 포화 전류가 1/<i>N</i><sub>a</sub>에 비례해 코일 열 <i>RI</i><sup>2</sup>는 감은 수와 거의 상관없다.</p>
+        <h3 style="font-size:15px;margin:14px 0 4px">4. 여자 에너지와 순 생산</h3>
+        <div class="eq"><i>E</i><sub>in</sub> = ∫<sub>켬</sub> <i>V i</i> d<i>t</i>, &nbsp;&nbsp; <i>E</i><sub>out</sub> = ∫<sub>끔</sub> <i>V i</i> d<i>t</i>, &nbsp;&nbsp; <i>E</i><sub>net</sub> = <i>E</i><sub>out</sub> − <i>E</i><sub>in</sub> = <i>W</i><sub>mech</sub> − <i>E</i><sub>cu</sub></div>
+        <p>이 방식도 전류를 켰다 껐다 하며, 켜는 구간에는 배터리가 코일에 전류를 세우는 데 에너지 <i>E</i><sub>in</sub>(여자 에너지)을 내준다. 다만 이 에너지는 코일 자기장에 저장될 뿐 사라지지 않는다. 끄는 구간에는 전류가 다이오드를 거쳐 배터리로 돌아오는데, 그동안 쇳조각이 멀어지며 인덕턴스가 줄어드는 것(d<i>L</i>/d<i>θ</i> &lt; 0)이 기계 일 <i>W</i><sub>mech</sub>를 전기로 바꿔 더해 주므로 돌려받는 에너지 <i>E</i><sub>out</sub>이 더 크다. 시뮬레이션의 ‘누적 발전량’은 <i>E</i><sub>out</sub>, ‘누적 사용 에너지 (코일 여자)’는 <i>E</i><sub>in</sub>, 순 생산은 그 차이다. 계자 방식의 전자석 전력은 저항에서 모두 열이 되지만, 여기서는 여자 에너지가 대부분 되돌아온다는 점이 다르다. 대신 배터리와 코일 사이를 오가는 에너지가 순 생산보다 훨씬 크므로(기본값 60 km/h에서 여자 약 49 kJ, 순 생산 약 5.3 kJ), 변환기 손실이 오가는 에너지의 몇 %만 되어도 순 생산이 크게 줄어든다.</p>
+        <dl class="sym">
+          <dt>V, i</dt><dd>코일에 거는 전압 (켬: +48 V, 끔: −48 V), 코일 전류 (A)</dd>
+          <dt>E<sub>in</sub>, E<sub>out</sub>, E<sub>net</sub></dt><dd>배터리가 내준 여자 에너지, 배터리가 돌려받은 에너지, 순 생산 에너지 (J)</dd>
+          <dt>W<sub>mech</sub>, E<sub>cu</sub></dt><dd>바퀴에서 빼앗은 기계 일 (J), 코일 저항에서 생긴 열 (J)</dd>
+        </dl>
         <p class="note">가정: 인덕턴스는 겹침에 따라 직선으로 바뀌고, 포화는 전류 상한으로만 나타냈다. 실제 스위치드 릴럭턴스 발전기는 포화 영역까지 써서 한 번에 더 많은 에너지를 뽑으므로 이 계산은 보수적이다. 스위치·다이오드의 전압 강하와 스위칭 손실, 회전 위치 센서 오차, 소음은 무시했다. 배터리 전압은 48 V로 일정하다고 보았다.</p>
       </div>
 
@@ -1713,7 +1721,7 @@ function srgCoil(q){
 }
 function srgStroke(c,omega,uon,uoff){
   const pitch=2*Math.PI/SMF.Z, dtdu=pitch/omega, du=1/SRG.N, dLmag=2*(c.Lon-c.Loff), V0=SRG.V;
-  let i=0, u=0, Eb=0, Ecu=0, I2=0;
+  let i=0, u=0, Eb=0, Ecu=0, I2=0, Ein=0;
   while(u<1.5){
     const uu = u<1 ? u : u-1, Lu=c.Loff+(c.Lon-c.Loff)*Math.max(0,1-Math.abs(uu-0.5)/0.5), dL= uu<0.5 ? dLmag : -dLmag;
     const on = u>=uon && u<uoff;
@@ -1721,20 +1729,20 @@ function srgStroke(c,omega,uon,uoff){
     const V = on ? (i<c.Iref ? V0 : -V0) : (u>=uoff ? -V0 : 0);
     let ni=i+(dtdu*(V-c.R*i)-i*dL)/Lu*du; if(ni<0) ni=0;
     const im=0.5*(i+ni), dt=dtdu*du;
-    Eb+=-V*im*dt; Ecu+=c.R*im*im*dt; I2+=im*im*dt; i=ni; u+=du;
+    Eb+=-V*im*dt; if(V>0) Ein+=V*im*dt; Ecu+=c.R*im*im*dt; I2+=im*im*dt; i=ni; u+=du;
   }
-  return [Eb,Ecu,I2];
+  return [Eb,Ecu,I2,Ein];   /* Eb: 배터리가 얻은 순 에너지(되돌려 받은 것 − 여자에 쓴 것), Ein: 여자(코일에 전류를 세우는 데) 배터리가 내준 에너지 */
 }
 function srgTable(q){
   const c=srgCoil(q), key=[Math.round(q.Na),c.n,Math.round(q.hr)].join('|');
   if(srgCache.has(key)) return srgCache.get(key);
-  const tb={v:[],Pb:[],Pm:[],I:[],uon:[],uoff:[],vmin:Infinity,c};
+  const tb={v:[],Pb:[],Pm:[],Pin:[],I:[],uon:[],uoff:[],vmin:Infinity,c};
   for(const v of SRG.speeds){
-    let best=[0,0,0], bu=[0,0];
+    let best=[0,0,0,0], bu=[0,0];
     if(v>0){ const om=v/SMF.rw;
       for(const a of SRG.uon) for(const b of SRG.uoff){ if(b<=a) continue; const r=srgStroke(c,om,a,b); if(r[0]>best[0]){ best=r; bu=[a,b]; } } }
     const fs = v>0 ? SMF.Z*(v/SMF.rw)/(2*Math.PI) : 0;          /* 철심 하나가 1초에 겪는 쇳조각 수 */
-    tb.v.push(v); tb.Pb.push(c.n*fs*best[0]); tb.Pm.push(c.n*fs*(best[0]+best[1])); tb.I.push(Math.sqrt(fs*best[2])); tb.uon.push(bu[0]); tb.uoff.push(bu[1]);
+    tb.v.push(v); tb.Pb.push(c.n*fs*best[0]); tb.Pm.push(c.n*fs*(best[0]+best[1])); tb.Pin.push(c.n*fs*best[3]); tb.I.push(Math.sqrt(fs*best[2])); tb.uon.push(bu[0]); tb.uoff.push(bu[1]);
     if(best[0]>0 && v<tb.vmin) tb.vmin=v;
   }
   if(srgCache.size>400) srgCache.clear();
@@ -1787,6 +1795,7 @@ function smCalc(q){
   const Pt = srg ? (v=>srgAt(tb,'Pm',v)) : (v=> (v>0 && K>0) ? (K*K*v*v/Rt)*smPhi(aL/v) : 0);
   const Pb = srg ? (v=>srgAt(tb,'Pb',v)) : (v=>share*Pt(v));
   const Irms = srg ? (v=>srgAt(tb,'I',v)) : (v=>Math.sqrt(Pt(v)/Rt));
+  const Pin = srg ? (v=>srgAt(tb,'Pin',v)) : (v=>0);   /* 전력 변환기 방식: 여자에 배터리가 내주는 전력 */
   const active = srg ? isFinite(tb.vmin) : K>0;
   const Fg=v=> v>0 ? Pt(v)/v : 0;                                   /* 발전기 제동력 */
   const Ffr=Math.max(q.Ffr,0), fric=Ffr>0, af=Ffr/m, K0=0.5*m*v0*v0;
@@ -1800,15 +1809,15 @@ function smCalc(q){
   const v1 = Math.max(vStop, Math.min(v0, srg ? vBE : ((em && q.autoOff) ? vBE : 0)));
   /* 구간 1 (v0 → v1): m dv/dt = −(Ffr + Fg(v)) 을 속력에 대해 수치 적분한다 (사다리꼴, 400칸).
      dt = m dv/(Ffr+Fg), dx = v dt, d(전기에너지) = Pt dt */
-  let t1=0, x1=0, Eb=0, Ecu=0; const tab={t:[0],v:[v0],x:[0],E:[0],Ecu:[0]};
+  let t1=0, x1=0, Eb=0, Ecu=0, Ein=0; const tab={t:[0],v:[v0],x:[0],E:[0],Ecu:[0],Ein:[0]};
   if(v0>0 && active && v1<v0){
     const n=400, logs = v1>0 && v0/v1>8, vAt=i=> logs ? v0*Math.pow(v1/v0,i/n) : v0+(v1-v0)*i/n;
     const g=v=>{ const F=Ffr+Fg(v); return F>0 ? m/F : Infinity; };
     let va=v0, ga=g(va);
     for(let i=1;i<=n;i++){ const vb=vAt(i), gb=g(vb), dv=va-vb;
       t1+=dv*(ga+gb)/2; x1+=dv*(ga*va+gb*vb)/2;
-      Eb+=dv*(ga*Pb(va)+gb*Pb(vb))/2; Ecu+=dv*(ga*(Pt(va)-Pb(va))+gb*(Pt(vb)-Pb(vb)))/2;
-      tab.t.push(t1); tab.v.push(vb); tab.x.push(x1); tab.E.push(Eb); tab.Ecu.push(Ecu); va=vb; ga=gb; }
+      Eb+=dv*(ga*Pb(va)+gb*Pb(vb))/2; Ecu+=dv*(ga*(Pt(va)-Pb(va))+gb*(Pt(vb)-Pb(vb)))/2; Ein+=dv*(ga*Pin(va)+gb*Pin(vb))/2;
+      tab.t.push(t1); tab.v.push(vb); tab.x.push(x1); tab.E.push(Eb); tab.Ecu.push(Ecu); tab.Ein.push(Ein); va=vb; ga=gb; }
   }
   if(em && K<=0 && !q.autoOff) t1=T0;   /* 자기장이 0이어도 전자석은 켜져 있음 */
   let t2, x2, noStop=false;
@@ -1816,22 +1825,22 @@ function smCalc(q){
   else if(v0<=0 || (active && v1<=vStop*(1+1e-9))){ t2=0; x2=0; }
   else { t2=Infinity; x2=Infinity; noStop=true; }   /* 마찰 0이고 발전기도 꺼져 있으면 계속 굴러감 */
   const E=Eb, Ef= (em && Pf>0) ? Pf*(K>0||!q.autoOff ? t1 : 0) : 0;
-  return {E, Ecu, Ef, net:E-Ef, vBE, v1, vStop, t1, x1, T:t1+t2, xs:x1+x2, noStop, fric, K0, K, r, Rt, gen, Pt, Pb, Irms, Fg, tab, srg, tb, v0, m, af, T0, x0, Ffr, share, Pf, em,
+  return {E, Ecu, Ein, Pin, Ef, net:E-Ef, vBE, v1, vStop, t1, x1, T:t1+t2, xs:x1+x2, noStop, fric, K0, K, r, Rt, gen, Pt, Pb, Irms, Fg, tab, srg, tb, v0, m, af, T0, x0, Ffr, share, Pf, em,
     upper:share*K0, P0: v0>v1 ? Pb(v0) : 0, epsMax:K*v0, F0: v0>v1 ? Fg(v0) : 0, Pinf: srg ? 0 : share*Pt(2000)};
 }
 function smRec(q, withGen, Tcap){
   const o=smCalc(q), a=o.af, v0=o.v0;
-  const v1= withGen?o.v1:v0, t1= withGen?o.t1:0, x1= withGen?o.x1:0, E1= withGen?o.E:0, C1= withGen?o.Ecu:0, tab= withGen?o.tab:null;
+  const v1= withGen?o.v1:v0, t1= withGen?o.t1:0, x1= withGen?o.x1:0, E1= withGen?o.E:0, C1= withGen?o.Ecu:0, N1= withGen?(o.Ein||0):0, tab= withGen?o.tab:null;
   const Traw = withGen ? o.T : o.T0, endless = !isFinite(Traw);
   const T = (withGen && o.noStop) ? t1 : (endless ? Tcap : Traw);
-  const st=t=>{ let v,x,E,Ec;
+  const st=t=>{ let v,x,E,Ec,Ei=0;
     if(tab && t<t1 && tab.t.length>1){
       let lo=0, hi=tab.t.length-1; while(hi-lo>1){ const mid=(lo+hi)>>1; if(tab.t[mid]<=t) lo=mid; else hi=mid; }
       const w=(t-tab.t[lo])/Math.max(tab.t[hi]-tab.t[lo],1e-12);
-      v=tab.v[lo]+(tab.v[hi]-tab.v[lo])*w; x=tab.x[lo]+(tab.x[hi]-tab.x[lo])*w; E=tab.E[lo]+(tab.E[hi]-tab.E[lo])*w; Ec=tab.Ecu[lo]+(tab.Ecu[hi]-tab.Ecu[lo])*w;
-    } else if(a>0){ const tau=Math.min(Math.max(t-t1,0), v1/a); v=v1-a*tau; x=x1+v1*tau-0.5*a*tau*tau; E=E1; Ec=C1; }
-    else { const tau=Math.max(t-t1,0); v=(withGen && !o.noStop) ? 0 : v1; x=x1+v*tau; E=E1; Ec=C1; }
-    if(v<1e-9) v=0; return [v,E,Ec,0,0,0,x]; };
+      v=tab.v[lo]+(tab.v[hi]-tab.v[lo])*w; x=tab.x[lo]+(tab.x[hi]-tab.x[lo])*w; E=tab.E[lo]+(tab.E[hi]-tab.E[lo])*w; Ec=tab.Ecu[lo]+(tab.Ecu[hi]-tab.Ecu[lo])*w; Ei=tab.Ein[lo]+(tab.Ein[hi]-tab.Ein[lo])*w;
+    } else if(a>0){ const tau=Math.min(Math.max(t-t1,0), v1/a); v=v1-a*tau; x=x1+v1*tau-0.5*a*tau*tau; E=E1; Ec=C1; Ei=N1; }
+    else { const tau=Math.max(t-t1,0); v=(withGen && !o.noStop) ? 0 : v1; x=x1+v*tau; E=E1; Ec=C1; Ei=N1; }
+    if(v<1e-9) v=0; return [v,E,Ec,Ei,0,0,x]; };
   const rec=[]; const n=400; for(let i=0;i<=n;i++){ const t=T*i/n; rec.push({t,s:st(t)}); }
   return {rec, t:T, s:rec[n].s, stops:!endless};
 }
@@ -1928,17 +1937,19 @@ function runSimple(){
   const Tcap = isFinite(o.T) ? Math.max(o.T,1) : (isFinite(o.T0) ? o.T0 : 30);
   const iLab = srgMode ? '코일 전류 (실효값, 코일 1개)' : '발전 전류 (실효값)';
   smAnim.set({on:smRec(q,true,Tcap), off:smRec(q,false,Tcap), rw:SMF.rw, iLabel:iLab, eLabel:'누적 발전량 E',
-    forces:v=>{ const on=v>o.v1; return {Fgen:on?o.Fg(v):0, Ffr:o.Ffr, I:on?o.Irms(v):0, PL:on?o.Pb(v):0}; },
+    forces:v=>{ const on=v>o.v1; return {Fgen:on?o.Fg(v):0, Ffr:o.Ffr, I:on?o.Irms(v):0, PL:on?o.Pb(v):0, Pin:on?o.Pin(v):0}; },
     hudItems:({t,st,v,x,F})=>{
-      const E=st[1], tOn= q.em ? Math.min(t,o.t1) : 0, Eu= (q.em && o.Pf>0) ? o.Pf*tOn : 0;
+      /* 전력 변환기 방식: st[1]은 순 에너지이므로, 발전량 = 순 + 여자 에너지, 사용 = 여자 에너지로 나눠 보인다 */
+      const Ein= srgMode ? (st[3]||0) : 0, E= st[1]+Ein, tOn= q.em ? Math.min(t,o.t1) : 0, Eu= srgMode ? Ein : ((q.em && o.Pf>0) ? o.Pf*tOn : 0);
       const fr=o.Ffr*x, coil=st[2]||0, emOn= q.em && o.Pf>0 && t<o.t1;
       const eF=e=>{ const [a,b]=eTxt(e); return a+' '+b; }, pF=p=> p>=1000 ? fmt(p/1000)+' kW' : fmt(p)+' W';
       const it=[['시간 t',fmt(t)+' s'],['속력 v',fmt(v*3.6)+' km/h'],['이동 거리 x',fmt(x)+' m'],[iLab,fmt(F.I)+' A'],
-        ['발전기 제동력',fmt(F.Fgen)+' N'],['마찰 제동력',fmt(F.Ffr)+' N'],['발전 전력 P',pF(F.PL)]];
+        ['발전기 제동력',fmt(F.Fgen)+' N'],['마찰 제동력',fmt(F.Ffr)+' N'],[srgMode?'배터리로 가는 순 전력':'발전 전력 P',pF(F.PL)]];
       if(q.em) it.push(['전자석 소비 전력',pF(emOn?o.Pf:0)]);
+      if(srgMode) it.push(['여자 전력 (배터리 → 코일)',pF(F.Pin||0)]);
       it.push({sep:'누적 에너지 (제동 시작부터 지금까지)'},
         ['누적 발전량 E',eF(E),'e-gen'],
-        ['누적 사용 에너지 (전자석)', srgMode ? '0 J' : eF(Eu),'e-use'],
+        [srgMode ? '누적 사용 에너지 (코일 여자)' : '누적 사용 에너지 (전자석)', eF(Eu),'e-use'],
         ['순 생산 에너지 (발전 − 사용)',eF(E-Eu),'e-net'],
         ['손실된 에너지 (마찰 + 코일 열)',eF(fr+coil),'e-loss'],
         ['에너지 회수 효율 (순 생산 ÷ 손실)', (fr+coil)>0 ? pct((E-Eu)/(fr+coil)*100) : '–']);
