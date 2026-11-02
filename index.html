@@ -924,6 +924,11 @@ function lerpState(rec,t){
   const a=rec[lo],b=rec[hi],u=(t-a.t)/((b.t-a.t)||1);
   return a.s.map((v,i)=>v+(b.s[i]-v)*u);
 }
+function stateAt(r,t){
+  const last=r.rec[r.rec.length-1];
+  if(t<=last.t) return lerpState(r.rec,t);
+  const s=last.s.slice(); s[6]=last.s[6]+last.s[0]*(t-last.t); return s;
+}
 function hexRGB(h){ h=h.trim().replace('#',''); if(h.length===3) h=h.split('').map(c=>c+c).join(''); return [0,2,4].map(i=>parseInt(h.substr(i,2),16)); }
 function mixC(a,b,u){ const pa=hexRGB(a), pb=hexRGB(b); return 'rgb('+pa.map((v,i)=>Math.round(v+(pb[i]-v)*u)).join(',')+')'; }
 function colors(){ const cs=getComputedStyle(document.documentElement); const g=n=>cs.getPropertyValue(n).trim();
@@ -997,15 +1002,16 @@ function makeAnim(pre){
   const A={on:null,off:null,forces:null,rw:0.3,iLabel:'발전 전류 I',eLabel:'누적 발전량',
     t:0,T:0,playing:false,rate:1,last:null,phase:0,raf:0,maxPfr:1,maxI:1,maxF:1};
   const visible=()=>el('anim').offsetParent!==null;
-  function sync(){ el('play').textContent = A.playing ? '일시정지' : (A.T>0 && A.t>=A.T ? '다시 재생' : '재생'); }
+  const canPlay=()=>A.T>0||A.endless;
+  function sync(){ el('play').textContent = A.playing ? '일시정지' : (!A.endless && A.T>0 && A.t>=A.T ? '다시 재생' : '재생'); }
   function start(){ cancelAnimationFrame(A.raf); A.last=null; A.raf=requestAnimationFrame(tick); }
   function tick(ts){
     if(!A.playing) return;
     if(A.last!=null){ const dtr=Math.min(0.1,(ts-A.last)/1000);
-      const v=lerpState(A.on.rec,A.t)[0]; const I=v>0?A.forces(v).I:0;
+      const v=stateAt(A.on,A.t)[0]; const I=v>0?A.forces(v).I:0;
       A.phase += 90*dtr*(I/A.maxI); A.t+=dtr*A.rate; }
     A.last=ts;
-    if(A.t>=A.T){ A.t=A.T; A.playing=false; sync(); }
+    if(!A.endless && A.t>=A.T){ A.t=A.T; A.playing=false; sync(); }
     draw();
     if(A.playing) A.raf=requestAnimationFrame(tick);
   }
@@ -1015,7 +1021,7 @@ function makeAnim(pre){
     const dpr=window.devicePixelRatio||1;
     if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
     const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); const C=colors();
-    const st=lerpState(A.on.rec,A.t), so=lerpState(A.off.rec,A.t);
+    const st=stateAt(A.on,A.t), so=stateAt(A.off,A.t);
     const v=st[0]>1e-6?st[0]:0, x=st[6], xo=so[6];
     const F= v>0 ? A.forces(v) : {Fgen:0,Ffr:0,I:0,PL:0};
     const s=Math.max(16,Math.min(34,W/24)), gy=H-46, X0=W*0.42, half=2.2;
@@ -1032,8 +1038,9 @@ function makeAnim(pre){
     ctx.font='11px "Noto Sans KR",sans-serif';
     const flag=(xw,col,txt,dash,row)=>{ const px=X(xw); if(px<-60||px>W+60) return; ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.setLineDash(dash); ctx.beginPath(); ctx.moveTo(px,12+row*14); ctx.lineTo(px,gy+24); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle=col; const right=px>W-120; ctx.textAlign=right?'right':'left'; ctx.fillText(txt,px+(right?-4:4),22+row*14); };
     flag(0,C.ink3,'제동 시작',[3,3],0);
-    if(Math.abs(xso-xs)>0.3) flag(xso,C.ink3,`발전기 없음 정지 ${fmt(xso)} m`,[2,3],1);
-    flag(xs,C.s1,`정지 위치 ${fmt(xs)} m`,[5,3],0);
+    const onStops=A.on.stops!==false, offStops=A.off.stops!==false;
+    if(offStops && (!onStops || Math.abs(xso-xs)>0.3)) flag(xso,C.ink3,`발전기 없음 정지 ${fmt(xso)} m`,[2,3],1);
+    if(onStops) flag(xs,C.s1,`정지 위치 ${fmt(xs)} m`,[5,3],0);
     const rw=A.rw>0?A.rw:0.3;
     drawCar(ctx,X(xo-half),gy,s,rw,xo/rw,{ghost:true},C);
     drawCar(ctx,X(x-half),gy,s,rw,x/rw,{ghost:false,heat:A.maxPfr>0?F.Ffr*v/A.maxPfr:0,I:F.I,phase:A.phase,batt:A.on.s[1]>0?st[1]/A.on.s[1]:0},C);
@@ -1045,20 +1052,22 @@ function makeAnim(pre){
     const items=[['시간 t',fmt(A.t)+' s'],['속력 v',fmt(v*3.6)+' km/h'],['이동 거리 x',fmt(x)+' m'],[A.iLabel,fmt(F.I)+' A'],
       ['발전기 제동력',fmt(F.Fgen)+' N'],['마찰 제동력',fmt(F.Ffr)+' N'],['발전 전력 P',Pt],[A.eLabel,Et]];
     el('hud').innerHTML=items.map(i=>`<div>${i[0]}<b>${i[1]}</b></div>`).join('');
-    const sc=el('scrub'); if(document.activeElement!==sc) sc.value=String(Math.round(A.T>0?A.t/A.T*1000:0));
+    const sc=el('scrub'); if(document.activeElement!==sc) sc.value=String(A.T>0?Math.min(1000,Math.round(A.t/A.T*1000)):(A.endless?1000:0));
   }
   A.set=o=>{
-    Object.assign(A,o); A.T=Math.max(o.on.t,o.off.t); A.t=0; A.last=null; A.phase=0;
+    Object.assign(A,o); A.endless = o.on.stops===false;
+    /* 계속 굴러가는 경우: 재생 막대는 알짜힘이 0이 되는 순간(on.t)까지만 */
+    A.T = A.endless ? o.on.t : Math.max(o.on.t,o.off.t); A.t=0; A.last=null; A.phase=0;
     A.maxPfr=1e-9; A.maxI=1e-9; A.maxF=1e-9;
     o.on.rec.forEach(r=>{ const v=r.s[0]; if(v<=0) return; const F=A.forces(v);
       A.maxPfr=Math.max(A.maxPfr,F.Ffr*v); A.maxI=Math.max(A.maxI,F.I); A.maxF=Math.max(A.maxF,F.Ffr,F.Fgen); });
-    A.playing=!reduceMotion && visible() && A.T>0;
+    A.playing=!reduceMotion && visible() && canPlay();
     sync(); draw(); if(A.playing) start();
   };
   A.pause=()=>{ if(A.playing){ A.playing=false; sync(); } };
-  A.wake=()=>{ if(!A.on) return; draw(); if(!A.playing && A.t===0 && A.T>0 && !reduceMotion){ A.playing=true; sync(); start(); } };
-  el('play').addEventListener('click',()=>{ if(A.playing){ A.playing=false; } else { if(A.t>=A.T){ A.t=0; A.phase=0; } A.playing=A.T>0; if(A.playing) start(); } sync(); });
-  el('restart').addEventListener('click',()=>{ A.t=0; A.phase=0; A.playing=A.T>0; sync(); if(A.playing) start(); else draw(); });
+  A.wake=()=>{ if(!A.on) return; draw(); if(!A.playing && A.t===0 && canPlay() && !reduceMotion){ A.playing=true; sync(); start(); } };
+  el('play').addEventListener('click',()=>{ if(A.playing){ A.playing=false; } else { if(!A.endless && A.t>=A.T){ A.t=0; A.phase=0; } A.playing=canPlay(); if(A.playing) start(); } sync(); });
+  el('restart').addEventListener('click',()=>{ A.t=0; A.phase=0; A.playing=canPlay(); sync(); if(A.playing) start(); else draw(); });
   el('rate').addEventListener('change',e=>{ A.rate=parseFloat(e.target.value)||1; });
   el('scrub').addEventListener('input',e=>{ A.t=parseInt(e.target.value,10)/1000*A.T; if(!A.playing) sync(); draw(); });
   new ResizeObserver(()=>{ if(!A.playing) draw(); }).observe(el('anim'));
@@ -1122,7 +1131,8 @@ function smRec(q, withGen, Tcap){
   const o=smCalc(q), m=o.m, a=o.af, v0=o.v0, sh=o.share;
   const c= withGen?o.c:0, v1= withGen?o.v1:v0, t1= withGen?o.t1:0, x1= withGen?o.x1:0, E1= withGen?o.E:0;
   const useExp = withGen && c>0 && t1>0 && (!o.fric || c*v0/o.Ffr>=1e-4), u= c>0 ? o.Ffr/c : 0;
-  const Traw = withGen ? o.T : o.T0, T = isFinite(Traw) ? Traw : Tcap;
+  const Traw = withGen ? o.T : o.T0, endless = !isFinite(Traw);
+  const T = (withGen && o.noStop) ? t1 : (endless ? Tcap : Traw);
   const st=t=>{ let v,x,E;
     if(t<t1){
       if(useExp){ v=(v0+u)*Math.exp(-c*t/m)-u; x=(m/c)*(v0+u)*(-Math.expm1(-c*t/m))-u*t; const vp=Math.max(v,0); E=sh*(o.K0-0.5*m*vp*vp-o.Ffr*x); }
@@ -1131,7 +1141,7 @@ function smRec(q, withGen, Tcap){
     else { const tau=t-t1; v=(withGen && !o.noStop) ? 0 : v1; x=x1+v*tau; E=E1; }
     if(v<1e-9) v=0; return [v,E,0,0,0,0,x]; };
   const rec=[]; const n=400; for(let i=0;i<=n;i++){ const t=T*i/n; rec.push({t,s:st(t)}); }
-  return {rec, t:T, s:rec[n].s};
+  return {rec, t:T, s:rec[n].s, stops:!endless};
 }
 function eTxt(E){ const a=Math.abs(E); return a>=1000 ? [fmt(E/1000),'kJ'] : [fmt(E),'J']; }
 let smBase=null;
