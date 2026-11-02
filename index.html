@@ -210,12 +210,8 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
   <div class="layout">
     <div class="panel params">
       <h3>바꿔 볼 값</h3>
-      <div class="seg" role="group" aria-label="자석 종류">
-        <button type="button" id="mag-pm" aria-pressed="true">영구자석</button>
-        <button type="button" id="mag-em" aria-pressed="false">전자석</button>
-      </div>
       <div id="sm-params"></div>
-      <div id="sm-em" hidden>
+      <div id="sm-em">
         <h3>전자석 (계자 코일)</h3>
         <p class="note" id="sm-bnote" style="margin:0 0 4px"></p>
         <div id="sm-em-params"></div>
@@ -305,7 +301,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
   <div id="sv-build" hidden>
     <div class="card">
       <h2>계산 조건</h2>
-      <p>마찰 브레이크는 제동 시작부터 정지까지 시뮬레이션 탭에서 정한 힘 <i>F</i><sub>fr</sub>로 일정하게 작동하고, 발전기 제동력은 여기에 더해진다(예: 1500 kg에 3000 N이면 마찰만으로 2 m/s² 감속).</p><p><b>고정 조건:</b> 바퀴→코일 기어비 10, 타이어 반지름 0.3 m, 코일 저항 <i>r</i> = 1 Ω, 부하 저항 <i>R</i> = 1 Ω이다. 공기저항과 구름저항은 무시한다.</p><p><b>전자석을 고르면:</b> 전자석: 공극 길이 <i>g</i> = 2 mm, 철심 포화 자기장 1.5 T(가정)이며 철심의 자기저항과 누설 자속은 무시한다.</p>
+      <p>마찰 브레이크는 제동 시작부터 정지까지 시뮬레이션 탭에서 정한 힘 <i>F</i><sub>fr</sub>로 일정하게 작동하고, 발전기 제동력은 여기에 더해진다(예: 1500 kg에 3000 N이면 마찰만으로 2 m/s² 감속).</p><p><b>고정 조건:</b> 바퀴→코일 기어비 10, 타이어 반지름 0.3 m, 코일 저항 <i>r</i> = 1 Ω, 부하 저항 <i>R</i> = 1 Ω이다. 공기저항과 구름저항은 무시한다.</p><p><b>전자석:</b> 전자석: 공극 길이 <i>g</i> = 2 mm, 철심 포화 자기장 1.5 T(가정)이며 철심의 자기저항과 누설 자속은 무시한다.</p>
     </div>
 
     <div class="card">
@@ -316,14 +312,13 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <li><b>비교 기준 대비</b>: ‘지금 값을 비교 기준으로 저장’을 누른 때의 발전량에 대한 배수이다.</li>
         <li><b>정지 거리</b>: 발전기가 있을 때 멈추기까지 간 거리와, 마찰 브레이크만 있을 때보다 얼마나 짧아졌는지이다. 마찰이 0이면 발전기만으로 감속해 속력이 처음의 1%가 될 때까지의 거리로 계산한다. 마찰도 발전기 제동력도 없거나, 마찰이 0인데 전자석을 꺼서 알짜힘이 0이 되면 ‘서지 않음’으로 표시한다.</li>
         <li><b>발전기 제동력 (시작 순간)</b>: 제동을 시작하는 순간 발전기가 내는 제동력과 발전 전력이다.</li>
-        <li><b>순이득, 전자석 소비 전력, 손익분기 속력</b> (전자석일 때): 발전량에서 전자석 소비 에너지를 뺀 값, 전자석이 쓰는 전력과 켜져 있던 시간, 발전 전력과 전자석 소비 전력이 같아지는 속력이다.</li>
+        <li><b>순이득, 전자석 소비 전력, 손익분기 속력</b>: 발전량에서 전자석 소비 에너지를 뺀 값, 전자석이 쓰는 전력과 켜져 있던 시간, 발전 전력과 전자석 소비 전력이 같아지는 속력이다.</li>
       </ul>
       <h3 style="font-size:15px;margin:14px 0 4px">주행 애니메이션</h3>
       <p>아래 ‘누적 에너지’에서 사용 에너지는 전자석이 쓴 에너지이고, 순 생산은 발전량에서 이를 뺀 값이다. 손실된 에너지는 차의 운동에너지 중 전기로 저장되지 못하고 열이 된 몫으로, 마찰 브레이크 열과 발전 코일 저항 열을 더한 것이다. 위 조건으로 제동하는 모습을 실제 시간 비율로 재생하며, 값을 바꾸면 처음부터 다시 재생된다. 차 위 화살표는 마찰 브레이크(주황)와 발전기(파랑)의 제동력이다. 전선 위 점선이 빠를수록 발전 전류가 크고, 배터리 칸은 최종 발전량 대비 누적 비율이다. 회색 점선 차는 발전기 없이 마찰 브레이크만으로 서는 차이므로, 두 차의 정지 위치 차이가 발전기가 제동을 도운 정도이다.</p>
       <h3 style="font-size:15px;margin:14px 0 4px">그래프</h3>
       <ul class="plain">
-        <li><b>자기장 세기와 발전량</b> (영구자석): 다른 값은 그대로 두고 <i>B</i>만 바꾼 결과이다. <i>B</i>가 작을 때는 <i>B</i><sup>2</sup>에 비례해 늘어난다. <i>B</i>가 커지면 발전기가 제동을 많이 도와 차가 빨리 서기 때문에 늘어나는 폭이 줄고, 점선(이론 상한)을 넘지 못한다.</li>
-        <li><b>계자 전류와 에너지</b> (전자석): 다른 값은 그대로 두고 계자 전류 <i>I</i><sub>f</sub>만 바꾼 결과이다. 철심이 포화되기 전에는 발전량과 전자석 소비가 모두 <i>I</i><sub>f</sub><sup>2</sup>에 비례해 함께 커진다. 포화 뒤에는 자기장이 더 커지지 않아 발전량은 그대로인데 소비만 늘어 순이득이 줄어든다.</li>
+        <li><b>계자 전류와 에너지</b>: 다른 값은 그대로 두고 계자 전류 <i>I</i><sub>f</sub>만 바꾼 결과이다. 철심이 포화되기 전에는 발전량과 전자석 소비가 모두 <i>I</i><sub>f</sub><sup>2</sup>에 비례해 함께 커진다. 포화 뒤에는 자기장이 더 커지지 않아 발전량은 그대로인데 소비만 늘어 순이득이 줄어든다.</li>
         <li><b>제동 시작 속력과 발전량</b>: 다른 값은 그대로 두고 <i>v</i><sub>0</sub>만 바꾼 결과이다. 발전기 힘이 마찰보다 작은 범위에서는 발전량이 대략 <i>v</i><sub>0</sub><sup>3</sup>에 비례한다. 전력이 속력의 제곱에 비례하고, 제동 시간이 속력에 비례하기 때문이다.</li>
       </ul>
     </div>
@@ -424,7 +419,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
             <rect x="520" y="166" width="40" height="8" fill="var(--ink-3)"/>
             <ellipse cx="548" cy="170" rx="4" ry="12" fill="var(--rim)" stroke="var(--ink-2)"/>
             <ellipse cx="558" cy="170" rx="4" ry="12" fill="var(--rim)" stroke="var(--ink-2)"/>
-            <text x="478" y="58" text-anchor="middle">④ 발전기: 자석(B) 사이에서 코일(N, S, r) 회전</text>
+            <text x="478" y="58" text-anchor="middle">④ 발전기: 전자석(B) 사이에서 코일(N, S, r) 회전</text>
             <text x="453" y="140" class="small">코일</text>
             <!-- 전선 → ⑤ 정류기 -->
             <polyline points="548,158 548,128 610,128 610,150" fill="none" stroke="var(--ink-2)" stroke-width="2"/>
@@ -491,13 +486,13 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
           <tr><td>① 바퀴</td><td>차와 함께 구르며 회전한다. 바퀴 각속도는 <i>ω</i><sub>w</sub> = <i>v</i>/<i>r</i><sub>w</sub>이다.</td><td><i>r</i><sub>w</sub> = 0.3 m</td></tr>
           <tr><td>② 브레이크 디스크·캘리퍼</td><td>캘리퍼가 패드로 디스크를 눌러 마찰력으로 제동하고, 운동에너지를 열로 바꾼다.</td><td><i>F</i><sub>fr</sub> (조절)</td></tr>
           <tr><td>③ 증속 기어</td><td>코일을 바퀴보다 <i>G</i>배 빠르게 돌린다. 기전력이 회전 속도에 비례하므로 기전력이 <i>G</i>배 커진다.</td><td><i>G</i> = 10</td></tr>
-          <tr><td>④ 발전기</td><td>영구자석 사이에서 코일이 돌며 자기선속 변화로 기전력을 만든다. 유도전류가 받는 힘이 회전을 방해해 제동력이 된다. 코일의 전류는 슬립링과 브러시로 꺼낸다.</td><td><i>B</i>, <i>N</i>, <i>S</i> (조절), <i>r</i> = 1 Ω</td></tr>
+          <tr><td>④ 발전기</td><td>전자석(계자 코일)이 만든 자기장 속에서 코일이 돌며 자기선속 변화로 기전력을 만든다. 유도전류가 받는 힘이 회전을 방해해 제동력이 된다. 코일의 전류는 슬립링과 브러시로 꺼낸다.</td><td><i>I</i><sub>f</sub>, <i>N</i><sub>f</sub>, <i>R</i><sub>f</sub>, <i>N</i>, <i>S</i> (조절), <i>r</i> = 1 Ω</td></tr>
           <tr><td>⑤ 정류기</td><td>다이오드 브리지로 코일의 교류를 직류로 바꾼다. 모델에서는 다이오드 전압 강하를 무시한다.</td><td>–</td></tr>
           <tr><td>⑥ 부하·배터리</td><td>전기에너지를 받아 저장한다. 모델에서는 저항 <i>R</i> 하나로 나타낸다.</td><td><i>R</i> = 1 Ω</td></tr>
         </tbody>
       </table>
       </div>
-      <p class="note">실제 차량의 교류발전기는 영구자석 대신 전류로 세기를 조절하는 전자석(계자 코일)을 쓰는 경우가 많다. 이 시뮬레이터는 원리를 보이기 위해 영구자석 하나와 코일 하나로 단순화했다.</p>
+      <p class="note">실제 차량의 교류발전기도 전류로 세기를 조절하는 전자석(계자 코일)을 쓴다. 다만 실제 발전기는 보통 계자가 돌고 바깥의 3상 코일에서 전기가 생기는 구조인데, 이 시뮬레이터는 원리를 보이기 위해 고정된 전자석 속에서 코일 하나가 도는 구조로 단순화했다.</p>
     </div>
   </div>
 </section>
@@ -1130,7 +1125,7 @@ const SM_EM=[
 const SMF={G:10, rw:0.3, r:1, R:1};
 /* 전자석: 공극 g, 철심 포화 자기장(가정) */
 const MU0=4e-7*Math.PI, EMF={g:0.002, Bsat:1.5};
-let smMag='pm', smOptCache=null;
+let smMag='em', smOptCache=null;   /* 기본 모드는 전자석(계자 코일)만 사용 */
 function smRead(){ const q={}; [...SM,...SM_EM].forEach(d=>{ const x=parseFloat($('#sm-'+d.id).value); q[d.id]= isFinite(x)&&x>=0 ? x : d.v; }); return q; }
 /* 주어진 조건(계자 코일 감은 수 등)에서 순이득 E − E_f가 가장 큰 계자 전류 (0~5 A) */
 function smOptIf(q){
@@ -1192,22 +1187,12 @@ function smRec(q, withGen, Tcap){
 }
 function eTxt(E){ const a=Math.abs(E); return a>=1000 ? [fmt(E/1000),'kJ'] : [fmt(E),'J']; }
 let smBase=null;
-function smBaseText(b){ return `기준: ${b.em?'전자석, ':''}<i>B</i> ${fmt(b.B)} T, <i>v</i><sub>0</sub> ${fmt(b.v0)} km/h, <i>m</i> ${fmt(b.m)} kg, <i>F</i><sub>fr</sub> ${fmt(b.Ffr)} N, <i>N</i> ${fmt(b.N)}, <i>S</i> ${fmt(b.S)} cm²`; }
+function smBaseText(b){ return `기준: <i>I</i><sub>f</sub> ${fmt(b.If)} A, <i>B</i> ${fmt(b.B)} T, <i>v</i><sub>0</sub> ${fmt(b.v0)} km/h, <i>m</i> ${fmt(b.m)} kg, <i>F</i><sub>fr</sub> ${fmt(b.Ffr)} N, <i>N</i> ${fmt(b.N)}, <i>S</i> ${fmt(b.S)} cm²`; }
 function srowHTML(d){ return `<div class="srow" id="row-${d.id}">
       <label for="sm-${d.id}">${d.label}<i>${d.sym}</i></label>
       <span class="sval"><input id="sm-${d.id}" type="number" inputmode="decimal" min="${d.min}" step="${d.step}" value="${d.v}"><span class="u">${d.unit}</span></span>
       <input id="sm-${d.id}-r" type="range" min="${d.min}" max="${d.max}" step="${d.step}" value="${d.v}" aria-label="${d.label} 슬라이더">
     </div>`; }
-let smPmB=null;
-function setMag(k){
-  if(k===smMag){ return; }
-  if(k==='em') smPmB=$('#sm-B').value;
-  smMag=k; $('#mag-pm').setAttribute('aria-pressed',k==='pm'?'true':'false'); $('#mag-em').setAttribute('aria-pressed',k==='em'?'true':'false');
-  $('#sm-em').hidden = k!=='em';
-  $('#sm-B').readOnly = k==='em'; $('#sm-B-r').disabled = k==='em';
-  if(k==='pm' && smPmB!=null){ $('#sm-B').value=smPmB; $('#sm-B-r').value=smPmB; }
-  runSimple();
-}
 function buildSimple(){
   $('#sm-params').innerHTML=SM.map(srowHTML).join('');
   $('#sm-em-params').innerHTML=SM_EM.map(srowHTML).join('');
@@ -1223,8 +1208,9 @@ function buildSimple(){
     n.addEventListener('input',()=>{ const x=parseFloat(n.value); if(isFinite(x)) r.value=String(Math.min(d.max,Math.max(d.min,x))); go(); });
   });
   $('#sm-autooff').addEventListener('change',go);
-  $('#mag-pm').addEventListener('click',()=>setMag('pm'));
-  $('#mag-em').addEventListener('click',()=>setMag('em'));
+  /* 자기장은 계자 전류로 계산되므로 B는 표시만 한다 */
+  $('#sm-B').readOnly=true; $('#sm-B-r').style.display='none';
+  { const rb=$('#row-B'); $('#sm-em-params').after(rb); rb.querySelector('label').innerHTML='자기장 세기 (계산값)<i>B</i>'; }
   $('#sm-base').addEventListener('click',()=>{ const q=smParams(); smBase=Object.assign({},q,{E:smCalc(q).E}); runSimple(); });
   $('#sm-reset').addEventListener('click',()=>{ [...SM,...SM_EM].forEach(d=>{ $('#sm-'+d.id).value=d.v; $('#sm-'+d.id+'-r').value=d.v; }); $('#sm-autooff').checked=true; runSimple(); });
   const q=smParams(); smBase=Object.assign({},q,{E:smCalc(q).E});
@@ -1291,7 +1277,7 @@ function runSimple(){
       if(q.em) it.push(['전자석 소비 전력',pF(emOn?o.Pf:0)]);
       it.push({sep:'누적 에너지 (제동 시작부터 지금까지)'},
         ['누적 발전량 E',eF(E),'e-gen'],
-        ['누적 사용 에너지 (전자석)', q.em ? eF(Eu) : '0 J (영구자석)','e-use'],
+        ['누적 사용 에너지 (전자석)', eF(Eu),'e-use'],
         ['순 생산 에너지 (발전 − 사용)',eF(E-Eu),'e-net'],
         ['손실된 에너지 (마찰 + 코일 열)',eF(fr+coil),'e-loss']);
       return it; }});
