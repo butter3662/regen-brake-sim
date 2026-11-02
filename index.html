@@ -1025,7 +1025,7 @@ function init(){
     if(!ptrs.has(e.pointerId)) return;
     const prev=ptrs.get(e.pointerId), cur={x:e.clientX,y:e.clientY}; ptrs.set(e.pointerId,cur);
     /* 끄는 방향과 반대로 돌린다 (상하좌우 반전) */
-    if(ptrs.size===1){ cam.yaw-= (cur.x-prev.x)*0.008; cam.pitch=Math.max(-1.45,Math.min(1.45,cam.pitch-(cur.y-prev.y)*0.008)); }
+    if(ptrs.size===1){ cam.yaw-= (cur.x-prev.x)*0.008; cam.pitch=Math.max(-1.45,Math.min(1.45,cam.pitch+(cur.y-prev.y)*0.008)); }
     else if(ptrs.size===2 && pinch0){ const [a,b]=[...ptrs.values()]; const d=Math.hypot(a.x-b.x,a.y-b.y); cam.dist=Math.max(0.15,Math.min(3,pinch0.dist*pinch0.d/d)); }
   });
   const up=e=>{ ptrs.delete(e.pointerId); if(ptrs.size<2) pinch0=null; };
