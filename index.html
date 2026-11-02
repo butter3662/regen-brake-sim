@@ -278,7 +278,7 @@ table.parts td:last-child{white-space:nowrap;font-family:var(--f-mono);font-size
         <div class="eq"><i>E</i> = <i>R</i>/(<i>R</i>+<i>r</i>) × (½ <i>m v</i><sub>0</sub><sup>2</sup> − <i>F</i><sub>fr</sub> <i>x</i><sub>s</sub>)</div>
         <p>처음 운동에너지 중 마찰 브레이크가 열로 바꾼 몫(<i>F</i><sub>fr</sub><i>x</i><sub>s</sub>)을 뺀 나머지가 전기에너지가 된다. 그중 <i>R</i>/(<i>R</i>+<i>r</i>)만큼이 부하로 가고, 나머지는 코일 저항에서 열이 된다. 발전기 힘이 마찰보다 훨씬 작을 때는 다음과 같이 근사할 수 있다.</p>
         <div class="eq"><i>E</i> ≈ <i>R</i>/(<i>R</i>+<i>r</i>)<sup>2</sup> × (<i>N B S G</i> / <i>r</i><sub>w</sub>)<sup>2</sup> × <i>v</i><sub>0</sub><sup>3</sup> / (6<i>a</i><sub>f</sub>)</div>
-        <p>이 범위에서는 <i>B</i>, <i>N</i>, <i>S</i>를 각각 2배로 하면 <i>E</i>는 약 4배, <i>v</i><sub>0</sub>을 2배로 하면 약 8배가 된다. 마찰 브레이크 제동력 <i>F</i><sub>fr</sub>를 키우면 <i>a</i><sub>f</sub>가 커져 차가 빨리 서므로, 근사 범위에서 <i>E</i>는 <i>F</i><sub>fr</sub>에 반비례해 줄어든다. 브레이크를 세게 밟을수록 정지 거리는 짧아지지만 발전기가 일할 시간이 줄어드는 것이다. 질량 <i>m</i>은 근사 범위와 상관없이 <i>E</i>에 정확히 비례한다. 운동 방정식에서 <i>t</i> = <i>mτ</i>로 바꾸면 d<i>v</i>/d<i>τ</i> = −(<i>F</i><sub>fr</sub> + <i>cv</i>)가 되어 <i>m</i>이 사라지기 때문이다. 속력이 줄어드는 모양은 같고 걸리는 시간만 <i>m</i>배가 되므로, 정지 거리와 발전량(<i>E</i> = <i>R</i>/(<i>R</i>+<i>r</i>) × ∫<i>cv</i><sup>2</sup>d<i>t</i>)이 모두 <i>m</i>배가 된다. 발전기 힘이 커질수록 정지 거리가 줄어 근사식보다 작아지고, <i>E</i>는 상한 <i>R</i>/(<i>R</i>+<i>r</i>) × ½<i>mv</i><sub>0</sub><sup>2</sup>를 넘지 못한다.</p>
+        <p>이 범위에서는 <i>B</i>, <i>N</i>, <i>S</i>를 각각 2배로 하면 <i>E</i>는 약 4배, <i>v</i><sub>0</sub>을 2배로 하면 약 8배가 된다. 마찰 브레이크 제동력 <i>F</i><sub>fr</sub>를 키우면 <i>a</i><sub>f</sub>가 커져 차가 빨리 서므로, 근사 범위에서 <i>E</i>는 <i>F</i><sub>fr</sub>에 반비례해 줄어든다. 브레이크를 세게 밟을수록 정지 거리는 짧아지지만 발전기가 일할 시간이 줄어드는 것이다. <i>F</i><sub>fr</sub> = 0이면 발전기만으로 제동한다. 이때 속력은 <i>v</i> = <i>v</i><sub>0</sub><i>e</i><sup>−<i>ct</i>/<i>m</i></sup>로 줄어 이론상 완전히 서지 않으므로, 속력이 처음의 1%가 될 때를 정지로 보았다. 발전량은 상한 <i>R</i>/(<i>R</i>+<i>r</i>) × ½<i>mv</i><sub>0</sub><sup>2</sup>에 가까워진다. 질량 <i>m</i>은 근사 범위와 상관없이 <i>E</i>에 정확히 비례한다. 운동 방정식에서 <i>t</i> = <i>mτ</i>로 바꾸면 d<i>v</i>/d<i>τ</i> = −(<i>F</i><sub>fr</sub> + <i>cv</i>)가 되어 <i>m</i>이 사라지기 때문이다. 속력이 줄어드는 모양은 같고 걸리는 시간만 <i>m</i>배가 되므로, 정지 거리와 발전량(<i>E</i> = <i>R</i>/(<i>R</i>+<i>r</i>) × ∫<i>cv</i><sup>2</sup>d<i>t</i>)이 모두 <i>m</i>배가 된다. 발전기 힘이 커질수록 정지 거리가 줄어 근사식보다 작아지고, <i>E</i>는 상한 <i>R</i>/(<i>R</i>+<i>r</i>) × ½<i>mv</i><sub>0</sub><sup>2</sup>를 넘지 못한다.</p>
         <dl class="sym">
           <dt>E</dt><dd>제동하는 동안 부하 저항에 전달된 전기에너지 (J)</dd>
           <dt>B</dt><dd>코일이 지나는 자기장의 세기 (T)</dd>
@@ -1071,7 +1071,7 @@ const SM=[
   {id:'B', label:'자기장 세기', sym:'B', unit:'T', v:0.4, min:0, max:1.5, step:0.01},
   {id:'v0', label:'제동 시작 속력', sym:'v<sub>0</sub>', unit:'km/h', v:60, min:0, max:150, step:1},
   {id:'m', label:'차량 질량', sym:'m', unit:'kg', v:1500, min:100, max:3000, step:10},
-  {id:'Ffr', label:'마찰 브레이크 제동력', sym:'F<sub>fr</sub>', unit:'N', v:3000, min:100, max:15000, step:100},
+  {id:'Ffr', label:'마찰 브레이크 제동력', sym:'F<sub>fr</sub>', unit:'N', v:3000, min:0, max:15000, step:100},
   {id:'N', label:'코일 감은 수', sym:'N', unit:'회', v:200, min:1, max:1000, step:1},
   {id:'S', label:'코일 면적', sym:'S', unit:'cm²', v:40, min:1, max:200, step:1},
 ];
@@ -1095,32 +1095,40 @@ function smParams(){
 function emB(q,If){ return Math.min(MU0*q.Nf*If/EMF.g, EMF.Bsat); }
 /* 구간 1 (v0 → v1): m dv/dt = −(F_fr + c·v),  구간 2 (v1 → 0): 마찰만.  c = (NBSG/r_w)²/(2(R+r))
    영구자석은 v1 = 0. 전자석을 손익분기 속도에서 끄면 v1 = √(P_f /(R/(R+r)·c)). */
+/* 마찰이 0이면 v = v0·e^(−ct/m)로 줄어 완전히 서지 않으므로, 속력이 처음의 1%가 되면 정지로 본다 */
+const SM_STOP=0.01;
 function smCalc(q){
   const f=SMF, m=Math.max(q.m,1e-6), v0=q.v0/3.6, K=q.N*q.B*(q.S*1e-4)*f.G/f.rw, c=K*K/(2*(f.R+f.r)), share=f.R/(f.R+f.r);
-  const Ffr=Math.max(q.Ffr,1), af=Ffr/m, K0=0.5*m*v0*v0, T0=v0/af, x0=v0*v0/(2*af);
+  const Ffr=Math.max(q.Ffr,0), fric=Ffr>0, af=Ffr/m, K0=0.5*m*v0*v0;
+  const T0= fric ? v0/af : (v0>0?Infinity:0), x0= fric ? v0*v0/(2*af) : (v0>0?Infinity:0);
   const em=!!q.em, Pf=em?q.Pf:0;
   const vBE = em ? (share*c>0 ? Math.sqrt(Pf/(share*c)) : Infinity) : 0;
-  const v1 = Math.min(v0, (em && q.autoOff) ? vBE : 0);
+  const vStop = fric ? 0 : SM_STOP*v0;
+  const v1 = Math.max(vStop, Math.min(v0, (em && q.autoOff) ? vBE : 0));
   let t1, x1, El;
   if(v0<=0 || c<=0 || v1>=v0){ t1=0; x1=0; El=0; }
-  else if(c*v0/Ffr<1e-4){ t1=(v0-v1)/af; x1=(v0*v0-v1*v1)/(2*af); El=c*(v0*v0*v0-v1*v1*v1)/(3*af); }   /* 발전기 힘이 매우 작을 때의 근사 */
+  else if(fric && c*v0/Ffr<1e-4){ t1=(v0-v1)/af; x1=(v0*v0-v1*v1)/(2*af); El=c*(v0*v0*v0-v1*v1*v1)/(3*af); }   /* 발전기 힘이 매우 작을 때의 근사 */
   else { const u=Ffr/c; t1=(m/c)*Math.log((v0+u)/(v1+u)); x1=(m/c)*(v0-v1)-u*t1; El=0.5*m*(v0*v0-v1*v1)-Ffr*x1; }
   if(em && c<=0 && !q.autoOff) t1=T0;   /* 자기장이 0이어도 전자석은 켜져 있음 */
-  const t2=v1/af, x2=v1*v1/(2*af);
-  const E=share*El, Ef= em ? Pf*(c>0||!q.autoOff ? t1 : 0) : 0;
-  return {E, Ef, net:E-Ef, vBE, v1, t1, x1, T:t1+t2, xs:x1+x2, K0, c, K, v0, m, af, T0, x0, Ffr, share, Pf, em,
+  let t2, x2, noStop=false;
+  if(fric){ t2=v1/af; x2=v1*v1/(2*af); }
+  else if(v0<=0 || (c>0 && v1<=vStop*(1+1e-9))){ t2=0; x2=0; }
+  else { t2=Infinity; x2=Infinity; noStop=true; }   /* 마찰 0이고 발전기도 꺼져 있으면 계속 굴러감 */
+  const E=share*El, Ef= (em && Pf>0) ? Pf*(c>0||!q.autoOff ? t1 : 0) : 0;
+  return {E, Ef, net:E-Ef, vBE, v1, vStop, t1, x1, T:t1+t2, xs:x1+x2, noStop, fric, K0, c, K, v0, m, af, T0, x0, Ffr, share, Pf, em,
     upper:share*K0, P0: v0>v1 ? share*c*v0*v0 : 0, epsMax:K*v0, F0: v0>v1 ? c*v0 : 0};
 }
-function smRec(q, withGen){
+function smRec(q, withGen, Tcap){
   const o=smCalc(q), m=o.m, a=o.af, v0=o.v0, sh=o.share;
   const c= withGen?o.c:0, v1= withGen?o.v1:v0, t1= withGen?o.t1:0, x1= withGen?o.x1:0, E1= withGen?o.E:0;
-  const useExp = withGen && c>0 && t1>0 && c*v0/o.Ffr>=1e-4, u= c>0 ? o.Ffr/c : 0;
-  const T = withGen ? o.T : o.T0;
+  const useExp = withGen && c>0 && t1>0 && (!o.fric || c*v0/o.Ffr>=1e-4), u= c>0 ? o.Ffr/c : 0;
+  const Traw = withGen ? o.T : o.T0, T = isFinite(Traw) ? Traw : Tcap;
   const st=t=>{ let v,x,E;
     if(t<t1){
       if(useExp){ v=(v0+u)*Math.exp(-c*t/m)-u; x=(m/c)*(v0+u)*(-Math.expm1(-c*t/m))-u*t; const vp=Math.max(v,0); E=sh*(o.K0-0.5*m*vp*vp-o.Ffr*x); }
       else { v=v0-a*t; x=v0*t-0.5*a*t*t; const vp=Math.max(v,0); E= c>0 ? sh*c*(v0*v0*v0-vp*vp*vp)/(3*a) : 0; }
-    } else { const tau=Math.min(t-t1, v1/a); v=v1-a*tau; x=x1+v1*tau-0.5*a*tau*tau; E=E1; }
+    } else if(a>0){ const tau=Math.min(t-t1, v1/a); v=v1-a*tau; x=x1+v1*tau-0.5*a*tau*tau; E=E1; }
+    else { const tau=t-t1; v=(withGen && !o.noStop) ? 0 : v1; x=x1+v*tau; E=E1; }
     if(v<1e-9) v=0; return [v,E,0,0,0,0,x]; };
   const rec=[]; const n=400; for(let i=0;i<=n;i++){ const t=T*i/n; rec.push({t,s:st(t)}); }
   return {rec, t:T, s:rec[n].s};
@@ -1165,11 +1173,14 @@ function runSimple(){
     $('#sm-bnote').innerHTML=`<i>B</i> = <i>μ</i><sub>0</sub><i>N</i><sub>f</sub><i>I</i><sub>f</sub>/<i>g</i> = ${fmt(q.Braw)} T${q.Braw>EMF.Bsat?` → 철심 포화로 ${EMF.Bsat} T에서 멈춤`:''}`; }
   const [ev,eu]=eTxt(o.E), [pv,pu]= o.P0>=1000?[fmt(o.P0/1000),'kW']:[fmt(o.P0),'W'];
   const ratio = smBase && smBase.E>0 ? o.E/smBase.E : NaN;
-  const dx = o.x0>0 ? (o.x0-o.xs)/o.x0*100 : NaN;
+  const dx = (o.x0>0 && isFinite(o.x0)) ? (o.x0-o.xs)/o.x0*100 : NaN;
+  const stopTile = o.noStop ? tile('정지 거리', '서지 않음', '', (o.c<=0 || o.v1>=o.v0) ? '마찰 브레이크와 발전기 제동력이 모두 0이라 감속하지 않는다' : `마찰 브레이크가 0이고 ${fmt(o.v1*3.6)} km/h 아래에서 전자석을 꺼서 그 속력으로 계속 굴러간다`)
+    : !o.fric ? tile('정지 거리', fmt(o.xs), 'm', `마찰 0: 발전기만으로 감속해 속력이 처음의 1%가 될 때까지의 거리. 발전기가 없으면 서지 않는다`)
+    : tile('정지 거리', fmt(o.xs), 'm', `발전기 없을 때 ${fmt(o.x0)} m보다 ${pct(dx)} 짧음`);
   let tiles=
     tile('제동 중 발전량 <i>E</i>', ev, eu, `차의 운동에너지 ${fmt(o.K0/1000)} kJ의 ${pct(o.K0>0?o.E/o.K0*100:NaN)}`)+
     tile('비교 기준 대비 (발전량)', isFinite(ratio)?'×'+(ratio>=100?fmt(ratio):ratio.toFixed(2)):'–', '', smBase?smBaseText(smBase):'')+
-    tile('정지 거리', fmt(o.xs), 'm', `발전기 없을 때 ${fmt(o.x0)} m보다 ${pct(dx)} 짧음`)+
+    stopTile+
     tile('발전기 제동력 (시작 순간)', fmt(o.F0), 'N', `마찰 ${fmt(o.Ffr)} N과 함께 작동, 발전 전력 ${pv} ${pu}`);
   if(q.em){
     const [nv,nu]=eTxt(o.net), [fv,fu]=eTxt(o.Ef), ok=o.net>=0;
@@ -1203,7 +1214,8 @@ function runSimple(){
   s2.push({name:'이론 상한', color:'--s2', dash:'6 4', pts:upV});
   lineChart($('#sm-c2'),{xLabel:'제동 시작 속력 v₀ (km/h)', yLabel:'에너지 (kJ)', xName:'v₀', xUnit:'km/h', yUnit:'kJ',
     series:s2, marks:[{x:Math.min(q.v0,150), label:`현재 v₀ = ${fmt(q.v0)} km/h`}]});
-  smAnim.set({on:smRec(q,true), off:smRec(q,false), rw:SMF.rw, iLabel:'발전 전류 (실효값)', eLabel:'누적 발전량 E',
+  const Tcap = isFinite(o.T) ? Math.max(o.T,1) : (isFinite(o.T0) ? o.T0 : 30);
+  smAnim.set({on:smRec(q,true,Tcap), off:smRec(q,false,Tcap), rw:SMF.rw, iLabel:'발전 전류 (실효값)', eLabel:'누적 발전량 E',
     forces:v=>{ const on=v>o.v1; return {Fgen:on?o.c*v:0, Ffr:o.Ffr, I:on?o.K*v/Math.SQRT2/(SMF.R+SMF.r):0, PL:on?o.share*o.c*v*v:0}; }});
   howEnergy(o);
   if(smView==='how' && !coil.on) drawCoil();
@@ -1274,11 +1286,13 @@ function drawCoil(){
   $('#how-src').innerHTML=`시뮬레이션 탭의 값 <i>B</i> = ${fmt(q.B)} T, <i>N</i> = ${fmt(q.N)}, <i>S</i> = ${fmt(q.S)} cm²와 기어비 <i>G</i> = ${SMF.G}, 타이어 반지름 ${SMF.rw} m로 계산한다.`;
 }
 function howEnergy(o){
-  const fr=o.Ffr*o.xs, el=Math.max(0,o.K0-fr);
-  breakdown($('#how-brk'),[
+  const fr= o.fric ? o.Ffr*o.xs : 0, el= o.share>0 ? o.E/o.share : 0, left=Math.max(0,o.K0-fr-el);
+  const rows=[
     {n:'마찰 브레이크 열', v:fr/1000, c:'--s2'},
-    {n:'부하로 간 전기에너지 (발전량 E)', v:o.share*el/1000, c:'--s1'},
-    {n:'코일 저항 열', v:(1-o.share)*el/1000, c:'--s3'}], o.K0/1000, 'kJ');
+    {n:'부하로 간 전기에너지 (발전량 E)', v:o.E/1000, c:'--s1'},
+    {n:'코일 저항 열', v:(el-o.E)/1000, c:'--s3'}];
+  if(left>o.K0*1e-3) rows.push({n:'남은 운동에너지 (아직 굴러가는 몫)', v:left/1000, c:'--s4'});
+  breakdown($('#how-brk'), rows, o.K0/1000, 'kJ');
 }
 let smView='sim';
 function setSmView(v){
