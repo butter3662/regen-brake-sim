@@ -142,8 +142,8 @@ dl.sym dd{margin:0;color:var(--ink-2)}
 .subtabs{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 16px;border-bottom:1px solid var(--line)}
 .subtabs button{border:0;border-bottom:2px solid transparent;border-radius:0;background:none;padding:9px 14px;font-family:var(--f-display);font-weight:600;font-size:14px;color:var(--ink-2);margin-bottom:-1px}
 .subtabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
-#sv-how,#sv-build{display:flex;flex-direction:column;gap:16px}
-#sv-how[hidden],#sv-build[hidden],#sv-sim[hidden],#sv-m3[hidden]{display:none}
+#sv-how,#sv-build,#sv-fx{display:flex;flex-direction:column;gap:16px}
+#sv-how[hidden],#sv-build[hidden],#sv-fx[hidden],#sv-sim[hidden],#sv-m3[hidden]{display:none}
 .flow{display:flex;flex-direction:column;gap:10px;margin-top:6px}
 .frow{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .chip{display:inline-block;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);font-size:13.5px}
@@ -260,6 +260,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
     <button type="button" role="tab" id="svt-how" aria-selected="false">작동 원리</button>
     <button type="button" role="tab" id="svt-m3" aria-selected="false">3D 모형</button>
     <button type="button" role="tab" id="svt-build" aria-selected="false">세부 내용</button>
+    <button type="button" role="tab" id="svt-fx" aria-selected="false">예상 효과</button>
   </div>
   <div id="sv-sim">
   <div class="layout">
@@ -648,6 +649,61 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
       </table>
       </div>
       <p class="note">실제 차량의 교류발전기도 전류로 세기를 조절하는 전자석(계자 코일)을 쓰지만, 계자가 돌기 때문에 브러시와 슬립링으로 전류를 넣는다. 이 설계는 자석과 코일을 모두 고정하고 쇳조각만 돌리는 유도자형(가변 릴럭턴스) 교류발전기 구조로, 바퀴처럼 움직이는 부분에 전선을 연결하는 문제를 피하기 위해 골랐다.</p>
+    </div>
+  </div>
+
+  <div id="sv-fx" hidden>
+    <div class="card">
+      <h2>예상 효과: 시내 주행 연비</h2>
+      <p>기본 세팅(전력 변환기 방식)을 그대로 단 차가 시내에서 0 → 60 km/h → 0을 3분 주기로 하루 10회 반복한다고 가정하면, 연비는 약 <b>0.5~0.7%</b> 좋아진다. 쏘나타 디 엣지 2.0 가솔린의 복합연비 12.6 km/L가 약 <b>12.67~12.69 km/L</b>가 되는 정도이고, 하루 약 12~15 mL, 1년이면 약 4.5~5.6 L의 휘발유를 아낀다.</p>
+      <div class="tblwrap">
+      <table class="parts basis">
+        <thead><tr><th>항목</th><th>전력 변환기 방식</th><th>다이오드 방식</th></tr></thead>
+        <tbody>
+          <tr><td>제동 1회 순 생산 <i>E</i><sub>1</sub> (60 km/h → 0)</td><td>5.26 kJ (회수 효율 2.6%)</td><td>2.52 kJ (회수 효율 1.2%)</td></tr>
+          <tr><td>하루 순 생산 <i>E</i><sub>d</sub> (10회)</td><td>52.6 kJ</td><td>25.2 kJ</td></tr>
+          <tr><td>하루 절약 연료 Δ<i>V</i></td><td>12.2~15.2 mL</td><td>5.8~7.3 mL</td></tr>
+          <tr><td>연비 개선율 Δ<i>V</i>/<i>V</i><sub>0</sub></td><td>0.54~0.67%</td><td>0.26~0.32%</td></tr>
+          <tr><td>연비 (기준 12.6 km/L)</td><td>12.67~12.69 km/L</td><td>12.63~12.64 km/L</td></tr>
+          <tr><td>1년(365일) 절약 연료</td><td>4.5~5.6 L</td><td>2.1~2.7 L</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <p class="note">범위의 앞쪽은 엔진 열효율 25%, 뒤쪽은 20%로 가정한 값이다. 제동 1회 값은 시뮬레이션 탭에서 다른 값은 모두 기본값으로 두고 <i>v</i><sub>0</sub>만 60 km/h로 바꿔 얻었다. 기본값인 50 km/h에서의 회수 효율은 2.4%이다.</p>
+    </div>
+
+    <div class="card">
+      <h2>계산 과정</h2>
+      <h3 style="font-size:15px;margin:6px 0 4px">1. 주행 주기 (가정)</h3>
+      <p>한 주기(180 s)를 0 → 60 km/h 가속(1.5 m/s²로 가정, 약 11 s, 93 m), 60 km/h 정속(약 164 s, 2.73 km), 60 km/h → 0 제동(시뮬레이션 결과 4.9 s, 40 m)으로 나누었다. 한 주기에 약 2.87 km, 하루 10회면 <i>d</i> ≈ 28.7 km를 달리고, 제동은 하루 10회이다.</p>
+      <h3 style="font-size:15px;margin:14px 0 4px">2. 하루 기준 연료량</h3>
+      <div class="eq"><i>V</i><sub>0</sub> = <i>d</i> / <i>FE</i> = 28.7 km / 12.6 km/L ≈ 2.28 L</div>
+      <h3 style="font-size:15px;margin:14px 0 4px">3. 아끼는 연료</h3>
+      <p>회수한 전기는 원래 엔진이 벨트로 교류발전기(알터네이터)를 돌려 만들어야 했던 전기를 대신한다. 따라서 같은 전기를 엔진으로 만들 때 드는 연료만큼을 아낀다.</p>
+      <div class="eq">Δ<i>V</i> = <i>E</i><sub>d</sub> / (<i>η</i><sub>e</sub> <i>η</i><sub>b</sub> <i>η</i><sub>a</sub> <i>H</i>) = 52.6 kJ / (0.108~0.135 × 32 MJ/L) ≈ 12~15 mL</div>
+      <dl class="sym">
+        <dt>d</dt><dd>하루 주행 거리 (km)</dd>
+        <dt>FE</dt><dd>기준 연비 12.6 km/L (쏘나타 디 엣지 2.0 가솔린 복합연비, 자동 6단·17인치)</dd>
+        <dt>V<sub>0</sub>, ΔV</dt><dd>하루 기준 연료량, 하루 절약 연료량 (L)</dd>
+        <dt>E<sub>1</sub>, E<sub>d</sub></dt><dd>제동 1회 순 생산 에너지, 하루 순 생산 에너지 (J)</dd>
+        <dt>η<sub>e</sub></dt><dd>시내 주행 중 엔진 평균 열효율. 최고 30%대 엔진도 실제 주행 평균은 20~25% 정도이고, 도심 정체 실측은 8~26%였다. 0.20~0.25로 가정했다.</dd>
+        <dt>η<sub>b</sub>, η<sub>a</sub></dt><dd>벨트 전달 효율 0.98, 교류발전기 효율 0.55</dd>
+        <dt>H</dt><dd>휘발유 저위발열량 32 MJ/L</dd>
+      </dl>
+      <h3 style="font-size:15px;margin:14px 0 4px">4. 개선율</h3>
+      <div class="eq">Δ<i>V</i> / <i>V</i><sub>0</sub> ≈ 0.54~0.67%, &nbsp;&nbsp; <i>FE</i>′ = <i>d</i> / (<i>V</i><sub>0</sub> − Δ<i>V</i>) ≈ 12.67~12.69 km/L</div>
+      <p>하루 회수량 52.6 kJ는 60 km/h에서 한 번 설 때 버리는 운동에너지(½ × 1500 kg × (16.7 m/s)² ≈ 208 kJ, 하루 약 2.1 MJ)의 약 2.5%이다. 그래서 연비 개선도 1%를 넘지 못한다.</p>
+    </div>
+
+    <div class="card">
+      <h2>한계와 주의점</h2>
+      <ul class="plain">
+        <li><b>실제로는 더 낮을 가능성이 크다.</b> 장치 무게(쇳조각 원판, 철심 8개, 코일)가 늘어 드는 연료, 전력 변환기의 스위칭 손실, 48 V → 12 V 변환 손실(약 5%)을 계산에 넣지 않았다. 틈 가장자리로 새는 자속을 무시한 것도 결과를 크게 만든다.</li>
+        <li><b>회수한 전기는 모두 쓸 수 있다고 보았다.</b> 하루 52.6 kJ를 주행 30분에 나누면 평균 약 29 W로, 차량이 평소 쓰는 전기 부하보다 작다.</li>
+        <li><b>기준 연비에 따라 달라진다.</b> 실제 도심 연비가 복합연비보다 낮으면 기준 연료량이 늘어 개선율(%)은 더 작아진다.</li>
+        <li><b>주행 주기 가정에 따라 달라진다.</b> 정속 164 s 대신 신호 대기(공회전)를 넣으면 거리는 줄지만 공회전 연료가 들어, 개선율은 대체로 0.5% 안팎에 머문다.</li>
+      </ul>
+      <p class="note">출처: 쏘나타 디 엣지 복합연비(현대자동차 카탈로그), 엔진 평균 열효율(What Is Engine Efficiency and How Is It Calculated?, Science Insights), 도심 정체 구간 엔진 열효율 실측(Factors affecting the efficiency of hybrid engines, White Rose eprints), 벨트·교류발전기 효율(Delco Remy 교류발전기 효율 자료), 휘발유 발열량(NCSU, Engineering ToolBox).</p>
     </div>
   </div>
 </section>
@@ -1961,12 +2017,12 @@ function howEnergy(o){
 let smView='sim';
 function setSmView(v){
   smView=v;
-  ['sim','how','m3','build'].forEach(k=>{ $('#sv-'+k).hidden=k!==v; $('#svt-'+k).setAttribute('aria-selected',k===v?'true':'false'); });
+  ['sim','how','m3','build','fx'].forEach(k=>{ $('#sv-'+k).hidden=k!==v; $('#svt-'+k).setAttribute('aria-selected',k===v?'true':'false'); });
   if(v==='sim') smAnim.wake(); else smAnim.pause();
   if(v==='how') coil.start(); else coil.stop();
   if(v==='m3') M3D.start(); else M3D.stop();
 }
-['sim','how','m3','build'].forEach(k=>$('#svt-'+k).addEventListener('click',()=>setSmView(k)));
+['sim','how','m3','build','fx'].forEach(k=>$('#svt-'+k).addEventListener('click',()=>setSmView(k)));
 (function(){ const n=$('#how-v'), r=$('#how-v-r');
   r.addEventListener('input',()=>{ n.value=r.value; if(!coil.on) drawCoil(); });
   n.addEventListener('input',()=>{ const x=parseFloat(n.value); if(isFinite(x)) r.value=String(Math.min(150,Math.max(0,x))); if(!coil.on) drawCoil(); });
