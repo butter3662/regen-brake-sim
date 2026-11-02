@@ -57,7 +57,7 @@ nav.tabs a{padding:9px 14px;color:var(--ink-2);text-decoration:none;font-family:
 nav.tabs a[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
 nav.tabs a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .layout{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start}
-@media (max-width:860px){.layout{grid-template-columns:1fr}}
+@media (max-width:860px){.layout{grid-template-columns:1fr}.layout>.results{order:-1}}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
 .params h3{font-family:var(--f-display);font-size:13px;font-weight:600;color:var(--ink-3);margin:14px 0 6px;letter-spacing:.02em}
 .params h3:first-child{margin-top:0}
@@ -246,7 +246,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
   <div id="sv-sim">
   <div class="layout">
     <div class="panel params">
-      <h3>바꿔 볼 값</h3>
+      <h3>변수</h3>
       <div id="sm-params"></div>
       <div id="sm-em">
         <h3>전자석 (계자 코일)</h3>
@@ -255,12 +255,10 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <label class="chk" for="sm-autooff"><input type="checkbox" id="sm-autooff" checked> 손익분기 속력 아래에서 전자석 끄기</label>
       </div>
       <div class="btnrow">
-        <button type="button" id="sm-base">지금 값을 비교 기준으로 저장</button>
         <button type="button" id="sm-reset">기본값으로 되돌리기</button>
       </div>
     </div>
     <div class="results">
-      <div class="tiles" id="sm-tiles"></div>
       <div class="card anim">
         <h2>주행 애니메이션</h2>
         <canvas id="sm-anim" role="img" aria-label="감속하는 자동차 애니메이션"></canvas>
@@ -394,7 +392,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
       <h2>계산 조건</h2>
       <p>마찰 브레이크는 제동 시작부터 정지까지 시뮬레이션 탭에서 정한 힘 <i>F</i><sub>fr</sub>로 일정하게 작동하고, 발전기 제동력은 여기에 더해진다(예: 1500 kg에 5100 N이면 마찰만으로 3.4 m/s² 감속). 공기저항과 구름저항은 무시한다.</p>
       <p><b>발전기 구조:</b> 3D 모형 탭의 쇳조각 원판 구조이다. 바퀴 허브에 붙은 비자성 원판에 쇳조각 <i>Z</i> = 12개(폭 39 mm, 두께 16 mm, 중심 반지름 0.15 m)가 있고, 차체에 고정한 U자 철심 <i>n</i>개(기본 4개: 0°, 45°, 180°, 225°)의 두 다리 사이를 지나간다. 철심은 A·B 짝으로 늘리고, B는 A보다 쇳조각 간격의 1.5칸 뒤에 둔다. 다리 끝 단면적은 <i>A</i> = 39 mm × <i>h</i>(<i>h</i>: 다리 끝의 반지름 방향 길이, 기본 50 mm)이다. 다리와 등의 두께도 <i>h</i>로 두어 단면적이 다리 끝 면적과 같게 했다. 그래서 틈이 포화 자기장에 이를 때 철심도 함께 포화되고, 철심이 먼저 포화되지 않는다. 쇳조각이 틈을 메우면 공기 틈의 합이 <i>g</i> = 2 mm(1 mm × 2), 비우면 <i>g</i> + <i>t</i> = 18 mm(<i>t</i>: 쇳조각 두께)이다. 기어는 없고, 타이어 반지름은 0.33 m이다.</p>
-      <p><b>코일:</b> 계자 코일과 발전 코일은 철심마다 하나씩 있고, 종류별로 모두 직렬로 잇는다. 코일 한 바퀴 길이는 다리 둘레에 감은 두께 몫을 더해 <i>l</i> = 2(39 mm + <i>h</i>) + 50 mm로 잡았다(기본 0.228 m). 발전 코일은 철심 하나당 구리 단면적 합 250 mm²(감는 공간 약 500 mm², 채움률 0.5 가정)를 꽉 채워 감는다고 보았다. 그래서 감은 수를 늘리면 선이 가늘어져 저항이 감은 수의 제곱에 비례해 커진다. 계자 코일 저항 <i>R</i><sub>f</sub>는 선 굵기에 따라 달라지므로 철심 하나의 값을 직접 조절하고, 전체 저항은 <i>n</i><i>R</i><sub>f</sub>이다.</p>
+      <p><b>코일:</b> 계자 코일과 발전 코일은 철심마다 하나씩 있고, 종류별로 모두 직렬로 잇는다. 코일 한 바퀴 길이는 다리 둘레에 감은 두께 몫을 더해 <i>l</i> = 2(39 mm + <i>h</i>) + 50 mm로 잡았다(기본 0.228 m). 발전 코일은 철심 하나당 구리 단면적 합 250 mm²(감는 공간 약 500 mm², 채움률 0.5 가정)를 꽉 채워 감는다고 보았다. 그래서 감은 수를 늘리면 선이 가늘어져 저항이 감은 수의 제곱에 비례해 커진다. 계자 코일도 같은 크기의 공간(구리 단면적 합 250 mm²)을 꽉 채워 감는다고 보아 철심 하나의 저항을 <i>R</i><sub>f</sub> = <i>ρl N</i><sub>f</sub><sup>2</sup>/<i>A</i><sub>cu</sub>로 계산하고, 전체 저항은 <i>nR</i><sub>f</sub>이다. 계자 전원은 48 V 배터리로 가정했다.</p>
       <p><b>부하:</b> 정류기 뒤의 48 V 배터리 충전 회로를 저항 <i>R</i> = 0.77 Ω 하나로 근사했다(가정). <b>철심:</b> 포화 자기장 1.5 T(가정)이고, 철의 자기 저항, 틈 가장자리로 새는 자속, 철손(와전류·히스테리시스)은 무시한다.</p>
     </div>
 
@@ -410,7 +408,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
           <tr><td>마찰 브레이크 제동력 <i>F</i><sub>fr</sub></td><td>5100 N</td><td>도로 설계 기준(AASHTO)이 대부분의 운전자에게 편안한 감속도로 쓰는 3.4 m/s²에 질량 1500 kg을 곱한 값이다.</td></tr>
           <tr><td>타이어 반지름 <i>r</i><sub>w</sub> (고정)</td><td>0.33 m</td><td>같은 차의 타이어 규격 235/45R18에서 계산했다. 휠 지름 18인치(457 mm) + 옆면 높이 2 × 235 mm × 0.45 = 약 669 mm이므로 반지름은 약 0.33 m이다.</td></tr>
           <tr><td>계자 전류 <i>I</i><sub>f</sub></td><td>3 A</td><td>12 V 차량용 교류발전기의 계자 전류는 정비 자료 기준 최대 2.38~2.75 A이고, 다른 자료에서는 약 4 A이다. 이 설계에서도 같은 크기로 두었다.</td></tr>
-          <tr><td>계자 코일 저항 <i>R</i><sub>f</sub> (철심 1개)</td><td>4 Ω</td><td>계산값이다. 500회 × 한 바퀴 0.228 m이면 선 길이는 약 114 m이다. 3 A에서 전류 밀도가 6 A/mm²가 되도록 단면적 0.5 mm²인 구리선(비저항 1.72 × 10<sup>−8</sup> Ω·m)을 쓴다고 보면 <i>R</i><sub>f</sub> = <i>ρl</i>/<i>S</i> ≈ 3.9 Ω이다. 철심 4개를 직렬로 이으면 16 Ω, 3 A에서 소비 전력은 3<sup>2</sup> × 16 = 144 W이다.</td></tr>
+          <tr><td>계자 코일 저항 <i>R</i><sub>f</sub> (철심 1개)</td><td>3.92 Ω (계산값)</td><td>감은 수로 자동 계산한다. 구리 단면적 합 250 mm²에 500회를 꽉 채우면 선 하나의 단면적은 0.5 mm²이고, 한 바퀴 0.228 m × 500회 = 114 m이므로 <i>R</i><sub>f</sub> = <i>ρl</i>/<i>S</i> = 1.72 × 10<sup>−8</sup> × 114 / (0.5 × 10<sup>−6</sup>) ≈ 3.92 Ω이다. 3 A에서 선의 전류 밀도는 6 A/mm²이다. 철심 4개를 직렬로 이으면 약 15.7 Ω, 소비 전력은 약 141 W, 필요한 전원 전압은 약 47 V이다.</td></tr>
           <tr><td>철심 수 <i>n</i>, 다리 끝 길이 <i>h</i></td><td>4개, 50 mm</td><td>3D 모형 탭의 설계값이다. 쇳조각 간격(30°)에 맞춰 A·B 짝을 늘릴 수 있고, 다리 끝 길이를 늘리면 다리와 등도 그만큼 두꺼워진다.</td></tr>
           <tr><td>계자 코일 감은 수 <i>N</i><sub>f</sub> (철심 1개)</td><td>500회</td><td>가정값이다. 계자 전류 3 A, 틈의 합 2 mm에서 자기장이 약 0.94 T가 되어 철심 포화(1.5 T 가정) 아래에 머물도록 정했다.</td></tr>
           <tr><td>발전 코일 감은 수 <i>N</i><sub>a</sub> (철심 1개)</td><td>27회</td><td>다른 값이 모두 기본값일 때 순이득(발전량 − 전자석 소비)이 가장 큰 감은 수를 계산해 정했다. 감은 수가 적으면 기전력이 작고, 많으면 인덕턴스(감은 수의 제곱에 비례)가 커져 전류가 줄어든다. 22~32회에서는 순이득 차이가 15% 이내이다.</td></tr>
@@ -423,16 +421,8 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
 
     <div class="card">
       <h2>시뮬레이션 화면 읽는 법</h2>
-      <h3 style="font-size:15px;margin:6px 0 4px">결과 칸</h3>
-      <ul class="plain">
-        <li><b>제동 중 발전량 <i>E</i></b>: 제동하는 동안 부하(배터리)에 전달된 전기에너지와, 그것이 처음 운동에너지의 몇 %인지이다.</li>
-        <li><b>비교 기준 대비</b>: ‘지금 값을 비교 기준으로 저장’을 누른 때의 발전량에 대한 배수이다.</li>
-        <li><b>정지 거리</b>: 발전기가 있을 때 멈추기까지 간 거리와, 마찰 브레이크만 있을 때보다 얼마나 짧아졌는지이다. 마찰이 0이면 발전기만으로 감속해 속력이 처음의 1%가 될 때까지의 거리로 계산한다. 마찰도 발전기 제동력도 없거나, 마찰이 0인데 전자석을 꺼서 알짜힘이 0이 되면 ‘서지 않음’으로 표시한다.</li>
-        <li><b>발전기 제동력 (시작 순간)</b>: 제동을 시작하는 순간 발전기가 내는 제동력과 발전 전력이다.</li>
-        <li><b>순이득, 전자석 소비 전력, 손익분기 속력</b>: 발전량에서 전자석 소비 에너지를 뺀 값, 전자석이 쓰는 전력과 켜져 있던 시간, 발전 전력과 전자석 소비 전력이 같아지는 속력이다.</li>
-      </ul>
-      <h3 style="font-size:15px;margin:14px 0 4px">주행 애니메이션</h3>
-      <p>아래 ‘누적 에너지’에서 사용 에너지는 전자석이 쓴 에너지이고, 순 생산은 발전량에서 이를 뺀 값이다. 손실된 에너지는 차의 운동에너지 중 전기로 저장되지 못하고 열이 된 몫으로, 마찰 브레이크 열과 발전 코일 저항 열을 더한 것이다. 위 조건으로 제동하는 모습을 실제 시간 비율로 재생하며, 값을 바꾸면 처음부터 다시 재생된다. 차 위 화살표는 마찰 브레이크(주황)와 발전기(파랑)의 제동력이다. 전선 위 점선이 빠를수록 발전 전류가 크고, 배터리 칸은 최종 발전량 대비 누적 비율이다. 회색 점선 차는 발전기 없이 마찰 브레이크만으로 서는 차이므로, 두 차의 정지 위치 차이가 발전기가 제동을 도운 정도이다.</p>
+      <h3 style="font-size:15px;margin:6px 0 4px">주행 애니메이션</h3>
+      <p>아래 ‘누적 에너지’에서 사용 에너지는 전자석이 쓴 에너지이고, 순 생산은 발전량에서 이를 뺀 값이다. 에너지 회수 효율은 그 시각까지의 순 생산(발전량 − 전자석 소비)을 손실된 에너지(마찰 브레이크 열 + 발전 코일 저항 열)로 나눈 값으로, 열로 버린 에너지에 비해 쓸 수 있는 전기를 얼마나 얻었는지 나타낸다. 분모가 손실이라 100%를 넘을 수 있다. 재생 막대를 끝으로 옮기면 제동 전체의 값과 정지 거리를 볼 수 있다. 변수 칸의 전자석 안내 줄에는 계자 전원 전압과 손익분기 속력을 표시한다. 손실된 에너지는 차의 운동에너지 중 전기로 저장되지 못하고 열이 된 몫으로, 마찰 브레이크 열과 발전 코일 저항 열을 더한 것이다. 위 조건으로 제동하는 모습을 실제 시간 비율로 재생하며, 값을 바꾸면 처음부터 다시 재생된다. 차 위 화살표는 마찰 브레이크(주황)와 발전기(파랑)의 제동력이다. 전선 위 점선이 빠를수록 발전 전류가 크고, 배터리 칸은 최종 발전량 대비 누적 비율이다. 회색 점선 차는 발전기 없이 마찰 브레이크만으로 서는 차이므로, 두 차의 정지 위치 차이가 발전기가 제동을 도운 정도이다.</p>
       <h3 style="font-size:15px;margin:14px 0 4px">그래프</h3>
       <ul class="plain">
         <li><b>계자 전류와 에너지</b>: 다른 값은 그대로 두고 계자 전류 <i>I</i><sub>f</sub>만 바꾼 결과이다. 철심이 포화되기 전에는 발전량과 전자석 소비가 모두 <i>I</i><sub>f</sub><sup>2</sup>에 비례해 함께 커진다. 포화 뒤에는 자기장이 더 커지지 않아 발전량은 그대로인데 소비만 늘어 순이득이 줄어든다.</li>
@@ -485,7 +475,8 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <p>철심 하나와 계자 코일, 공기 틈으로 된 자기 회로에 앙페르 법칙을 적용한 결과이다. 철심의 투자율이 매우 커서 자기 회로의 저항은 대부분 공기 틈에 있다고 보았다. <i>B</i>는 쇳조각이 틈을 메웠을 때 틈의 자기장이다. 철심이 포화되면 전류를 늘려도 <i>B</i>가 거의 커지지 않으므로, 이 시뮬레이터에서는 1.5 T에서 멈추게 했다(가정값).</p>
         <h3 style="font-size:15px;margin:14px 0 4px">2. 전자석이 쓰는 에너지</h3>
         <div class="eq"><i>P</i><sub>f</sub> = <i>n I</i><sub>f</sub><sup>2</sup> <i>R</i><sub>f</sub>, &nbsp;&nbsp; <i>E</i><sub>f</sub> = <i>P</i><sub>f</sub> <i>t</i><sub>on</sub></div>
-        <p>계자 코일 <i>n</i>개는 직렬이므로 같은 전류 <i>I</i><sub>f</sub>가 흐르고, 전체 저항은 <i>n R</i><sub>f</sub>이다. 일정한 자기장을 유지하는 데에는 일이 들지 않는다. 전자석의 소비는 전류가 계자 코일 저항을 지나며 생기는 열이 전부이다. 자기장을 처음 만들 때 코일에 저장되는 에너지는 무시했다. 발전된 전기에너지는 전자석에서 나오는 것이 아니라 차의 운동에너지에서 나온다.</p>
+        <div class="eq"><i>R</i><sub>f</sub> = <i>ρ l N</i><sub>f</sub><sup>2</sup> / <i>A</i><sub>cu</sub> &nbsp;⇒&nbsp; <i>P</i><sub>f</sub> = (<i>n ρ l</i> / <i>A</i><sub>cu</sub>) (<i>N</i><sub>f</sub> <i>I</i><sub>f</sub>)<sup>2</sup>, &nbsp;&nbsp; <i>V</i><sub>f</sub> = <i>n I</i><sub>f</sub> <i>R</i><sub>f</sub></div>
+        <p>계자 코일 <i>n</i>개는 직렬이므로 같은 전류 <i>I</i><sub>f</sub>가 흐르고, 전체 저항은 <i>n R</i><sub>f</sub>이다. 정해진 공간에 감은 수를 늘리면 선이 가늘어져 저항이 감은 수의 제곱에 비례해 커진다. 그래서 전자석 소비 전력은 기자력 <i>N</i><sub>f</sub><i>I</i><sub>f</sub>만으로 정해지고, 같은 자기장을 얻는 데 드는 전력은 감은 수와 상관없다. 감은 수를 늘리면 필요한 전류가 줄어드는 대신 필요한 전원 전압 <i>V</i><sub>f</sub>가 감은 수에 비례해 커진다. 시뮬레이션 탭은 이 전압이 48 V를 넘으면 경고를 표시한다. 일정한 자기장을 유지하는 데에는 일이 들지 않는다. 전자석의 소비는 전류가 계자 코일 저항을 지나며 생기는 열이 전부이다. 자기장을 처음 만들 때 코일에 저장되는 에너지는 무시했다. 발전된 전기에너지는 전자석에서 나오는 것이 아니라 차의 운동에너지에서 나온다.</p>
         <h3 style="font-size:15px;margin:14px 0 4px">3. 손익분기 속력</h3>
         <div class="eq"><i>R</i>/(<i>R</i>+<i>r</i>) × <i>P</i>(<i>v</i><sub>be</sub>) = <i>P</i><sub>f</sub></div>
         <p>부하로 가는 발전 전력은 <i>R</i>/(<i>R</i>+<i>r</i>) × <i>P</i>(<i>v</i>)이다. 속력이 <i>v</i><sub>be</sub>보다 느려지면 이 값이 <i>P</i><sub>f</sub>보다 작아져 손해이므로, 그 아래에서는 전자석을 끄는 것이 유리하다. 전자석을 끄면 그 뒤로는 마찰 브레이크만으로 멈춘다. <i>P</i>(<i>v</i>)는 속력에 따라 커지므로 이분법으로 <i>v</i><sub>be</sub>를 찾는다. 빠를 때의 상한 <i>P</i><sub>∞</sub>조차 <i>P</i><sub>f</sub>보다 작으면 어느 속력에서도 손해이므로 전자석을 켜지 않는다. 철심이 포화되기 전에는 모든 속력에서 <i>P</i> ∝ Δ<i>Φ</i><sup>2</sup> ∝ <i>I</i><sub>f</sub><sup>2</sup>이고 <i>P</i><sub>f</sub> ∝ <i>I</i><sub>f</sub><sup>2</sup>이다. 따라서 <i>v</i><sub>be</sub>는 계자 전류와 상관없이 장치 구조(<i>R</i><sub>f</sub>, <i>N</i><sub>f</sub>, <i>N</i><sub>a</sub>, <i>n</i>, <i>h</i>, <i>g</i>, <i>Z</i> 등)로 정해진다.</p>
@@ -499,6 +490,8 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <dl class="sym">
           <dt>μ<sub>0</sub></dt><dd>진공의 투자율 4π × 10<sup>−7</sup> T·m/A</dd>
           <dt>N<sub>f</sub>, I<sub>f</sub>, R<sub>f</sub></dt><dd>철심 하나의 계자 코일 감은 수, 계자 전류 (A), 철심 하나의 계자 코일 저항 (Ω)</dd>
+          <dt>ρ, l, A<sub>cu</sub></dt><dd>구리의 비저항 1.72 × 10<sup>−8</sup> Ω·m, 코일 한 바퀴 길이 (m), 철심 하나의 코일에 들어가는 구리 단면적 합 (250 mm²)</dd>
+          <dt>V<sub>f</sub></dt><dd>계자 코일 전체에 걸어야 하는 전원 전압 (V)</dd>
           <dt>B, A</dt><dd>쇳조각이 틈을 메웠을 때 틈의 자기장 (T), 다리 끝 단면적 (m²)</dd>
           <dt>g, t</dt><dd>쇳조각이 있을 때 틈의 합 (2 mm), 쇳조각 두께 (16 mm)</dd>
           <dt>P<sub>f</sub>, E<sub>f</sub></dt><dd>전자석 소비 전력 (W), 소비 에너지 (J)</dd>
@@ -1524,7 +1517,7 @@ const SM=[
 const SM_EM=[
   {id:'If', label:'계자 전류', sym:'I<sub>f</sub>', unit:'A', v:3, min:0, max:5, step:0.05},
   {id:'Nf', label:'계자 코일 감은 수 (철심 1개)', sym:'N<sub>f</sub>', unit:'회', v:500, min:10, max:2000, step:10},
-  {id:'Rf', label:'계자 코일 저항 (철심 1개)', sym:'R<sub>f</sub>', unit:'Ω', v:4, min:0.1, max:20, step:0.1},
+  {id:'Rf', label:'계자 코일 저항 (철심 1개)', sym:'R<sub>f</sub>', unit:'Ω', v:3.92, min:0, max:1000, step:0.01},
 ];
 /* 마찰 브레이크 제동력 Ffr는 입력값(제동 내내 일정). 마찰만의 감속도 af = Ffr/m */
 /* 발전기 구조: 바퀴와 함께 도는 쇳조각 원판 + 차체에 고정한 U자 철심 n개(A, B, A, B, …). 3D 모형 탭과 같은 설계이다.
@@ -1532,7 +1525,9 @@ const SM_EM=[
    다리와 등의 두께는 h로 두어 단면적이 다리 끝 면적과 같게 한다(틈과 철심이 함께 포화).
    코일 한 바퀴 길이 lTurn = 2(w + h) + lExtra(감은 두께 몫), 발전 코일 저항은 감는 공간이 정해져 있다고 보고
    r = ρ·n·lTurn·Na²/Acu로 계산한다. */
-const SMF={rw:0.33, R:0.77, Z:12, w:0.039, tTooth:0.016, rhoCu:1.72e-8, lExtra:0.05, Acu:250e-6};
+const SMF={rw:0.33, R:0.77, Z:12, w:0.039, tTooth:0.016, rhoCu:1.72e-8, lExtra:0.05, Acu:250e-6, AcuF:250e-6, Vbat:48};
+/* 계자 코일도 정해진 공간(구리 단면적 합 AcuF)을 꽉 채워 감는다고 보고 Rf = ρ·lTurn·Nf²/AcuF (철심 1개) */
+function smRf(q){ const h=Math.max(q.hr||50,1)/1000, lTurn=2*(SMF.w+h)+SMF.lExtra; return SMF.rhoCu*lTurn*q.Nf*q.Nf/SMF.AcuF; }
 /* 전자석: g = 쇳조각이 있을 때 틈의 합(1 mm × 2), 철심 포화 자기장(가정) */
 const MU0=4e-7*Math.PI, EMF={g:0.002, Bsat:1.5};
 function smN(q){ return Math.max(2, 2*Math.round((isFinite(q.nC)?q.nC:4)/2)); }
@@ -1572,7 +1567,8 @@ function smOptNa(q){
 /* 화면 입력 + 자석 종류를 합친 계산용 값. 전자석이면 B = μ0·Nf·If/g (포화 이하) */
 function smParams(){
   const q=smRead(); q.em = smMag==='em'; q.autoOff=$('#sm-autooff').checked;
-  if(q.em){ q.Braw=MU0*q.Nf*q.If/EMF.g; q.B=Math.min(q.Braw,EMF.Bsat); q.Pf=q.If*q.If*q.Rf*smN(q); }
+  q.Rf=smRf(q);
+  if(q.em){ q.Braw=MU0*q.Nf*q.If/EMF.g; q.B=Math.min(q.Braw,EMF.Bsat); q.Pf=q.If*q.If*q.Rf*smN(q); q.Vf=q.If*q.Rf*smN(q); }
   return q;
 }
 function emB(q,If){ return Math.min(MU0*q.Nf*If/EMF.g, EMF.Bsat); }
@@ -1631,8 +1627,6 @@ function smRec(q, withGen, Tcap){
   return {rec, t:T, s:rec[n].s, stops:!endless};
 }
 function eTxt(E){ const a=Math.abs(E); return a>=1000 ? [fmt(E/1000),'kJ'] : [fmt(E),'J']; }
-let smBase=null;
-function smBaseText(b){ return `기준: <i>I</i><sub>f</sub> ${fmt(b.If)} A, <i>B</i> ${fmt(b.B)} T, <i>v</i><sub>0</sub> ${fmt(b.v0)} km/h, <i>m</i> ${fmt(b.m)} kg, <i>F</i><sub>fr</sub> ${fmt(b.Ffr)} N, <i>N</i><sub>a</sub> ${Math.round(b.Na)}, <i>n</i> ${smN(b)}, <i>h</i> ${Math.round(b.hr)} mm`; }
 function srowHTML(d){ return `<div class="srow" id="row-${d.id}">
       <label for="sm-${d.id}">${d.label}<i>${d.sym}</i></label>
       <span class="sval"><input id="sm-${d.id}" type="number" inputmode="decimal" min="${d.min}" step="${d.step}" value="${d.v}"><span class="u">${d.unit}</span></span>
@@ -1660,17 +1654,22 @@ function buildSimple(){
   $('#sm-autooff').addEventListener('change',go);
   /* 자기장은 계자 전류로 계산되므로 B는 표시만 한다 */
   $('#sm-B').readOnly=true; $('#sm-B-r').style.display='none';
+  /* 계자 코일 저항도 감은 수로 계산되므로 표시만 한다 */
+  $('#sm-Rf').readOnly=true; $('#sm-Rf-r').style.display='none';
+  $('#row-Rf').querySelector('label').innerHTML='계자 코일 저항 (철심 1개, 계산값)<i>R</i><sub>f</sub>';
   { const rb=$('#row-B'); $('#sm-em-params').after(rb); rb.querySelector('label').innerHTML='틈의 자기장 (쇳조각이 있을 때, 계산값)<i>B</i>'; }
   { const t=document.createElement('p'); t.className='note'; t.id='sm-rnote'; t.style.margin='-2px 0 6px'; $('#na-opt').after(t); }
-  $('#sm-base').addEventListener('click',()=>{ const q=smParams(); smBase=Object.assign({},q,{E:smCalc(q).E}); runSimple(); });
   $('#sm-reset').addEventListener('click',()=>{ [...SM,...SM_EM].forEach(d=>{ $('#sm-'+d.id).value=d.v; $('#sm-'+d.id+'-r').value=d.v; }); $('#sm-autooff').checked=true; runSimple(); });
-  const q=smParams(); smBase=Object.assign({},q,{E:smCalc(q).E});
 }
 function runSimple(){
   const q=smParams(), o=smCalc(q);
   $('#sm-rnote').innerHTML=`철심 ${o.gen.n}개(다리·등 두께 ${fmt(o.gen.h*1000)} mm) · 발전 코일 전체: 저항 <i>r</i> = ${fmt(o.r)} Ω, 인덕턴스 <i>L</i> = ${fmt(o.gen.L*1000)} mH · 계자 코일 전체 저항 ${fmt(q.Rf*o.gen.n)} Ω · 자속 변화폭 Δ<i>Φ</i> = ${fmt(o.gen.dphi*1000)} mWb (철심 1개)`;
   if(q.em){ $('#sm-B').value=q.B.toFixed(3); $('#sm-B-r').value=String(q.B);
-    $('#sm-bnote').textContent= q.Braw>EMF.Bsat ? `철심 포화: B = ${EMF.Bsat} T에서 멈춤` : '';
+    $('#sm-Rf').value=q.Rf.toFixed(2);
+    { const n=smN(q), over=q.Vf>SMF.Vbat;
+      $('#sm-bnote').innerHTML=(q.Braw>EMF.Bsat ? `철심 포화: <i>B</i> = ${EMF.Bsat} T에서 멈춤 · ` : '')+
+        `계자 전원 전압 <i>n I</i><sub>f</sub><i>R</i><sub>f</sub> = ${fmt(q.Vf)} V`+(over?` <span class="pill bad">! ${SMF.Vbat} V 배터리로는 부족</span>`:` (${SMF.Vbat} V 배터리 이하)`)+
+        ` · 손익분기 속력 ${isFinite(o.vBE)?fmt(o.vBE*3.6)+' km/h':'없음 (어떤 속력에서도 손해)'}`; }
     const op=smOptIf(q), [nv2,nu2]=eTxt(op.net), edge=op.If>4.999;
     $('#if-opt-mark').style.left=`calc(9px + (100% - 18px) * ${op.If/5})`;
     $('#if-opt').innerHTML=`<span class="optdot" aria-hidden="true"></span>최대 순이득 계자 전류 ≈ <b>${op.If.toFixed(2)} A</b> (순이득 ${nv2} ${nu2})${edge?' · 범위 끝':''} <button type="button" data-v="${op.If.toFixed(2)}">적용</button>`;
@@ -1680,24 +1679,6 @@ function runSimple(){
       $('#na-opt').innerHTML=`<span class="optdot" aria-hidden="true"></span>지금 계자 전류(${fmt(q.If)} A)에서 최대 순이득 감은 수 = <b>${on.Na}회</b> (순이득 ${nv3} ${nu3})${on.Na>=200?' · 범위 끝':''} <button type="button" data-v="${on.Na}">적용</button>`; }
     else { mk.style.display='none'; $('#na-opt').innerHTML=`<span class="optdot" aria-hidden="true"></span>지금 계자 전류(${fmt(q.If)} A)에서는 어떤 감은 수도 순이득이 0보다 크지 않다.`; }
   }
-  const [ev,eu]=eTxt(o.E), [pv,pu]= o.P0>=1000?[fmt(o.P0/1000),'kW']:[fmt(o.P0),'W'];
-  const ratio = smBase && smBase.E>0 ? o.E/smBase.E : NaN;
-  const dx = (o.x0>0 && isFinite(o.x0)) ? (o.x0-o.xs)/o.x0*100 : NaN;
-  const stopTile = o.noStop ? tile('정지 거리', '서지 않음', '', (o.K<=0 || o.v1>=o.v0) ? '제동력 0' : `${fmt(o.v1*3.6)} km/h로 계속 주행`)
-    : !o.fric ? tile('정지 거리', fmt(o.xs), 'm', `마찰 0: 속력 1%까지의 거리`)
-    : tile('정지 거리', fmt(o.xs), 'm', `발전기 없을 때 ${fmt(o.x0)} m보다 ${pct(dx)} 짧음`);
-  let tiles=
-    tile('제동 중 발전량 <i>E</i>', ev, eu, `차의 운동에너지 ${fmt(o.K0/1000)} kJ의 ${pct(o.K0>0?o.E/o.K0*100:NaN)}`)+
-    tile('비교 기준 대비 (발전량)', isFinite(ratio)?'×'+(ratio>=100?fmt(ratio):ratio.toFixed(2)):'–', '', smBase?smBaseText(smBase):'')+
-    stopTile+
-    tile('발전기 제동력 (시작 순간)', fmt(o.F0), 'N', `마찰 ${fmt(o.Ffr)} N · 발전 전력 ${pv} ${pu}`);
-  if(q.em){
-    const [nv,nu]=eTxt(o.net), [fv,fu]=eTxt(o.Ef), ok=o.net>=0;
-    tiles+= tile('순이득 <i>E</i> − <i>E</i><sub>f</sub>', nv, nu, `<span class="pill ${ok?'ok':'bad'}">${ok?'✓ 이득':'! 손해'}</span> 발전량 ${ev} ${eu} − 전자석 ${fv} ${fu}`)+
-      tile('전자석 소비 전력 <i>P</i><sub>f</sub>', fmt(o.Pf), 'W', `켜진 시간 ${fmt(o.t1)} s · ${fv} ${fu}`)+
-      tile('손익분기 속력', isFinite(o.vBE)?fmt(o.vBE*3.6):'–', 'km/h', q.autoOff ? '이 아래에서 전자석 끔' : '이 아래는 손해 (계속 켬)');
-  }
-  $('#sm-tiles').innerHTML=tiles;
   /* 그래프 1 */
   if(q.em){
     $('#sm-c1-h').textContent='계자 전류와 에너지';
@@ -1735,7 +1716,8 @@ function runSimple(){
         ['누적 발전량 E',eF(E),'e-gen'],
         ['누적 사용 에너지 (전자석)', eF(Eu),'e-use'],
         ['순 생산 에너지 (발전 − 사용)',eF(E-Eu),'e-net'],
-        ['손실된 에너지 (마찰 + 코일 열)',eF(fr+coil),'e-loss']);
+        ['손실된 에너지 (마찰 + 코일 열)',eF(fr+coil),'e-loss'],
+        ['에너지 회수 효율 (순 생산 ÷ 손실)', (fr+coil)>0 ? pct((E-Eu)/(fr+coil)*100) : '–']);
       return it; }});
   howEnergy(o);
   if(smView==='how' && !coil.on) drawCoil();
