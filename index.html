@@ -175,6 +175,9 @@ table.parts td:last-child{white-space:nowrap;font-family:var(--f-mono);font-size
 #sm-em h3{margin-top:12px}
 .hud .hud-sep{grid-column:1 / -1;font-size:12px;font-weight:600;color:var(--ink-2);border-top:1px dashed var(--line);padding-top:8px;margin-top:2px}
 .hud .e-net b{color:var(--accent)}
+ul.plain{padding-left:20px;margin:4px 0}
+ul.plain li{margin:0 0 8px;max-width:80ch}
+#sm-bnote:empty{display:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -194,7 +197,7 @@ table.parts td:last-child{white-space:nowrap;font-family:var(--f-mono);font-size
   <div class="subtabs" role="tablist">
     <button type="button" role="tab" id="svt-sim" aria-selected="true">시뮬레이션</button>
     <button type="button" role="tab" id="svt-how" aria-selected="false">작동 원리</button>
-    <button type="button" role="tab" id="svt-build" aria-selected="false">세부 구조</button>
+    <button type="button" role="tab" id="svt-build" aria-selected="false">세부 내용</button>
   </div>
   <div id="sv-sim">
   <div class="layout">
@@ -211,9 +214,6 @@ table.parts td:last-child{white-space:nowrap;font-family:var(--f-mono);font-size
         <div id="sm-em-params"></div>
         <label class="chk" for="sm-autooff"><input type="checkbox" id="sm-autooff" checked> 손익분기 속력 아래에서 전자석 끄기</label>
       </div>
-      <div class="derived">
-        마찰 브레이크는 제동 시작부터 정지까지 위에서 정한 힘 <i>F</i><sub>fr</sub>로 일정하게 작동하고, 발전기 제동력은 여기에 더해진다(예: 1500 kg에 3000 N이면 마찰만으로 2 m/s² 감속). 고정 조건: 바퀴→코일 기어비 10, 타이어 반지름 0.3 m, 코일 저항 <i>r</i> = 1 Ω, 부하 저항 <i>R</i> = 1 Ω이다. 공기저항과 구름저항은 무시한다.<span id="sm-em-fixed" hidden> 전자석: 공극 길이 <i>g</i> = 2 mm, 철심 포화 자기장 1.5 T(가정)이며 철심의 자기저항과 누설 자속은 무시한다.</span>
-      </div>
       <div class="btnrow">
         <button type="button" id="sm-base">지금 값을 비교 기준으로 저장</button>
         <button type="button" id="sm-reset">기본값으로 되돌리기</button>
@@ -223,7 +223,6 @@ table.parts td:last-child{white-space:nowrap;font-family:var(--f-mono);font-size
       <div class="tiles" id="sm-tiles"></div>
       <div class="card anim">
         <h2>주행 애니메이션</h2>
-        <p class="cap">아래 ‘누적 에너지’에서 사용 에너지는 전자석이 쓴 에너지이고, 순 생산은 발전량에서 이를 뺀 값이다. 손실된 에너지는 차의 운동에너지 중 전기로 저장되지 못하고 열이 된 몫으로, 마찰 브레이크 열과 발전 코일 저항 열을 더한 것이다. 위 조건으로 제동하는 모습을 실제 시간 비율로 재생하며, 값을 바꾸면 처음부터 다시 재생된다. 차 위 화살표는 마찰 브레이크(주황)와 발전기(파랑)의 제동력이다. 전선 위 점선이 빠를수록 발전 전류가 크고, 배터리 칸은 최종 발전량 대비 누적 비율이다. 회색 점선 차는 발전기 없이 마찰 브레이크만으로 서는 차이므로, 두 차의 정지 위치 차이가 발전기가 제동을 도운 정도이다.</p>
         <canvas id="sm-anim" role="img" aria-label="감속하는 자동차 애니메이션"></canvas>
         <div class="hud" id="sm-hud"></div>
         <div class="ctrl">
@@ -236,64 +235,12 @@ table.parts td:last-child{white-space:nowrap;font-family:var(--f-mono);font-size
       <div class="two">
         <div class="card">
           <h2 id="sm-c1-h">자기장 세기와 발전량</h2>
-          <p class="cap" id="sm-c1-cap">다른 값은 그대로 두고 <i>B</i>만 바꾼 결과이다. <i>B</i>가 작을 때는 <i>B</i><sup>2</sup>에 비례해 늘어난다. <i>B</i>가 커지면 발전기가 제동을 많이 도와 차가 빨리 서기 때문에 늘어나는 폭이 줄고, 점선(이론 상한)을 넘지 못한다.</p>
           <div class="chart" id="sm-c1"></div>
         </div>
         <div class="card">
           <h2>제동 시작 속력과 발전량</h2>
-          <p class="cap">다른 값은 그대로 두고 <i>v</i><sub>0</sub>만 바꾼 결과이다. 발전기 힘이 마찰보다 작은 범위에서는 발전량이 대략 <i>v</i><sub>0</sub><sup>3</sup>에 비례한다. 전력이 속력의 제곱에 비례하고, 제동 시간이 속력에 비례하기 때문이다.</p>
           <div class="chart" id="sm-c2"></div>
         </div>
-      </div>
-      <div class="card" id="sm-em-card" hidden>
-        <h2>전자석 계산</h2>
-        <h3 style="font-size:15px;margin:6px 0 4px">1. 전자석이 만드는 자기장</h3>
-        <div class="eq"><i>B</i> = <i>μ</i><sub>0</sub> <i>N</i><sub>f</sub> <i>I</i><sub>f</sub> / <i>g</i> &nbsp;&nbsp; (<i>B</i> ≤ 1.5 T)</div>
-        <p>철심에 감은 계자 코일과 좁은 공극으로 된 자기 회로에 앙페르 법칙을 적용한 결과이다. 철심의 투자율이 매우 커서 자기 회로의 저항은 대부분 공극에 있다고 보았다. 철심이 포화되면 전류를 늘려도 <i>B</i>가 거의 커지지 않으므로, 이 시뮬레이터에서는 1.5 T에서 멈추게 했다(가정값).</p>
-        <h3 style="font-size:15px;margin:14px 0 4px">2. 전자석이 쓰는 에너지</h3>
-        <div class="eq"><i>P</i><sub>f</sub> = <i>I</i><sub>f</sub><sup>2</sup> <i>R</i><sub>f</sub>, &nbsp;&nbsp; <i>E</i><sub>f</sub> = <i>P</i><sub>f</sub> <i>t</i><sub>on</sub></div>
-        <p>일정한 자기장을 유지하는 데에는 일이 들지 않는다. 전자석의 소비는 전류가 계자 코일 저항을 지나며 생기는 열이 전부이다. 자기장을 처음 만들 때 코일에 저장되는 에너지는 무시했다. 발전된 전기에너지는 전자석에서 나오는 것이 아니라 차의 운동에너지에서 나온다.</p>
-        <h3 style="font-size:15px;margin:14px 0 4px">3. 손익분기 속력</h3>
-        <div class="eq"><i>v</i><sub>be</sub> = √( <i>P</i><sub>f</sub> / ( <i>R</i>/(<i>R</i>+<i>r</i>) · <i>c</i> ) )</div>
-        <p>부하로 가는 발전 전력은 <i>R</i>/(<i>R</i>+<i>r</i>) · <i>cv</i><sup>2</sup>이다. 속력이 <i>v</i><sub>be</sub>보다 느려지면 이 값이 <i>P</i><sub>f</sub>보다 작아져 손해이므로, 그 아래에서는 전자석을 끄는 것이 유리하다. 전자석을 끄면 그 뒤로는 마찰 브레이크만으로 멈춘다. 철심이 포화되기 전에는 <i>c</i> ∝ <i>B</i><sup>2</sup> ∝ <i>I</i><sub>f</sub><sup>2</sup>이고 <i>P</i><sub>f</sub> ∝ <i>I</i><sub>f</sub><sup>2</sup>이다. 따라서 <i>v</i><sub>be</sub>는 계자 전류와 상관없이 장치 구조(<i>R</i><sub>f</sub>, <i>N</i><sub>f</sub>, <i>g</i>, <i>N</i>, <i>S</i>, <i>G</i> 등)로 정해진다.</p>
-        <h3 style="font-size:15px;margin:14px 0 4px">4. 순이득</h3>
-        <div class="eq">순이득 = <i>E</i> − <i>E</i><sub>f</sub></div>
-        <dl class="sym">
-          <dt>μ<sub>0</sub></dt><dd>진공의 투자율 4π × 10<sup>−7</sup> T·m/A</dd>
-          <dt>N<sub>f</sub>, I<sub>f</sub>, R<sub>f</sub></dt><dd>계자 코일 감은 수, 계자 전류 (A), 계자 코일 저항 (Ω)</dd>
-          <dt>g</dt><dd>자기 회로의 공극 길이 (m)</dd>
-          <dt>P<sub>f</sub>, E<sub>f</sub></dt><dd>전자석 소비 전력 (W), 소비 에너지 (J)</dd>
-          <dt>t<sub>on</sub></dt><dd>제동 중 전자석이 켜져 있던 시간 (s)</dd>
-          <dt>v<sub>be</sub></dt><dd>발전 전력과 전자석 소비 전력이 같아지는 속력 (m/s)</dd>
-        </dl>
-      </div>
-      <div class="card">
-        <h2>계산 방법</h2>
-        <h3 style="font-size:15px;margin:6px 0 4px">1. 운동 방정식</h3>
-        <div class="eq"><i>m</i> d<i>v</i>/d<i>t</i> = −(<i>F</i><sub>fr</sub> + <i>F</i><sub>gen</sub>), &nbsp;&nbsp; <i>F</i><sub>fr</sub> = 일정, &nbsp;&nbsp; <i>F</i><sub>gen</sub> = <i>c v</i></div>
-        <div class="eq"><i>c</i> = (<i>N B S G</i> / <i>r</i><sub>w</sub>)<sup>2</sup> / (2(<i>R</i>+<i>r</i>))</div>
-        <p>코일이 각속도 <i>ω</i> = <i>Gv</i>/<i>r</i><sub>w</sub>로 돌면 자기선속은 <i>Φ</i> = <i>BS</i> cos <i>ωt</i>이고, 패러데이 법칙에 따라 기전력은 <i>ε</i> = <i>NBSω</i> sin <i>ωt</i>이다. 회로 전체에서 쓰이는 평균 전력은 (<i>NBSω</i>)<sup>2</sup>/(2(<i>R</i>+<i>r</i>)) = <i>cv</i><sup>2</sup>이다. 이 전력은 차의 운동에너지에서 나오므로 발전기 제동력은 <i>F</i><sub>gen</sub> = <i>cv</i><sup>2</sup>/<i>v</i> = <i>cv</i>이다(렌츠 법칙). 마찰 브레이크는 패드를 미는 힘이 일정하므로 일정한 힘 <i>F</i><sub>fr</sub>를 낸다고 두었다. 두 힘은 제동 시작부터 함께 작용한다.</p>
-        <h3 style="font-size:15px;margin:14px 0 4px">2. 정지 시간과 정지 거리</h3>
-        <div class="eq"><i>T</i> = (<i>m</i>/<i>c</i>) ln(1 + <i>c v</i><sub>0</sub> / (<i>m a</i><sub>f</sub>)), &nbsp;&nbsp; <i>x</i><sub>s</sub> = (<i>m</i>/<i>c</i>)(<i>v</i><sub>0</sub> − <i>a</i><sub>f</sub><i>T</i>)</div>
-        <p>위 미분방정식을 풀면 <i>v</i>(<i>t</i>) = (<i>v</i><sub>0</sub> + <i>u</i>)<i>e</i><sup>−<i>ct</i>/<i>m</i></sup> − <i>u</i>이다(<i>u</i> = <i>ma</i><sub>f</sub>/<i>c</i>). <i>v</i> = 0이 되는 시각이 <i>T</i>이고, 이를 적분한 이동 거리가 <i>x</i><sub>s</sub>이다. 발전기가 없으면(<i>c</i> → 0) <i>x</i><sub>s</sub> = <i>v</i><sub>0</sub><sup>2</sup>/(2<i>a</i><sub>f</sub>)가 된다.</p>
-        <h3 style="font-size:15px;margin:14px 0 4px">3. 발전량 (에너지 보존)</h3>
-        <div class="eq"><i>E</i> = <i>R</i>/(<i>R</i>+<i>r</i>) × (½ <i>m v</i><sub>0</sub><sup>2</sup> − <i>F</i><sub>fr</sub> <i>x</i><sub>s</sub>)</div>
-        <p>처음 운동에너지 중 마찰 브레이크가 열로 바꾼 몫(<i>F</i><sub>fr</sub><i>x</i><sub>s</sub>)을 뺀 나머지가 전기에너지가 된다. 그중 <i>R</i>/(<i>R</i>+<i>r</i>)만큼이 부하로 가고, 나머지는 코일 저항에서 열이 된다. 발전기 힘이 마찰보다 훨씬 작을 때는 다음과 같이 근사할 수 있다.</p>
-        <div class="eq"><i>E</i> ≈ <i>R</i>/(<i>R</i>+<i>r</i>)<sup>2</sup> × (<i>N B S G</i> / <i>r</i><sub>w</sub>)<sup>2</sup> × <i>v</i><sub>0</sub><sup>3</sup> / (6<i>a</i><sub>f</sub>)</div>
-        <p>이 범위에서는 <i>B</i>, <i>N</i>, <i>S</i>를 각각 2배로 하면 <i>E</i>는 약 4배, <i>v</i><sub>0</sub>을 2배로 하면 약 8배가 된다. 마찰 브레이크 제동력 <i>F</i><sub>fr</sub>를 키우면 <i>a</i><sub>f</sub>가 커져 차가 빨리 서므로, 근사 범위에서 <i>E</i>는 <i>F</i><sub>fr</sub>에 반비례해 줄어든다. 브레이크를 세게 밟을수록 정지 거리는 짧아지지만 발전기가 일할 시간이 줄어드는 것이다. <i>F</i><sub>fr</sub> = 0이면 발전기만으로 제동한다. 이때 속력은 <i>v</i> = <i>v</i><sub>0</sub><i>e</i><sup>−<i>ct</i>/<i>m</i></sup>로 줄어 이론상 완전히 서지 않으므로, 속력이 처음의 1%가 될 때를 정지로 보았다. 발전량은 상한 <i>R</i>/(<i>R</i>+<i>r</i>) × ½<i>mv</i><sub>0</sub><sup>2</sup>에 가까워진다. 질량 <i>m</i>은 근사 범위와 상관없이 <i>E</i>에 정확히 비례한다. 운동 방정식에서 <i>t</i> = <i>mτ</i>로 바꾸면 d<i>v</i>/d<i>τ</i> = −(<i>F</i><sub>fr</sub> + <i>cv</i>)가 되어 <i>m</i>이 사라지기 때문이다. 속력이 줄어드는 모양은 같고 걸리는 시간만 <i>m</i>배가 되므로, 정지 거리와 발전량(<i>E</i> = <i>R</i>/(<i>R</i>+<i>r</i>) × ∫<i>cv</i><sup>2</sup>d<i>t</i>)이 모두 <i>m</i>배가 된다. 발전기 힘이 커질수록 정지 거리가 줄어 근사식보다 작아지고, <i>E</i>는 상한 <i>R</i>/(<i>R</i>+<i>r</i>) × ½<i>mv</i><sub>0</sub><sup>2</sup>를 넘지 못한다.</p>
-        <dl class="sym">
-          <dt>E</dt><dd>제동하는 동안 부하 저항에 전달된 전기에너지 (J)</dd>
-          <dt>B</dt><dd>코일이 지나는 자기장의 세기 (T)</dd>
-          <dt>N, S</dt><dd>코일 감은 수, 코일 한 바퀴의 면적 (m²)</dd>
-          <dt>v<sub>0</sub>, v</dt><dd>제동 시작 속력, 시각 <i>t</i>의 속력 (m/s)</dd>
-          <dt>m</dt><dd>차량 질량 (kg)</dd>
-          <dt>F<sub>fr</sub>, a<sub>f</sub></dt><dd>마찰 브레이크 제동력 (N), 마찰만으로 낼 때의 감속도 <i>a</i><sub>f</sub> = <i>F</i><sub>fr</sub>/<i>m</i> (m/s²)</dd>
-          <dt>F<sub>gen</sub>, c</dt><dd>발전기 제동력 (N), 발전기 제동 계수 (N·s/m)</dd>
-          <dt>G, r<sub>w</sub></dt><dd>바퀴 대비 코일 회전의 기어비, 타이어 반지름 (m)</dd>
-          <dt>R, r</dt><dd>부하 저항, 코일 저항 (Ω)</dd>
-          <dt>T, x<sub>s</sub></dt><dd>정지 시간 (s), 정지 거리 (m)</dd>
-        </dl>
-        <p class="note">가정: 균일한 자기장 속에서 도는 단일 코일 교류 발전기이며, 코일의 자체 인덕턴스, 기어 손실, 타이어 미끄러짐은 무시한다.</p>
       </div>
     </div>
   </div>
@@ -349,6 +296,83 @@ table.parts td:last-child{white-space:nowrap;font-family:var(--f-mono);font-size
   </div>
 
   <div id="sv-build" hidden>
+    <div class="card">
+      <h2>계산 조건</h2>
+      <p>마찰 브레이크는 제동 시작부터 정지까지 시뮬레이션 탭에서 정한 힘 <i>F</i><sub>fr</sub>로 일정하게 작동하고, 발전기 제동력은 여기에 더해진다(예: 1500 kg에 3000 N이면 마찰만으로 2 m/s² 감속).</p><p><b>고정 조건:</b> 바퀴→코일 기어비 10, 타이어 반지름 0.3 m, 코일 저항 <i>r</i> = 1 Ω, 부하 저항 <i>R</i> = 1 Ω이다. 공기저항과 구름저항은 무시한다.</p><p><b>전자석을 고르면:</b> 전자석: 공극 길이 <i>g</i> = 2 mm, 철심 포화 자기장 1.5 T(가정)이며 철심의 자기저항과 누설 자속은 무시한다.</p>
+    </div>
+
+    <div class="card">
+      <h2>시뮬레이션 화면 읽는 법</h2>
+      <h3 style="font-size:15px;margin:6px 0 4px">결과 칸</h3>
+      <ul class="plain">
+        <li><b>제동 중 발전량 <i>E</i></b>: 제동하는 동안 부하(배터리)에 전달된 전기에너지와, 그것이 처음 운동에너지의 몇 %인지이다.</li>
+        <li><b>비교 기준 대비</b>: ‘지금 값을 비교 기준으로 저장’을 누른 때의 발전량에 대한 배수이다.</li>
+        <li><b>정지 거리</b>: 발전기가 있을 때 멈추기까지 간 거리와, 마찰 브레이크만 있을 때보다 얼마나 짧아졌는지이다. 마찰이 0이면 발전기만으로 감속해 속력이 처음의 1%가 될 때까지의 거리로 계산한다. 마찰도 발전기 제동력도 없거나, 마찰이 0인데 전자석을 꺼서 알짜힘이 0이 되면 ‘서지 않음’으로 표시한다.</li>
+        <li><b>발전기 제동력 (시작 순간)</b>: 제동을 시작하는 순간 발전기가 내는 제동력과 발전 전력이다.</li>
+        <li><b>순이득, 전자석 소비 전력, 손익분기 속력</b> (전자석일 때): 발전량에서 전자석 소비 에너지를 뺀 값, 전자석이 쓰는 전력과 켜져 있던 시간, 발전 전력과 전자석 소비 전력이 같아지는 속력이다.</li>
+      </ul>
+      <h3 style="font-size:15px;margin:14px 0 4px">주행 애니메이션</h3>
+      <p>아래 ‘누적 에너지’에서 사용 에너지는 전자석이 쓴 에너지이고, 순 생산은 발전량에서 이를 뺀 값이다. 손실된 에너지는 차의 운동에너지 중 전기로 저장되지 못하고 열이 된 몫으로, 마찰 브레이크 열과 발전 코일 저항 열을 더한 것이다. 위 조건으로 제동하는 모습을 실제 시간 비율로 재생하며, 값을 바꾸면 처음부터 다시 재생된다. 차 위 화살표는 마찰 브레이크(주황)와 발전기(파랑)의 제동력이다. 전선 위 점선이 빠를수록 발전 전류가 크고, 배터리 칸은 최종 발전량 대비 누적 비율이다. 회색 점선 차는 발전기 없이 마찰 브레이크만으로 서는 차이므로, 두 차의 정지 위치 차이가 발전기가 제동을 도운 정도이다.</p>
+      <h3 style="font-size:15px;margin:14px 0 4px">그래프</h3>
+      <ul class="plain">
+        <li><b>자기장 세기와 발전량</b> (영구자석): 다른 값은 그대로 두고 <i>B</i>만 바꾼 결과이다. <i>B</i>가 작을 때는 <i>B</i><sup>2</sup>에 비례해 늘어난다. <i>B</i>가 커지면 발전기가 제동을 많이 도와 차가 빨리 서기 때문에 늘어나는 폭이 줄고, 점선(이론 상한)을 넘지 못한다.</li>
+        <li><b>계자 전류와 에너지</b> (전자석): 다른 값은 그대로 두고 계자 전류 <i>I</i><sub>f</sub>만 바꾼 결과이다. 철심이 포화되기 전에는 발전량과 전자석 소비가 모두 <i>I</i><sub>f</sub><sup>2</sup>에 비례해 함께 커진다. 포화 뒤에는 자기장이 더 커지지 않아 발전량은 그대로인데 소비만 늘어 순이득이 줄어든다.</li>
+        <li><b>제동 시작 속력과 발전량</b>: 다른 값은 그대로 두고 <i>v</i><sub>0</sub>만 바꾼 결과이다. 발전기 힘이 마찰보다 작은 범위에서는 발전량이 대략 <i>v</i><sub>0</sub><sup>3</sup>에 비례한다. 전력이 속력의 제곱에 비례하고, 제동 시간이 속력에 비례하기 때문이다.</li>
+      </ul>
+    </div>
+
+      <div class="card">
+        <h2>계산 방법</h2>
+        <h3 style="font-size:15px;margin:6px 0 4px">1. 운동 방정식</h3>
+        <div class="eq"><i>m</i> d<i>v</i>/d<i>t</i> = −(<i>F</i><sub>fr</sub> + <i>F</i><sub>gen</sub>), &nbsp;&nbsp; <i>F</i><sub>fr</sub> = 일정, &nbsp;&nbsp; <i>F</i><sub>gen</sub> = <i>c v</i></div>
+        <div class="eq"><i>c</i> = (<i>N B S G</i> / <i>r</i><sub>w</sub>)<sup>2</sup> / (2(<i>R</i>+<i>r</i>))</div>
+        <p>코일이 각속도 <i>ω</i> = <i>Gv</i>/<i>r</i><sub>w</sub>로 돌면 자기선속은 <i>Φ</i> = <i>BS</i> cos <i>ωt</i>이고, 패러데이 법칙에 따라 기전력은 <i>ε</i> = <i>NBSω</i> sin <i>ωt</i>이다. 회로 전체에서 쓰이는 평균 전력은 (<i>NBSω</i>)<sup>2</sup>/(2(<i>R</i>+<i>r</i>)) = <i>cv</i><sup>2</sup>이다. 이 전력은 차의 운동에너지에서 나오므로 발전기 제동력은 <i>F</i><sub>gen</sub> = <i>cv</i><sup>2</sup>/<i>v</i> = <i>cv</i>이다(렌츠 법칙). 마찰 브레이크는 패드를 미는 힘이 일정하므로 일정한 힘 <i>F</i><sub>fr</sub>를 낸다고 두었다. 두 힘은 제동 시작부터 함께 작용한다.</p>
+        <h3 style="font-size:15px;margin:14px 0 4px">2. 정지 시간과 정지 거리</h3>
+        <div class="eq"><i>T</i> = (<i>m</i>/<i>c</i>) ln(1 + <i>c v</i><sub>0</sub> / (<i>m a</i><sub>f</sub>)), &nbsp;&nbsp; <i>x</i><sub>s</sub> = (<i>m</i>/<i>c</i>)(<i>v</i><sub>0</sub> − <i>a</i><sub>f</sub><i>T</i>)</div>
+        <p>위 미분방정식을 풀면 <i>v</i>(<i>t</i>) = (<i>v</i><sub>0</sub> + <i>u</i>)<i>e</i><sup>−<i>ct</i>/<i>m</i></sup> − <i>u</i>이다(<i>u</i> = <i>ma</i><sub>f</sub>/<i>c</i>). <i>v</i> = 0이 되는 시각이 <i>T</i>이고, 이를 적분한 이동 거리가 <i>x</i><sub>s</sub>이다. 발전기가 없으면(<i>c</i> → 0) <i>x</i><sub>s</sub> = <i>v</i><sub>0</sub><sup>2</sup>/(2<i>a</i><sub>f</sub>)가 된다.</p>
+        <h3 style="font-size:15px;margin:14px 0 4px">3. 발전량 (에너지 보존)</h3>
+        <div class="eq"><i>E</i> = <i>R</i>/(<i>R</i>+<i>r</i>) × (½ <i>m v</i><sub>0</sub><sup>2</sup> − <i>F</i><sub>fr</sub> <i>x</i><sub>s</sub>)</div>
+        <p>처음 운동에너지 중 마찰 브레이크가 열로 바꾼 몫(<i>F</i><sub>fr</sub><i>x</i><sub>s</sub>)을 뺀 나머지가 전기에너지가 된다. 그중 <i>R</i>/(<i>R</i>+<i>r</i>)만큼이 부하로 가고, 나머지는 코일 저항에서 열이 된다. 발전기 힘이 마찰보다 훨씬 작을 때는 다음과 같이 근사할 수 있다.</p>
+        <div class="eq"><i>E</i> ≈ <i>R</i>/(<i>R</i>+<i>r</i>)<sup>2</sup> × (<i>N B S G</i> / <i>r</i><sub>w</sub>)<sup>2</sup> × <i>v</i><sub>0</sub><sup>3</sup> / (6<i>a</i><sub>f</sub>)</div>
+        <p>이 범위에서는 <i>B</i>, <i>N</i>, <i>S</i>를 각각 2배로 하면 <i>E</i>는 약 4배, <i>v</i><sub>0</sub>을 2배로 하면 약 8배가 된다. 마찰 브레이크 제동력 <i>F</i><sub>fr</sub>를 키우면 <i>a</i><sub>f</sub>가 커져 차가 빨리 서므로, 근사 범위에서 <i>E</i>는 <i>F</i><sub>fr</sub>에 반비례해 줄어든다. 브레이크를 세게 밟을수록 정지 거리는 짧아지지만 발전기가 일할 시간이 줄어드는 것이다. <i>F</i><sub>fr</sub> = 0이면 발전기만으로 제동한다. 이때 속력은 <i>v</i> = <i>v</i><sub>0</sub><i>e</i><sup>−<i>ct</i>/<i>m</i></sup>로 줄어 이론상 완전히 서지 않으므로, 속력이 처음의 1%가 될 때를 정지로 보았다. 발전량은 상한 <i>R</i>/(<i>R</i>+<i>r</i>) × ½<i>mv</i><sub>0</sub><sup>2</sup>에 가까워진다. 질량 <i>m</i>은 근사 범위와 상관없이 <i>E</i>에 정확히 비례한다. 운동 방정식에서 <i>t</i> = <i>mτ</i>로 바꾸면 d<i>v</i>/d<i>τ</i> = −(<i>F</i><sub>fr</sub> + <i>cv</i>)가 되어 <i>m</i>이 사라지기 때문이다. 속력이 줄어드는 모양은 같고 걸리는 시간만 <i>m</i>배가 되므로, 정지 거리와 발전량(<i>E</i> = <i>R</i>/(<i>R</i>+<i>r</i>) × ∫<i>cv</i><sup>2</sup>d<i>t</i>)이 모두 <i>m</i>배가 된다. 발전기 힘이 커질수록 정지 거리가 줄어 근사식보다 작아지고, <i>E</i>는 상한 <i>R</i>/(<i>R</i>+<i>r</i>) × ½<i>mv</i><sub>0</sub><sup>2</sup>를 넘지 못한다.</p>
+        <dl class="sym">
+          <dt>E</dt><dd>제동하는 동안 부하 저항에 전달된 전기에너지 (J)</dd>
+          <dt>B</dt><dd>코일이 지나는 자기장의 세기 (T)</dd>
+          <dt>N, S</dt><dd>코일 감은 수, 코일 한 바퀴의 면적 (m²)</dd>
+          <dt>v<sub>0</sub>, v</dt><dd>제동 시작 속력, 시각 <i>t</i>의 속력 (m/s)</dd>
+          <dt>m</dt><dd>차량 질량 (kg)</dd>
+          <dt>F<sub>fr</sub>, a<sub>f</sub></dt><dd>마찰 브레이크 제동력 (N), 마찰만으로 낼 때의 감속도 <i>a</i><sub>f</sub> = <i>F</i><sub>fr</sub>/<i>m</i> (m/s²)</dd>
+          <dt>F<sub>gen</sub>, c</dt><dd>발전기 제동력 (N), 발전기 제동 계수 (N·s/m)</dd>
+          <dt>G, r<sub>w</sub></dt><dd>바퀴 대비 코일 회전의 기어비, 타이어 반지름 (m)</dd>
+          <dt>R, r</dt><dd>부하 저항, 코일 저항 (Ω)</dd>
+          <dt>T, x<sub>s</sub></dt><dd>정지 시간 (s), 정지 거리 (m)</dd>
+        </dl>
+        <p class="note">가정: 균일한 자기장 속에서 도는 단일 코일 교류 발전기이며, 코일의 자체 인덕턴스, 기어 손실, 타이어 미끄러짐은 무시한다.</p>
+      </div>
+
+      <div class="card">
+        <h2>전자석 계산</h2>
+        <h3 style="font-size:15px;margin:6px 0 4px">1. 전자석이 만드는 자기장</h3>
+        <div class="eq"><i>B</i> = <i>μ</i><sub>0</sub> <i>N</i><sub>f</sub> <i>I</i><sub>f</sub> / <i>g</i> &nbsp;&nbsp; (<i>B</i> ≤ 1.5 T)</div>
+        <p>철심에 감은 계자 코일과 좁은 공극으로 된 자기 회로에 앙페르 법칙을 적용한 결과이다. 철심의 투자율이 매우 커서 자기 회로의 저항은 대부분 공극에 있다고 보았다. 철심이 포화되면 전류를 늘려도 <i>B</i>가 거의 커지지 않으므로, 이 시뮬레이터에서는 1.5 T에서 멈추게 했다(가정값).</p>
+        <h3 style="font-size:15px;margin:14px 0 4px">2. 전자석이 쓰는 에너지</h3>
+        <div class="eq"><i>P</i><sub>f</sub> = <i>I</i><sub>f</sub><sup>2</sup> <i>R</i><sub>f</sub>, &nbsp;&nbsp; <i>E</i><sub>f</sub> = <i>P</i><sub>f</sub> <i>t</i><sub>on</sub></div>
+        <p>일정한 자기장을 유지하는 데에는 일이 들지 않는다. 전자석의 소비는 전류가 계자 코일 저항을 지나며 생기는 열이 전부이다. 자기장을 처음 만들 때 코일에 저장되는 에너지는 무시했다. 발전된 전기에너지는 전자석에서 나오는 것이 아니라 차의 운동에너지에서 나온다.</p>
+        <h3 style="font-size:15px;margin:14px 0 4px">3. 손익분기 속력</h3>
+        <div class="eq"><i>v</i><sub>be</sub> = √( <i>P</i><sub>f</sub> / ( <i>R</i>/(<i>R</i>+<i>r</i>) · <i>c</i> ) )</div>
+        <p>부하로 가는 발전 전력은 <i>R</i>/(<i>R</i>+<i>r</i>) · <i>cv</i><sup>2</sup>이다. 속력이 <i>v</i><sub>be</sub>보다 느려지면 이 값이 <i>P</i><sub>f</sub>보다 작아져 손해이므로, 그 아래에서는 전자석을 끄는 것이 유리하다. 전자석을 끄면 그 뒤로는 마찰 브레이크만으로 멈춘다. 철심이 포화되기 전에는 <i>c</i> ∝ <i>B</i><sup>2</sup> ∝ <i>I</i><sub>f</sub><sup>2</sup>이고 <i>P</i><sub>f</sub> ∝ <i>I</i><sub>f</sub><sup>2</sup>이다. 따라서 <i>v</i><sub>be</sub>는 계자 전류와 상관없이 장치 구조(<i>R</i><sub>f</sub>, <i>N</i><sub>f</sub>, <i>g</i>, <i>N</i>, <i>S</i>, <i>G</i> 등)로 정해진다.</p>
+        <h3 style="font-size:15px;margin:14px 0 4px">4. 순이득</h3>
+        <div class="eq">순이득 = <i>E</i> − <i>E</i><sub>f</sub></div>
+        <dl class="sym">
+          <dt>μ<sub>0</sub></dt><dd>진공의 투자율 4π × 10<sup>−7</sup> T·m/A</dd>
+          <dt>N<sub>f</sub>, I<sub>f</sub>, R<sub>f</sub></dt><dd>계자 코일 감은 수, 계자 전류 (A), 계자 코일 저항 (Ω)</dd>
+          <dt>g</dt><dd>자기 회로의 공극 길이 (m)</dd>
+          <dt>P<sub>f</sub>, E<sub>f</sub></dt><dd>전자석 소비 전력 (W), 소비 에너지 (J)</dd>
+          <dt>t<sub>on</sub></dt><dd>제동 중 전자석이 켜져 있던 시간 (s)</dd>
+          <dt>v<sub>be</sub></dt><dd>발전 전력과 전자석 소비 전력이 같아지는 속력 (m/s)</dd>
+        </dl>
+      </div>
+
     <div class="card">
       <h2>장치 구성도</h2>
       <p class="cap">바퀴 축에 증속 기어와 발전기를 연결한 구조이다. 브레이크 디스크와 캘리퍼(마찰 제동)는 기존 부품을 그대로 쓴다. 번호는 아래 부품표와 같다.</p>
@@ -1159,7 +1183,7 @@ function setMag(k){
   if(k===smMag){ return; }
   if(k==='em') smPmB=$('#sm-B').value;
   smMag=k; $('#mag-pm').setAttribute('aria-pressed',k==='pm'?'true':'false'); $('#mag-em').setAttribute('aria-pressed',k==='em'?'true':'false');
-  $('#sm-em').hidden = k!=='em'; $('#sm-em-card').hidden = k!=='em'; $('#sm-em-fixed').hidden = k!=='em';
+  $('#sm-em').hidden = k!=='em';
   $('#sm-B').readOnly = k==='em'; $('#sm-B-r').disabled = k==='em';
   if(k==='pm' && smPmB!=null){ $('#sm-B').value=smPmB; $('#sm-B-r').value=smPmB; }
   runSimple();
@@ -1183,29 +1207,28 @@ function buildSimple(){
 function runSimple(){
   const q=smParams(), o=smCalc(q);
   if(q.em){ $('#sm-B').value=q.B.toFixed(3); $('#sm-B-r').value=String(q.B);
-    $('#sm-bnote').innerHTML=`<i>B</i> = <i>μ</i><sub>0</sub><i>N</i><sub>f</sub><i>I</i><sub>f</sub>/<i>g</i> = ${fmt(q.Braw)} T${q.Braw>EMF.Bsat?` → 철심 포화로 ${EMF.Bsat} T에서 멈춤`:''}`; }
+    $('#sm-bnote').textContent= q.Braw>EMF.Bsat ? `철심 포화: B = ${EMF.Bsat} T에서 멈춤` : ''; }
   const [ev,eu]=eTxt(o.E), [pv,pu]= o.P0>=1000?[fmt(o.P0/1000),'kW']:[fmt(o.P0),'W'];
   const ratio = smBase && smBase.E>0 ? o.E/smBase.E : NaN;
   const dx = (o.x0>0 && isFinite(o.x0)) ? (o.x0-o.xs)/o.x0*100 : NaN;
-  const stopTile = o.noStop ? tile('정지 거리', '서지 않음', '', (o.c<=0 || o.v1>=o.v0) ? '마찰 브레이크와 발전기 제동력이 모두 0이라 감속하지 않는다' : `마찰 브레이크가 0이고 ${fmt(o.v1*3.6)} km/h 아래에서 전자석을 꺼서 그 속력으로 계속 굴러간다`)
-    : !o.fric ? tile('정지 거리', fmt(o.xs), 'm', `마찰 0: 발전기만으로 감속해 속력이 처음의 1%가 될 때까지의 거리. 발전기가 없으면 서지 않는다`)
+  const stopTile = o.noStop ? tile('정지 거리', '서지 않음', '', (o.c<=0 || o.v1>=o.v0) ? '제동력 0' : `${fmt(o.v1*3.6)} km/h로 계속 주행`)
+    : !o.fric ? tile('정지 거리', fmt(o.xs), 'm', `마찰 0: 속력 1%까지의 거리`)
     : tile('정지 거리', fmt(o.xs), 'm', `발전기 없을 때 ${fmt(o.x0)} m보다 ${pct(dx)} 짧음`);
   let tiles=
     tile('제동 중 발전량 <i>E</i>', ev, eu, `차의 운동에너지 ${fmt(o.K0/1000)} kJ의 ${pct(o.K0>0?o.E/o.K0*100:NaN)}`)+
     tile('비교 기준 대비 (발전량)', isFinite(ratio)?'×'+(ratio>=100?fmt(ratio):ratio.toFixed(2)):'–', '', smBase?smBaseText(smBase):'')+
     stopTile+
-    tile('발전기 제동력 (시작 순간)', fmt(o.F0), 'N', `마찰 ${fmt(o.Ffr)} N과 함께 작동, 발전 전력 ${pv} ${pu}`);
+    tile('발전기 제동력 (시작 순간)', fmt(o.F0), 'N', `마찰 ${fmt(o.Ffr)} N · 발전 전력 ${pv} ${pu}`);
   if(q.em){
     const [nv,nu]=eTxt(o.net), [fv,fu]=eTxt(o.Ef), ok=o.net>=0;
     tiles+= tile('순이득 <i>E</i> − <i>E</i><sub>f</sub>', nv, nu, `<span class="pill ${ok?'ok':'bad'}">${ok?'✓ 이득':'! 손해'}</span> 발전량 ${ev} ${eu} − 전자석 ${fv} ${fu}`)+
-      tile('전자석 소비 전력 <i>P</i><sub>f</sub>', fmt(o.Pf), 'W', `켜져 있던 시간 ${fmt(o.t1)} s, 소비 에너지 ${fv} ${fu}`)+
-      tile('손익분기 속력', isFinite(o.vBE)?fmt(o.vBE*3.6):'–', 'km/h', q.autoOff ? '이 속력 아래에서는 전자석을 끈다' : '이 속력 아래에서는 전자석 소비가 발전보다 크다 (지금은 계속 켜 둠)');
+      tile('전자석 소비 전력 <i>P</i><sub>f</sub>', fmt(o.Pf), 'W', `켜진 시간 ${fmt(o.t1)} s · ${fv} ${fu}`)+
+      tile('손익분기 속력', isFinite(o.vBE)?fmt(o.vBE*3.6):'–', 'km/h', q.autoOff ? '이 아래에서 전자석 끔' : '이 아래는 손해 (계속 켬)');
   }
   $('#sm-tiles').innerHTML=tiles;
   /* 그래프 1 */
   if(q.em){
     $('#sm-c1-h').textContent='계자 전류와 에너지';
-    $('#sm-c1-cap').innerHTML='다른 값은 그대로 두고 계자 전류 <i>I</i><sub>f</sub>만 바꾼 결과이다. 철심이 포화되기 전에는 발전량과 전자석 소비가 모두 <i>I</i><sub>f</sub><sup>2</sup>에 비례해 함께 커진다. 포화 뒤에는 자기장이 더 커지지 않아 발전량은 그대로인데 소비만 늘어 순이득이 줄어든다.';
     const pE=[],pF=[],pN=[];
     for(let i=0;i<=100;i++){ const If=5*i/100; const qq=Object.assign({},q,{If,B:emB(q,If),Pf:If*If*q.Rf}); const r=smCalc(qq); pE.push([If,r.E/1000]); pF.push([If,r.Ef/1000]); pN.push([If,r.net/1000]); }
     const marks=[{x:Math.min(q.If,5), label:`현재 I<tspan baseline-shift="sub" font-size="9">f</tspan> = ${fmt(q.If)} A`}];
@@ -1214,7 +1237,6 @@ function runSimple(){
       series:[{name:'발전량 E', color:'--s1', pts:pE},{name:'전자석 소비 Ef', color:'--s2', dash:'6 4', pts:pF},{name:'순이득', color:'--s3', dash:'2 3', pts:pN}], marks});
   } else {
     $('#sm-c1-h').textContent='자기장 세기와 발전량';
-    $('#sm-c1-cap').innerHTML='다른 값은 그대로 두고 <i>B</i>만 바꾼 결과이다. <i>B</i>가 작을 때는 <i>B</i><sup>2</sup>에 비례해 늘어난다. <i>B</i>가 커지면 발전기가 제동을 많이 도와 차가 빨리 서기 때문에 늘어나는 폭이 줄고, 점선(이론 상한)을 넘지 못한다.';
     const ptsB=[], upB=[]; for(let i=0;i<=150;i++){ const B=i/100; const r=smCalc(Object.assign({},q,{B})); ptsB.push([B,r.E/1000]); upB.push([B,r.upper/1000]); }
     lineChart($('#sm-c1'),{xLabel:'자기장 세기 B (T)', yLabel:'발전량 E (kJ)', xName:'B', xUnit:'T', yUnit:'kJ',
       series:[{name:'발전량', color:'--s1', pts:ptsB},{name:'이론 상한', color:'--s2', dash:'6 4', pts:upB}],
