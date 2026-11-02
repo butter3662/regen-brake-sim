@@ -341,11 +341,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
   <div class="m3-stage">
     <canvas id="m3-cv" aria-label="회생제동 발전 장치 3D 모형"></canvas>
     <div class="m3-views">
-      <button type="button" data-m3view="in" aria-pressed="true">안쪽에서</button>
-      <button type="button" data-m3view="out" aria-pressed="false">바깥쪽에서</button>
-      <button type="button" data-m3view="side" aria-pressed="false">옆에서</button>
-      <button type="button" data-m3view="top" aria-pressed="false">위에서</button>
-      <button type="button" data-m3view="core" aria-pressed="false">U자 철심 확대</button>
+      <button type="button" id="m3-core" aria-pressed="false">U자 철심 확대</button>
     </div>
     <div class="m3-hint">끌기: 회전 · 휠/두 손가락: 확대</div>
   </div>
@@ -1012,7 +1008,7 @@ function frame(ts){
 }
 function setView(name){
   const v=VIEWS[name]; mode=name; cam.yaw=v.yaw; cam.pitch=v.pitch; cam.dist=v.dist; [cam.tx,cam.ty,cam.tz]=v.t;
-  document.querySelectorAll('[data-m3view]').forEach(b=>b.setAttribute('aria-pressed', b.dataset.m3view===name?'true':'false'));
+  const b=$('#m3-core'); b.setAttribute('aria-pressed', name==='core'?'true':'false'); b.textContent = name==='core' ? '전체 보기' : 'U자 철심 확대';
 }
 let inited=false;
 function init(){
@@ -1031,7 +1027,7 @@ function init(){
   const up=e=>{ ptrs.delete(e.pointerId); if(ptrs.size<2) pinch0=null; };
   cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
   cv.addEventListener('wheel',e=>{ e.preventDefault(); cam.dist=Math.max(0.15,Math.min(3,cam.dist*Math.exp(e.deltaY*0.001))); },{passive:false});
-  document.querySelectorAll('[data-m3view]').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.m3view)));
+  $('#m3-core').addEventListener('click',()=>setView(mode==='core'?'in':'core'));
   const pb=$('#m3-play'); pb.textContent=playing?'일시정지':'재생';
   pb.addEventListener('click',()=>{ playing=!playing; pb.textContent=playing?'일시정지':'재생'; });
   $('#m3-spd').addEventListener('input',e=>{ st.speed=+e.target.value; $('#m3-spdo').textContent=st.speed+' km/h'; });
