@@ -58,6 +58,18 @@ nav.tabs a{padding:9px 14px;color:var(--ink-2);text-decoration:none;font-family:
 nav.tabs a[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
 nav.tabs a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .layout{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start}
+.tzbars{display:flex;flex-direction:column;gap:8px;margin:0 0 10px}
+.tzbars .r{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:13px}
+.tzbars .r span{color:var(--ink-2)}
+.tzbars .r b{font-family:var(--f-mono);font-weight:500;font-variant-numeric:tabular-nums}
+.tzbars .bar{grid-column:1/-1;height:9px;border-radius:5px;background:var(--line);overflow:hidden}
+.tzbars .bar i{display:block;height:100%;min-width:2px}
+.tzdl{display:grid;grid-template-columns:1fr auto;gap:3px 10px;margin:0;font-size:13px}
+.tzdl dt{color:var(--ink-2)}
+.tzdl dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+.cseg{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}
+.cseg button{font-size:13px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.cseg button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);font-weight:500}
 @media (max-width:860px){.layout{grid-template-columns:1fr}.layout>.results{order:-1}}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
 .params h3{font-family:var(--f-display);font-size:13px;font-weight:600;color:var(--ink-3);margin:14px 0 6px;letter-spacing:.02em}
@@ -239,6 +251,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
 .m3 .m3-note{font-size:12.5px;color:var(--ink-3);margin:12px 0 0;max-width:90ch}
 .m3 .m3-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--ink-2);margin-top:10px}
 .m3 .m3-legend span{display:inline-flex;align-items:center;gap:6px}
+.m3 [hidden]{display:none!important}
 .m3 .m3-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 </style>
 </head>
@@ -305,6 +318,13 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
           <div class="chart" id="sm-c2"></div>
         </div>
       </div>
+      <div class="card tz" id="tz-card">
+      <h2>대조군과 비교: 테슬라 수준 회생제동</h2>
+      <p class="note" id="tz-cond" style="margin:0 0 8px"></p>
+      <div class="tzbars" id="tz-bars"></div>
+      <dl class="tzdl" id="tz-dl"></dl>
+      <p class="note" style="margin:6px 0 0">대조군은 같은 차가 제동할 때마다 운동에너지 ½<i>mv</i><sub>0</sub><sup>2</sup>의 70%를 회수한다고 단순 가정했다. 연료 환산은 두 경우 모두 회수 에너지가 엔진이 할 일을 대신한다고 보고 엔진 열효율 25%, 휘발유 32 MJ/L로 나눴다. 자세한 근거는 ‘예상 효과’ 탭에 있다.</p>
+    </div>
     </div>
   </div>
   </div>
@@ -390,6 +410,8 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
           <label class="m3-chk" for="m3-labels"><input type="checkbox" id="m3-labels" checked> 이름표</label>
           <label class="m3-chk" for="m3-brake"><input type="checkbox" id="m3-brake" checked> 브레이크</label>
           <label class="m3-chk" for="m3-flux"><input type="checkbox" id="m3-flux" checked> 자속 경로</label></div>
+        <div class="m3-row"><label class="lb" for="m3-gen">발전 방식</label>
+          <select id="m3-gen"><option value="diode" selected>다이오드 정류 + 계자 코일</option><option value="srg">전력 변환기 (계자 코일 없음)</option></select></div>
         <div class="m3-row"><label class="lb" for="m3-spd">차량 속력</label><input type="range" id="m3-spd" min="0" max="150" step="1" value="50"><output id="m3-spdo">50 km/h</output></div>
         <div class="m3-row"><label class="lb" for="m3-slow">느리게 보기</label>
           <select id="m3-slow"><option value="0.02">1/50배</option><option value="0.05" selected>1/20배</option><option value="0.2">1/5배</option><option value="1">실제 속도</option></select></div>
@@ -400,8 +422,9 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <span><i style="background:#6b6a65"></i>쇳조각</span>
         <span><i style="background:#d3d1c7"></i>원판 (비자성)</span>
         <span><i style="background:#b4b2a9"></i>U자 철심</span>
-        <span><i style="background:#afa9ec"></i>계자 코일</span>
-        <span><i style="background:#ef9f27"></i>발전 코일</span>
+        <span data-gen="diode"><i style="background:#afa9ec"></i>계자 코일</span>
+        <span data-gen="diode"><i style="background:#ef9f27"></i>발전 코일</span>
+        <span data-gen="srg" hidden><i style="background:#1d9e75"></i>코일 (자화 + 발전 겸용)</span>
         <span><i style="background:#e24b4a"></i>자속이 클수록 붉게</span>
       </div>
     </div>
@@ -411,14 +434,16 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
       <div class="m3-meter"><span>Φ<sub>B</sub> (철심 B)</span><div class="m3-bar"><i id="m3-barB" style="background:var(--m3-phiB)"></i></div><b id="m3-valB">–</b></div>
       <div class="m3-meter"><span>Φ<sub>A</sub> + Φ<sub>B</sub></span><div class="m3-bar"><i id="m3-barS" style="background:var(--m3-sum)"></i></div><b id="m3-valS">–</b></div>
       <div class="m3-big">
-        <div>발전 기전력 ε<b id="m3-emf">–</b></div>
+        <div><span id="m3-emf-l">발전 기전력 ε</span><b id="m3-emf">–</b></div>
+        <div data-gen="srg" hidden>회전 기전력 (철심 A)<b id="m3-e2">–</b></div>
         <div>자속 변화 빈도<b id="m3-freq">–</b></div>
         <div>바퀴 회전수<b id="m3-rps">–</b></div>
       </div>
-      <p class="m3-note">A 철심(0°, −30°, −60°, −90°)과 B 철심(45°, 75°, 105°, 135°)은 쇳조각 간격의 반 칸만큼 어긋나 있어서, 한쪽 자속이 커지면 다른 쪽은 작아진다. 계자 코일은 Φ<sub>A</sub> + Φ<sub>B</sub>(거의 일정)를, 반대로 이은 발전 코일은 Φ<sub>A</sub> − Φ<sub>B</sub>를 느낀다.</p>
+      <p class="m3-note" data-gen="diode">A 철심(0°, −30°, −60°, −90°)과 B 철심(45°, 75°, 105°, 135°)은 쇳조각 간격의 반 칸만큼 어긋나 있어서, 한쪽 자속이 커지면 다른 쪽은 작아진다. 계자 코일은 Φ<sub>A</sub> + Φ<sub>B</sub>(거의 일정)를, 반대로 이은 발전 코일은 Φ<sub>A</sub> − Φ<sub>B</sub>를 느낀다.</p>
+      <p class="m3-note" data-gen="srg" hidden>계자 코일이 없고, 철심마다 코일 하나(17회)를 두 다리에 나눠 감는다(초록). 쇳조각이 정렬하기 직전에 변환기가 +48 V를 걸어 전류를 세우고(여자), 쇳조각이 멀어지는 동안 전류를 유지해 제동 토크를 만들고, 다음 쇳조각이 오기 전에 −48 V로 전류를 0으로 되돌린다(배터리로 회수). 그래서 자속은 전류가 흐르는 구간에만 생긴다. 회전 기전력 <i>iω</i> d<i>L</i>/d<i>θ</i>가 음수인 구간(멀어질 때)에 기계 에너지가 전기로 바뀐다. 전류 모양은 켜고 끄는 각도를 대표값으로 둔 근사이다.</p>
     </div>
   </div>
-  <p class="m3-note">시뮬레이션 탭의 기본 설계와 같은 모형이다. 이 탭의 기전력은 다이오드 정류 방식 기준이다. 치수와 수치는 설계 가정값이다. 타이어 235/45R18(반지름 0.33 m), 쇳조각 12개(폭 39 mm, 반지름 방향 65 mm, 두께 16 mm), 틈은 쇳조각이 있을 때 1 mm × 2, 없을 때 약 18 mm이다. U자 철심은 8개(A 0°·−30°·−60°·−90°, B 45°·75°·105°·135°)이고, 지면과 간격을 두려고 아래쪽은 비웠다. 다리와 등의 두께는 65 mm로 단면적이 다리 끝 면적과 같아 틈과 함께 포화된다. 철심은 와전류 손실을 줄이려고 얇은 규소강판을 쌓아 만든다. 계자는 철심마다 140회 × 17 A(8개 직렬에 약 47 V), 발전 코일은 철심마다 17회이다. 자속은 쇳조각과 철심이 겹치는 면적에 비례한다고 근사했고, 틈이 넓을 때 자속이 옆으로 퍼지는 효과는 무시했다.</p>
+  <p class="m3-note">시뮬레이션 탭의 기본 설계와 같은 모형이다. ‘발전 방식’에서 다이오드 방식과 전력 변환기 방식을 바꿔 볼 수 있다. 치수와 수치는 설계 가정값이다. 타이어 235/45R18(반지름 0.33 m), 쇳조각 12개(폭 39 mm, 반지름 방향 65 mm, 두께 16 mm), 틈은 쇳조각이 있을 때 1 mm × 2, 없을 때 약 18 mm이다. U자 철심은 8개(A 0°·−30°·−60°·−90°, B 45°·75°·105°·135°)이고, 지면과 간격을 두려고 아래쪽은 비웠다. 다리와 등의 두께는 65 mm로 단면적이 다리 끝 면적과 같아 틈과 함께 포화된다. 철심은 와전류 손실을 줄이려고 얇은 규소강판을 쌓아 만든다. 다이오드 방식은 계자가 철심마다 140회 × 17 A(8개 직렬에 약 47 V), 발전 코일이 철심마다 17회이다. 전력 변환기 방식은 계자 코일 자리까지 써서 철심마다 코일 하나(17회, 전류 상한 약 140 A)를 감는다. 자속은 쇳조각과 철심이 겹치는 면적에 비례한다고 근사했고, 틈이 넓을 때 자속이 옆으로 퍼지는 효과는 무시했다.</p>
 </div>
 
   </div>
@@ -507,7 +532,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
 
       <div class="card">
         <h2>전력 변환기 방식 계산</h2>
-        <p>변수 칸에서 ‘전력 변환기’를 고르면 계자 코일을 쓰지 않는다. 철심마다 발전 코일 하나를 비대칭 하프브리지 변환기로 따로 제어해서, 같은 코일이 자화와 발전을 모두 한다(스위치드 릴럭턴스 발전기). 다른 철심과의 상호 인덕턴스는 무시하고 철심마다 따로 계산해 <i>n</i>배 한다.</p>
+        <p>변수 칸에서 ‘전력 변환기’를 고르면 계자 코일을 쓰지 않는다. 철심마다 발전 코일 하나를 비대칭 하프브리지 변환기로 따로 제어해서, 같은 코일이 자화와 발전을 모두 한다(스위치드 릴럭턴스 발전기). 계자 코일이 빠진 자리까지 이 코일을 감는다고 보아 철심 하나의 구리 단면적 합을 500 mm²(두 자리 합)로 잡았다. 코일이 두꺼워져 한 바퀴 길이도 늘어나므로 두께 몫을 2배(100 mm)로 잡아 <i>l</i> = 2(39 mm + <i>h</i>) + 100 mm로 계산한다. 그래서 같은 감은 수에서 저항이 다이오드 방식 발전 코일의 약 0.6배이다. 다른 철심과의 상호 인덕턴스는 무시하고 철심마다 따로 계산해 <i>n</i>배 한다.</p>
         <h3 style="font-size:15px;margin:14px 0 4px">1. 코일 하나의 전압식</h3>
         <div class="eq"><i>v</i> = <i>R i</i> + <i>L</i>(<i>θ</i>) d<i>i</i>/d<i>t</i> + <i>i ω</i> d<i>L</i>/d<i>θ</i>, &nbsp;&nbsp; <i>L</i>(<i>θ</i>) = <i>N</i><sub>a</sub><sup>2</sup> (<i>𝒫</i><sub>off</sub> + (<i>𝒫</i><sub>on</sub> − <i>𝒫</i><sub>off</sub>) × 겹침)</div>
         <p>쇳조각 한 칸(30°) 동안 겹침은 0 → 1 → 0으로 직선 변화하고, 인덕턴스도 <i>L</i><sub>off</sub> → <i>L</i><sub>on</sub> → <i>L</i><sub>off</sub>로 바뀐다. 쇳조각이 멀어질 때 d<i>L</i>/d<i>θ</i> &lt; 0이라 마지막 항이 발전 기전력이 된다. 이때 바퀴가 받는 제동 토크는 <i>T</i> = ½<i>i</i><sup>2</sup> |d<i>L</i>/d<i>θ</i>|이다.</p>
@@ -519,7 +544,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <p>앞쪽은 쇳조각이 정렬했을 때 틈이 포화(1.5 T)에 이르는 전류이고, <i>I</i><sub>max</sub> = 150 A는 스위치와 배선이 견디는 전류(가정)이다. 감은 수를 줄이면 포화 전류가 커지지만 150 A에서 막힌다. 그래서 전력 변환기 방식의 최적 감은 수는 포화 전류가 150 A 근처가 되는 감은 수(약 16회)이다. 공간이 정해져 있으면 저항이 <i>N</i><sub>a</sub><sup>2</sup>, 포화 전류가 1/<i>N</i><sub>a</sub>에 비례해 코일 열 <i>RI</i><sup>2</sup>는 감은 수와 거의 상관없다.</p>
         <h3 style="font-size:15px;margin:14px 0 4px">4. 여자 에너지와 순 생산</h3>
         <div class="eq"><i>E</i><sub>in</sub> = ∫<sub>켬</sub> <i>V i</i> d<i>t</i>, &nbsp;&nbsp; <i>E</i><sub>out</sub> = ∫<sub>끔</sub> <i>V i</i> d<i>t</i>, &nbsp;&nbsp; <i>E</i><sub>net</sub> = <i>E</i><sub>out</sub> − <i>E</i><sub>in</sub> = <i>W</i><sub>mech</sub> − <i>E</i><sub>cu</sub></div>
-        <p>이 방식도 전류를 켰다 껐다 하며, 켜는 구간에는 배터리가 코일에 전류를 세우는 데 에너지 <i>E</i><sub>in</sub>(여자 에너지)을 내준다. 다만 이 에너지는 코일 자기장에 저장될 뿐 사라지지 않는다. 끄는 구간에는 전류가 다이오드를 거쳐 배터리로 돌아오는데, 그동안 쇳조각이 멀어지며 인덕턴스가 줄어드는 것(d<i>L</i>/d<i>θ</i> &lt; 0)이 기계 일 <i>W</i><sub>mech</sub>를 전기로 바꿔 더해 주므로 돌려받는 에너지 <i>E</i><sub>out</sub>이 더 크다. 시뮬레이션의 ‘누적 발전량’은 <i>E</i><sub>out</sub>, ‘누적 사용 에너지 (코일 여자)’는 <i>E</i><sub>in</sub>, 순 생산은 그 차이다. 계자 방식의 전자석 전력은 저항에서 모두 열이 되지만, 여기서는 여자 에너지가 대부분 되돌아온다는 점이 다르다. 대신 배터리와 코일 사이를 오가는 에너지가 순 생산보다 훨씬 크므로(기본값 60 km/h에서 여자 약 49 kJ, 순 생산 약 5.3 kJ), 변환기 손실이 오가는 에너지의 몇 %만 되어도 순 생산이 크게 줄어든다.</p>
+        <p>이 방식도 전류를 켰다 껐다 하며, 켜는 구간에는 배터리가 코일에 전류를 세우는 데 에너지 <i>E</i><sub>in</sub>(여자 에너지)을 내준다. 다만 이 에너지는 코일 자기장에 저장될 뿐 사라지지 않는다. 끄는 구간에는 전류가 다이오드를 거쳐 배터리로 돌아오는데, 그동안 쇳조각이 멀어지며 인덕턴스가 줄어드는 것(d<i>L</i>/d<i>θ</i> &lt; 0)이 기계 일 <i>W</i><sub>mech</sub>를 전기로 바꿔 더해 주므로 돌려받는 에너지 <i>E</i><sub>out</sub>이 더 크다. 시뮬레이션의 ‘누적 발전량’은 <i>E</i><sub>out</sub>, ‘누적 사용 에너지 (코일 여자)’는 <i>E</i><sub>in</sub>, 순 생산은 그 차이다. 계자 방식의 전자석 전력은 저항에서 모두 열이 되지만, 여기서는 여자 에너지가 대부분 되돌아온다는 점이 다르다. 대신 배터리와 코일 사이를 오가는 에너지가 순 생산보다 훨씬 크므로(기본값 60 km/h에서 여자 약 54 kJ, 순 생산 약 5.9 kJ), 변환기 손실이 오가는 에너지의 몇 %만 되어도 순 생산이 크게 줄어든다.</p>
         <dl class="sym">
           <dt>V, i</dt><dd>코일에 거는 전압 (켬: +48 V, 끔: −48 V), 코일 전류 (A)</dd>
           <dt>E<sub>in</sub>, E<sub>out</sub>, E<sub>net</sub></dt><dd>배터리가 내준 여자 에너지, 배터리가 돌려받은 에너지, 순 생산 에너지 (J)</dd>
@@ -603,6 +628,8 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
 
     <div class="card">
       <h2>회로도</h2>
+      <div class="cseg" role="group" aria-label="회로도 발전 방식"><button type="button" data-c="diode" aria-pressed="true">다이오드 방식</button><button type="button" data-c="srg" aria-pressed="false">전력 변환기 방식</button></div>
+      <div id="circ-diode">
       <p class="cap">직렬로 이은 발전 코일 <i>n</i>개는 크기 <i>Kv</i>인 네모파 기전력 <i>ε</i>, 저항 <i>r</i>, 인덕턴스 <i>L</i>을 가진 교류 전원으로 볼 수 있다. 다이오드 4개로 된 브리지 정류기를 거치면, 코일 전류의 방향이 바뀌어도 부하 <i>R</i>에는 한 방향으로 전류가 흐른다.</p>
       <div class="diagram">
         <svg viewBox="0 0 640 240" class="circ" role="img" aria-label="교류 전원, 내부저항, 브리지 정류기, 부하 저항으로 된 회로도">
@@ -636,6 +663,43 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
           </g>
         </svg>
       </div>
+      </div>
+      <div id="circ-srg" hidden>
+      <p class="cap">철심마다 코일 하나에 스위치 2개(S<sub>1</sub>, S<sub>2</sub>)와 다이오드 2개(D<sub>1</sub>, D<sub>2</sub>)로 된 비대칭 하프브리지가 붙고, 철심 <i>n</i>개의 회로가 48 V 배터리에 나란히 이어진다. ① S<sub>1</sub>·S<sub>2</sub>를 켜면 배터리 → S<sub>1</sub> → 코일 → S<sub>2</sub>로 전류가 흘러 코일에 +48 V가 걸린다(여자). ② 둘 다 끄면 코일 전류가 D<sub>1</sub> → 코일 → D<sub>2</sub>를 거쳐 배터리 + 쪽으로 밀려 들어가 코일에 −48 V가 걸린다(회수). ③ 하나만 켜면 전류가 스위치와 다이오드 하나씩을 돌며 코일 전압이 0이 된다. 회전 위치 센서로 쇳조각 각도를 읽어 켜고 끄는 시점을 정한다.</p>
+      <div class="diagram">
+        <svg viewBox="0 0 640 260" class="circ" role="img" aria-label="48 V 배터리에 철심마다 스위치 2개, 다이오드 2개, 코일 하나로 된 비대칭 하프브리지가 나란히 이어진 회로도">
+          <g class="dg" fill="none" stroke="var(--ink-2)" stroke-width="2">
+            <polyline points="70,112 70,40 560,40"/><polyline points="70,148 70,220 560,220"/>
+            <line x1="52" y1="112" x2="88" y2="112"/><line x1="60" y1="122" x2="80" y2="122" stroke-width="4"/><line x1="52" y1="138" x2="88" y2="138"/><line x1="60" y1="148" x2="80" y2="148" stroke-width="4"/>
+            <polyline points="230,40 230,56"/><polyline points="230,96 230,112"/><line x1="230" y1="56" x2="241" y2="94"/><circle cx="230" cy="56" r="2.5" fill="var(--ink-2)"/><circle cx="230" cy="96" r="2.5" fill="var(--ink-2)"/>
+            <polyline points="230,112 300,112"/>
+            <path d="M300 112 a7 6 0 0 1 0 12 a7 6 0 0 1 0 12 a7 6 0 0 1 0 12"/>
+            <polyline points="300,148 370,148"/>
+            <polyline points="370,148 370,164"/><polyline points="370,204 370,220"/><line x1="370" y1="164" x2="381" y2="202"/><circle cx="370" cy="164" r="2.5" fill="var(--ink-2)"/><circle cx="370" cy="204" r="2.5" fill="var(--ink-2)"/>
+            <polyline points="190,220 190,112 230,112"/>
+            <path d="M182,172 L198,172 L190,160 Z" fill="var(--ink-2)"/><line x1="182" y1="160" x2="198" y2="160"/>
+            <polyline points="410,148 370,148"/><polyline points="410,148 410,40"/>
+            <path d="M402,100 L418,100 L410,88 Z" fill="var(--ink-2)"/><line x1="402" y1="88" x2="418" y2="88"/>
+            <g stroke-dasharray="5 4" opacity="0.55">
+              <rect x="470" y="70" width="80" height="120" rx="8"/>
+              <polyline points="510,40 510,70"/><polyline points="510,190 510,220"/>
+            </g>
+          </g>
+          <g class="dg">
+            <text x="96" y="105">+</text><text x="96" y="160">−</text>
+            <text x="70" y="250" text-anchor="middle">배터리 48 V</text>
+            <text x="246" y="78">S<tspan baseline-shift="sub" font-size="10">1</tspan></text>
+            <text x="386" y="190">S<tspan baseline-shift="sub" font-size="10">2</tspan></text>
+            <text x="166" y="170" text-anchor="end">D<tspan baseline-shift="sub" font-size="10">1</tspan></text>
+            <text x="426" y="98">D<tspan baseline-shift="sub" font-size="10">2</tspan></text>
+            <text x="316" y="134">코일 (철심 1개)</text>
+            <text x="300" y="250" text-anchor="middle">철심 1개의 회로</text>
+            <text x="510" y="125" text-anchor="middle" class="small">철심 2</text><text x="510" y="143" text-anchor="middle" class="small">… 철심 n</text>
+            <text x="510" y="250" text-anchor="middle" class="small">나란히 연결</text>
+          </g>
+        </svg>
+      </div>
+      </div>
     </div>
 
     <div class="card">
@@ -663,21 +727,21 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
   <div id="sv-fx" hidden>
     <div class="card">
       <h2>예상 효과: 시내 주행 연비</h2>
-      <p>기본 세팅(전력 변환기 방식)을 그대로 단 차가 시내에서 0 → 60 km/h → 0을 3분 주기로 하루 20회 반복한다고 가정하면, 연비는 약 <b>0.5~0.7%</b> 좋아진다. 쏘나타 디 엣지 2.0 가솔린의 복합연비 12.6 km/L가 약 <b>12.67~12.69 km/L</b>가 되는 정도이고, 하루 약 24~31 mL, 1년이면 약 9~11 L의 휘발유를 아낀다.</p>
+      <p>기본 세팅(전력 변환기 방식)을 그대로 단 차가 시내에서 0 → 60 km/h → 0을 3분 주기로 하루 20회 반복한다고 가정하면, 연비는 약 <b><span data-fx="s_pctR">–</span></b> 좋아진다. 쏘나타 디 엣지 2.0 가솔린의 복합연비 12.6 km/L가 약 <b><span data-fx="s_fe">–</span> km/L</b>가 되는 정도이고, 하루 약 <span data-fx="s_dvR">–</span> mL, 1년이면 약 <span data-fx="s_yrR">–</span> L의 휘발유를 아낀다.</p>
       <div class="tblwrap">
       <table class="parts basis">
         <thead><tr><th>항목</th><th>전력 변환기 방식</th><th>다이오드 방식</th></tr></thead>
         <tbody>
-          <tr><td>제동 1회 순 생산 <i>E</i><sub>1</sub> (60 km/h → 0)</td><td>5.26 kJ (회수 효율 2.6%)</td><td>2.52 kJ (회수 효율 1.2%)</td></tr>
-          <tr><td>하루 순 생산 <i>E</i><sub>d</sub> (20회)</td><td>105.2 kJ</td><td>50.4 kJ</td></tr>
-          <tr><td>하루 절약 연료 Δ<i>V</i></td><td>24.4~30.5 mL</td><td>11.7~14.6 mL</td></tr>
-          <tr><td>연비 개선율 Δ<i>V</i>/<i>V</i><sub>0</sub></td><td>0.54~0.67%</td><td>0.26~0.32%</td></tr>
-          <tr><td>연비 (기준 12.6 km/L)</td><td>12.67~12.69 km/L</td><td>12.63~12.64 km/L</td></tr>
-          <tr><td>1년(365일) 절약 연료</td><td>8.9~11.1 L</td><td>4.3~5.3 L</td></tr>
+          <tr><td>제동 1회 순 생산 <i>E</i><sub>1</sub> (60 km/h → 0)</td><td><span data-fx="s_E1">–</span> kJ (회수 효율 <span data-fx="s_eta">–</span>)</td><td><span data-fx="d_E1">–</span> kJ (회수 효율 <span data-fx="d_eta">–</span>)</td></tr>
+          <tr><td>하루 순 생산 <i>E</i><sub>d</sub> (20회)</td><td><span data-fx="s_Ed">–</span> kJ</td><td><span data-fx="d_Ed">–</span> kJ</td></tr>
+          <tr><td>하루 절약 연료 Δ<i>V</i></td><td><span data-fx="s_dv">–</span> mL</td><td><span data-fx="d_dv">–</span> mL</td></tr>
+          <tr><td>연비 개선율 Δ<i>V</i>/<i>V</i><sub>0</sub></td><td><span data-fx="s_pct">–</span></td><td><span data-fx="d_pct">–</span></td></tr>
+          <tr><td>연비 (기준 12.6 km/L)</td><td><span data-fx="s_feR">–</span> km/L</td><td><span data-fx="d_feR">–</span> km/L</td></tr>
+          <tr><td>1년(365일) 절약 연료</td><td><span data-fx="s_yr">–</span> L</td><td><span data-fx="d_yr">–</span> L</td></tr>
         </tbody>
       </table>
       </div>
-      <p class="note">범위의 앞쪽은 엔진 열효율 25%, 뒤쪽은 20%로 가정한 값이다. 제동 1회 값은 시뮬레이션 탭에서 다른 값은 모두 기본값으로 두고 <i>v</i><sub>0</sub>만 60 km/h로 바꿔 얻었다. 기본값인 50 km/h에서의 회수 효율은 2.4%이다.</p>
+      <p class="note">범위의 앞쪽은 엔진 열효율 25%, 뒤쪽은 20%로 가정한 값이다. 제동 1회 값은 시뮬레이션 탭에서 다른 값은 모두 기본값으로 두고 <i>v</i><sub>0</sub>만 60 km/h로 바꿔 얻었다. 기본값인 50 km/h에서의 회수 효율은 전력 변환기 방식 <span data-fx="s_eta50">–</span>, 다이오드 방식 <span data-fx="d_eta50">–</span>이다. 이 값들은 페이지를 열 때 시뮬레이션 모형으로 다시 계산해 넣는다.</p>
     </div>
 
     <div class="card">
@@ -695,16 +759,16 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
       <table class="parts basis">
         <thead><tr><th>항목 (같은 환산 기준, <i>η</i><sub>e</sub> = 0.25)</th><th>이 장치 (전력 변환기 방식)</th><th>대조군 (테슬라 수준)</th></tr></thead>
         <tbody>
-          <tr><td>제동 1회 회수 에너지</td><td>5.26 kJ (운동에너지의 2.5%)</td><td>146 kJ (운동에너지의 70%)</td></tr>
-          <tr><td>하루 회수 에너지 (20회)</td><td>105.2 kJ (0.029 kWh)</td><td>2.92 MJ (0.810 kWh)</td></tr>
-          <tr><td>하루 절약 연료</td><td>13.2 mL</td><td>0.364 L</td></tr>
-          <tr><td>연비 개선율 (기준 하루 4.56 L)</td><td>0.29%</td><td>8.0%</td></tr>
-          <tr><td>1년(365일) 절약 연료</td><td>4.8 L</td><td>133 L</td></tr>
+          <tr><td>제동 1회 회수 에너지</td><td><span data-fx="s_E1">–</span> kJ (운동에너지의 <span data-fx="s_ke">–</span>)</td><td>146 kJ (운동에너지의 70%)</td></tr>
+          <tr><td>하루 회수 에너지 (20회)</td><td><span data-fx="s_Ed">–</span> kJ (<span data-fx="s_kwh">–</span> kWh)</td><td>2.92 MJ (0.810 kWh)</td></tr>
+          <tr><td>하루 절약 연료</td><td><span data-fx="s_dvm">–</span> mL</td><td>0.364 L</td></tr>
+          <tr><td>연비 개선율 (기준 하루 4.56 L)</td><td><span data-fx="s_pctm">–</span></td><td>8.0%</td></tr>
+          <tr><td>1년(365일) 절약 연료</td><td><span data-fx="s_yrm">–</span> L</td><td>133 L</td></tr>
         </tbody>
       </table>
       </div>
-      <p><b>환산 기준에 주의해야 한다.</b> 대조군은 회수한 에너지가 바퀴를 굴리는 일을 대신한다고 보고 엔진 효율 <i>η</i><sub>e</sub>로만 나누었다. 위의 ‘예상 효과’ 표는 이 장치의 전기가 교류발전기 전기를 대신한다고 보아 <i>η</i><sub>e</sub><i>η</i><sub>b</sub><i>η</i><sub>a</sub>로 나누었으므로, 같은 에너지라도 연료를 약 1.9배 더 아끼는 것으로 계산된다. 그래서 이 표에서는 두 경우를 모두 <i>η</i><sub>e</sub> = 0.25 기준으로 맞췄다. 같은 기준에서 이 장치의 회수 에너지는 대조군의 약 3.6%이다.</p>
-      <p><b>두 기준을 쓰는 이유:</b> 이 장치의 회수 전력은 평균 약 29 W로 차량 전기 부하 안에서 모두 쓸 수 있어 교류발전기를 대신한다고 볼 수 있다. 대조군의 회수량은 1시간 주행에 평균 약 810 W로 크기 때문에, 전기 부하만으로 다 쓰기 어렵고 바퀴를 굴리는 데 써야 한다. 그러려면 구동 모터와 큰 배터리가 필요하므로, 대조군은 사실상 하이브리드차 수준의 장치를 뜻한다. 실제 회수량은 배터리 온도, 충전 상태, 회생제동 출력 제한 등에 따라 달라지므로 이 값은 이론적 단순 환산치이다.</p>
+      <p><b>환산 기준에 주의해야 한다.</b> 대조군은 회수한 에너지가 바퀴를 굴리는 일을 대신한다고 보고 엔진 효율 <i>η</i><sub>e</sub>로만 나누었다. 위의 ‘예상 효과’ 표는 이 장치의 전기가 교류발전기 전기를 대신한다고 보아 <i>η</i><sub>e</sub><i>η</i><sub>b</sub><i>η</i><sub>a</sub>로 나누었으므로, 같은 에너지라도 연료를 약 1.9배 더 아끼는 것으로 계산된다. 그래서 이 표에서는 두 경우를 모두 <i>η</i><sub>e</sub> = 0.25 기준으로 맞췄다. 같은 기준에서 이 장치의 회수 에너지는 대조군의 약 <span data-fx="s_ratio">–</span>이다.</p>
+      <p><b>두 기준을 쓰는 이유:</b> 이 장치의 회수 전력은 평균 약 <span data-fx="s_W">–</span> W로 차량 전기 부하 안에서 모두 쓸 수 있어 교류발전기를 대신한다고 볼 수 있다. 대조군의 회수량은 1시간 주행에 평균 약 810 W로 크기 때문에, 전기 부하만으로 다 쓰기 어렵고 바퀴를 굴리는 데 써야 한다. 그러려면 구동 모터와 큰 배터리가 필요하므로, 대조군은 사실상 하이브리드차 수준의 장치를 뜻한다. 실제 회수량은 배터리 온도, 충전 상태, 회생제동 출력 제한 등에 따라 달라지므로 이 값은 이론적 단순 환산치이다.</p>
       <p class="note">출처: 회생제동 시스템 효율 60~70%(Electra, Regenerative braking in electric cars), 왕복 효율 80% × 80% = 64%(IMI, How it works: Regenerative braking).</p>
     </div>
 
@@ -716,7 +780,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
       <div class="eq"><i>V</i><sub>0</sub> = <i>d</i> / <i>FE</i> = 57.4 km / 12.6 km/L ≈ 4.56 L</div>
       <h3 style="font-size:15px;margin:14px 0 4px">3. 아끼는 연료</h3>
       <p>회수한 전기는 원래 엔진이 벨트로 교류발전기(알터네이터)를 돌려 만들어야 했던 전기를 대신한다. 따라서 같은 전기를 엔진으로 만들 때 드는 연료만큼을 아낀다.</p>
-      <div class="eq">Δ<i>V</i> = <i>E</i><sub>d</sub> / (<i>η</i><sub>e</sub> <i>η</i><sub>b</sub> <i>η</i><sub>a</sub> <i>H</i>) = 105.2 kJ / (0.108~0.135 × 32 MJ/L) ≈ 24~31 mL</div>
+      <div class="eq">Δ<i>V</i> = <i>E</i><sub>d</sub> / (<i>η</i><sub>e</sub> <i>η</i><sub>b</sub> <i>η</i><sub>a</sub> <i>H</i>) = <span data-fx="s_Ed">–</span> kJ / (0.108~0.135 × 32 MJ/L) ≈ <span data-fx="s_dvR">–</span> mL</div>
       <dl class="sym">
         <dt>d</dt><dd>하루 주행 거리 (km)</dd>
         <dt>FE</dt><dd>기준 연비 12.6 km/L (쏘나타 디 엣지 2.0 가솔린 복합연비, 자동 6단·17인치)</dd>
@@ -727,17 +791,17 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <dt>H</dt><dd>휘발유 저위발열량 32 MJ/L</dd>
       </dl>
       <h3 style="font-size:15px;margin:14px 0 4px">4. 개선율</h3>
-      <div class="eq">Δ<i>V</i> / <i>V</i><sub>0</sub> ≈ 0.54~0.67%, &nbsp;&nbsp; <i>FE</i>′ = <i>d</i> / (<i>V</i><sub>0</sub> − Δ<i>V</i>) ≈ 12.67~12.69 km/L</div>
-      <p>하루 회수량 105.2 kJ는 60 km/h에서 설 때마다 버리는 운동에너지(½ × 1500 kg × (16.7 m/s)² ≈ 208 kJ, 하루 약 4.2 MJ)의 약 2.5%이다. 회수량과 주행 거리가 함께 늘어나므로 개선율(%)은 반복 횟수와 상관없이 같다. 그래서 연비 개선도 1%를 넘지 못한다.</p>
+      <div class="eq">Δ<i>V</i> / <i>V</i><sub>0</sub> ≈ <span data-fx="s_pct">–</span>, &nbsp;&nbsp; <i>FE</i>′ = <i>d</i> / (<i>V</i><sub>0</sub> − Δ<i>V</i>) ≈ <span data-fx="s_feR">–</span> km/L</div>
+      <p>하루 회수량 <span data-fx="s_Ed">–</span> kJ는 60 km/h에서 설 때마다 버리는 운동에너지(½ × 1500 kg × (16.7 m/s)² ≈ 208 kJ, 하루 약 4.2 MJ)의 약 <span data-fx="s_ke">–</span>에 불과하다. 그래서 연비 개선도 1%를 넘지 못한다. 회수량과 주행 거리가 반복 횟수에 함께 비례하므로, 개선율(%)은 반복 횟수와 상관없이 같다.</p>
     </div>
 
     <div class="card">
       <h2>한계와 주의점</h2>
       <ul class="plain">
-        <li><b>실제로는 더 낮을 가능성이 크다.</b> 장치 무게(쇳조각 원판, 철심 8개, 코일)가 늘어 드는 연료, 전력 변환기의 스위칭 손실, 48 V → 12 V 변환 손실(약 5%)을 계산에 넣지 않았다. 틈 가장자리로 새는 자속을 무시한 것도 결과를 크게 만든다.</li>
-        <li><b>회수한 전기는 모두 쓸 수 있다고 보았다.</b> 하루 105.2 kJ를 주행 60분에 나누면 평균 약 29 W로, 차량이 평소 쓰는 전기 부하보다 작다.</li>
+        <li><b>실제로는 더 낮을 가능성이 크다.</b> 장치 무게(쇳조각 원판, 철심 8개, 코일)가 늘어 드는 연료, 전력 변환기의 스위치·다이오드 손실(배터리와 코일 사이를 오가는 여자 에너지가 순 생산의 약 9배라 영향이 크다), 48 V → 12 V 변환 손실(약 5%)을 계산에 넣지 않았다. 틈 가장자리로 새는 자속을 무시한 것도 결과를 크게 만든다.</li>
+        <li><b>회수한 전기는 모두 쓸 수 있다고 보았다.</b> 하루 <span data-fx="s_Ed">–</span> kJ를 주행 60분에 나누면 평균 약 <span data-fx="s_W">–</span> W로, 차량이 평소 쓰는 전기 부하보다 작다.</li>
         <li><b>기준 연비에 따라 달라진다.</b> 실제 도심 연비가 복합연비보다 낮으면 기준 연료량이 늘어 개선율(%)은 더 작아진다.</li>
-        <li><b>주행 주기 가정에 따라 달라진다.</b> 정속 164 s 대신 신호 대기(공회전)를 넣으면 거리는 줄지만 공회전 연료가 들어, 개선율은 대체로 0.5% 안팎에 머문다.</li>
+        <li><b>주행 주기 가정에 따라 달라진다.</b> 정속 164 s 대신 신호 대기(공회전)를 넣으면 거리는 줄지만 공회전 연료가 들어, 개선율은 대체로 비슷한 수준에 머문다.</li>
       </ul>
       <p class="note">출처: 쏘나타 디 엣지 복합연비(현대자동차 카탈로그), 엔진 평균 열효율(What Is Engine Efficiency and How Is It Calculated?, Science Insights), 도심 정체 구간 엔진 열효율 실측(Factors affecting the efficiency of hybrid engines, White Rose eprints), 벨트·교류발전기 효율(Delco Remy 교류발전기 효율 자료), 휘발유 발열량(NCSU, Engineering ToolBox).</p>
     </div>
@@ -921,7 +985,7 @@ function lathe(profile,n){
 }
 const rect=(r1,r2,z1,z2)=>[[r1,z1],[r2,z1],[r2,z2],[r1,z2]];
 function hex(h){ return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]; }
-const GLOW=hex('#e24b4a');
+const GLOW=hex('#e24b4a'), SRGC=hex('#1d9e75');
 
 /* 회전하는 부분 */
 addMesh(Object.assign(lathe(rect(0.229,0.334,-0.1175,0.1175),48),{color:'#2c2c2a', group:'wheel', kind:'tire'}));
@@ -941,8 +1005,8 @@ CORE_ANG.forEach((a,i)=>{
   addMesh(Object.assign(radialBox(a,0.039,0.125,RL,Z0+0.009,Z0+0.009+TL),{color:'#b4b2a9', glow:i, core:i}));   /* 바깥쪽 다리 */
   addMesh(Object.assign(radialBox(a,0.039,0.125,RL,Z0-0.009-TL,Z0-0.009),{color:'#b4b2a9', glow:i, core:i}));   /* 안쪽 다리 */
   addMesh(Object.assign(radialBox(a,0.039,RL,RB,Z0-0.009-TL,Z0+0.009+TL),{color:'#b4b2a9', glow:i, core:i}));   /* 등 */
-  addMesh(Object.assign(radialBox(a,0.058,RT+0.015,RL-0.005,Z0+0.003,Z0+0.015+TL),{color:'#afa9ec', core:i}));            /* 계자 코일 */
-  addMesh(Object.assign(radialBox(a,0.058,RT+0.015,RL-0.005,Z0-0.015-TL,Z0-0.003),{color:'#ef9f27', core:i}));            /* 발전 코일 */
+  addMesh(Object.assign(radialBox(a,0.058,RT+0.015,RL-0.005,Z0+0.003,Z0+0.015+TL),{color:'#afa9ec', core:i, coil:'f'}));            /* 계자 코일 (전력 변환기 방식: 코일 1개의 절반) */
+  addMesh(Object.assign(radialBox(a,0.058,RT+0.015,RL-0.005,Z0-0.015-TL,Z0-0.003),{color:'#ef9f27', core:i, coil:'a'}));            /* 발전 코일 (전력 변환기 방식: 코일 1개의 절반) */
 });
 
 /* 카메라 */
@@ -999,10 +1063,19 @@ function proj(c){ const f=Math.min(W,H)*1.15; return [W/2 + f*c[0]/c[2], H/2 - f
 /* 상태 */
 let alpha=0, last=null, raf=0, running=false, lastUI=0;
 let playing=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
-const st={speed:50, slow:0.05, tire:0.22, brake:true, labels:true, flux:true};
+const st={speed:50, slow:0.05, tire:0.22, brake:true, labels:true, flux:true, gen:'diode'};
 function phase(coreA){ let d=((coreA - alpha) % TOOTH + TOOTH) % TOOTH; if(d>TOOTH/2) d-=TOOTH; return d; }
 function overlap(coreA){ return Math.max(0, 1-Math.abs(phase(coreA))/HALF); }               /* 겹침 비율 0~1 */
 function dOverlap(coreA){ const d=phase(coreA); return Math.abs(d)>=HALF ? 0 : (d>0?1:-1)/HALF; } /* d(겹침)/dα */
+/* 전력 변환기 방식: 쇳조각 한 칸 안의 위치 u (0: 직전 쇳조각과 가운데, 0.5: 정렬, 1: 다음 가운데).
+   바퀴가 돌면 α가 줄어 phase가 커지므로, phase < 0이 다가오는 구간, phase > 0이 멀어지는 구간이다. */
+const SRG_P={on:0.42, full:0.5, off:0.88, zero:0.96};
+function uPos(coreA){ return 0.5 + phase(coreA)/TOOTH; }
+function srgCur(coreA){ const u=uPos(coreA), p=SRG_P;     /* 전류 / I_ref (모양만 나타낸 근사) */
+  if(u<p.on||u>=p.zero) return 0; if(u<p.full) return (u-p.on)/(p.full-p.on); if(u<p.off) return 1; return 1-(u-p.off)/(p.zero-p.off); }
+const POFF=0.002/0.018;   /* 𝒫_off / 𝒫_on */
+function srgFlux(coreA){ return srgCur(coreA)*(POFF+(1-POFF)*overlap(coreA)); }   /* 자속 / 정렬·I_ref 때 자속 */
+const ISAT=1.5*0.002/(MU0*NARM), IREF=Math.min(ISAT,150), PON=MU0*AREA/0.002;
 
 /* 모드별 투명도 */
 function alphaOf(m){
@@ -1023,7 +1096,7 @@ function draw(){
   ensureBuf();
   const bg=css('--m3-stage'); const bgc=hex(bg.length===7?bg:'#e9eef3');
   u32.fill(pack(bgc[0],bgc[1],bgc[2])); zb.fill(0);
-  const glowE=CORE_ANG.map(overlap);
+  const glowE=CORE_ANG.map(a=> st.gen==='srg' ? srgFlux(a) : overlap(a));
   const L=[-0.35,0.55,-0.75], Ln=Math.hypot(...L); L[0]/=Ln; L[1]/=Ln; L[2]/=Ln;   /* 표면에서 빛 쪽 방향 (카메라 좌표) */
   const f=Math.min(W,H)*1.15*sc, hx=bw/2, hy=bh/2;
   const trans=[];
@@ -1033,6 +1106,7 @@ function draw(){
     const cvx=m.verts.map(p=>toCam(a? rotZ(p,a) : p));
     const sx=cvx.map(c=>hx+f*c[0]/c[2]), sy=cvx.map(c=>hy-f*c[1]/c[2]), sw=cvx.map(c=>1/c[2]);
     let rgb=m.rgb;
+    if(m.coil && st.gen==='srg') rgb=SRGC;
     if(m.glow!=null){ const e=glowE[m.glow]*0.85; rgb=[0,1,2].map(i=>m.rgb[i]+(GLOW[i]-m.rgb[i])*e); }
     for(const fc of m.faces){
       let skip=false; for(const i of fc) if(cvx[i][2]<0.03){ skip=true; break; } if(skip) continue;
@@ -1077,8 +1151,9 @@ function drawFlux(glowE){
 const LABELS_ALL=[
   {t:'U자 철심 A', p:()=>rotZ([0,RB,Z0],CORE_ANG[0])},
   {t:'U자 철심 B', p:()=>rotZ([0,RB,Z0],CORE_ANG[1])},
-  {t:'계자 코일', p:()=>rotZ([0,RL-0.005,Z0+0.012+TL],CORE_ANG[2]), sy:-1},
-  {t:'발전 코일', p:()=>rotZ([0,RL-0.005,Z0-0.012-TL],CORE_ANG[2]), sy:1},
+  {t:'계자 코일', p:()=>rotZ([0,RL-0.005,Z0+0.012+TL],CORE_ANG[2]), sy:-1, gen:'diode'},
+  {t:'발전 코일', p:()=>rotZ([0,RL-0.005,Z0-0.012-TL],CORE_ANG[2]), sy:1, gen:'diode'},
+  {t:'코일 (자화 + 발전, 두 다리에 나눠 감음)', p:()=>rotZ([0,RL-0.005,Z0-0.012-TL],CORE_ANG[2]), sy:1, gen:'srg'},
   {t:'쇳조각 원판', p:()=>[-0.12,-0.02,Z0]},
   {t:'고정 브래킷 (차체에 고정)', p:()=>rotZ([0,RB+0.012,Z0],-1.75)},
   {t:'브레이크 디스크', p:()=>rotZ([0,0.13,-0.03],-2.5), need:'brake'},
@@ -1087,8 +1162,10 @@ const LABELS_ALL=[
 ];
 const LABELS_CORE=[
   {t:'등 (자속이 돌아가는 길)', p:()=>[0,RB,Z0], sy:-1},
-  {t:'바깥쪽 다리 + 계자 코일', p:()=>[0,RL-0.005,Z0+0.012+TL], sy:-1},
-  {t:'안쪽 다리 + 발전 코일', p:()=>[0,RL-0.005,Z0-0.012-TL], sy:-1},
+  {t:'바깥쪽 다리 + 계자 코일', p:()=>[0,RL-0.005,Z0+0.012+TL], sy:-1, gen:'diode'},
+  {t:'안쪽 다리 + 발전 코일', p:()=>[0,RL-0.005,Z0-0.012-TL], sy:-1, gen:'diode'},
+  {t:'바깥쪽 다리 + 코일 절반', p:()=>[0,RL-0.005,Z0+0.012+TL], sy:-1, gen:'srg'},
+  {t:'안쪽 다리 + 코일 절반', p:()=>[0,RL-0.005,Z0-0.012-TL], sy:-1, gen:'srg'},
   {t:'쇳조각 (원판과 함께 회전)', p:()=>rotZ([0,0.15,Z0+0.0085],alpha+TOOTH), sy:1},
   {t:'틈 1 mm (양쪽)', p:()=>[0,0.135,Z0+0.009], sx:1, sy:1},
   {t:'원판 (비자성)', p:()=>rotZ([0,0.18,Z0],0.5), sx:-1, sy:1},
@@ -1101,6 +1178,7 @@ function drawLabels(){
   for(const l of list){
     if(l.need==='brake' && !st.brake) continue;
     if(l.need==='tire' && st.tire<=0) continue;
+    if(l.gen && l.gen!==st.gen) continue;
     const c=toCam(l.p()); if(c[2]<0.03) continue;
     const [x,y]=proj(c); if(x<2||y<2||x>W-2||y>H-2) continue;
     /* 가려짐 판정: 깊이 버퍼에 더 가까운 면이 있으면 점을 속이 빈 원으로 그린다 */
@@ -1129,14 +1207,20 @@ function drawLabels(){
 /* 측정값 */
 function updateUI(){
   const omega=(st.speed/3.6)/RW;            /* 실제 바퀴 각속도 rad/s */
-  const pA=PHI_MIN+DPHI*overlap(CORE_ANG[0]), pB=PHI_MIN+DPHI*overlap(CORE_ANG[1]);
+  const srg=st.gen==='srg';
+  const pA= srg ? PHI_MAX*srgFlux(CORE_ANG[0]) : PHI_MIN+DPHI*overlap(CORE_ANG[0]), pB= srg ? PHI_MAX*srgFlux(CORE_ANG[1]) : PHI_MIN+DPHI*overlap(CORE_ANG[1]);
   /* 바퀴는 α가 줄어드는 방향으로 돈다(dα/dt = −ω). ε = −N·d(ΦA−ΦB)/dt, 두 짝 직렬 */
   const emf=-(NC/2)*NARM*DPHI*(dOverlap(CORE_ANG[0])-dOverlap(CORE_ANG[1]))*(-omega);
   const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
   $('#m3-barA').style.width=(pA/PHI_MAX*100)+'%'; set('#m3-valA',(pA*1000).toFixed(2)+' mWb');
   $('#m3-barB').style.width=(pB/PHI_MAX*100)+'%'; set('#m3-valB',(pB*1000).toFixed(2)+' mWb');
   $('#m3-barS').style.width=((pA+pB)/(2*PHI_MAX)*100)+'%'; set('#m3-valS',((pA+pB)*1000).toFixed(2)+' mWb');
-  set('#m3-emf',(emf>=0?'+':'−')+Math.abs(emf).toFixed(1)+' V');
+  if(srg){
+    /* 철심 A 코일: 전류 i, 회전 기전력 e = i·dL/dt = i·N²(𝒫on−𝒫off)·d(겹침)/dα·dα/dt, dα/dt = −ω */
+    const i=IREF*srgCur(CORE_ANG[0]), e=i*NARM*NARM*PON*(1-POFF)*dOverlap(CORE_ANG[0])*(-omega);
+    set('#m3-emf', i.toFixed(0)+' A');
+    set('#m3-e2', (e>=0?'+':'−')+Math.abs(e).toFixed(1)+' V');
+  } else set('#m3-emf',(emf>=0?'+':'−')+Math.abs(emf).toFixed(1)+' V');
   set('#m3-freq',(omega/(2*Math.PI)*Z).toFixed(1)+' Hz');
   set('#m3-rps',(omega/(2*Math.PI)).toFixed(2)+' 회/s');
 }
@@ -1178,10 +1262,22 @@ function init(){
   $('#m3-brake').addEventListener('change',e=>{ st.brake=e.target.checked; });
   $('#m3-labels').addEventListener('change',e=>{ st.labels=e.target.checked; });
   $('#m3-flux').addEventListener('change',e=>{ st.flux=e.target.checked; });
+  const gs=$('#m3-gen'); if(gs) gs.addEventListener('change',e=>{ setGen(e.target.value); if(typeof window.M3D_onGen==='function') window.M3D_onGen(st.gen); });
+  setGen(st.gen);
+}
+/* 발전 방식에 따라 코일 색·이름표·측정값 이름을 바꾼다 */
+function setGen(g){
+  st.gen = g==='srg' ? 'srg' : 'diode'; const srg=st.gen==='srg';
+  const gs=$('#m3-gen'); if(gs && gs.value!==st.gen) gs.value=st.gen;
+  document.querySelectorAll('.m3 [data-gen]').forEach(el=>{ el.hidden = el.getAttribute('data-gen')!==st.gen; });
+  const t=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
+  t('#m3-emf-l', srg ? '철심 A 코일 전류 i' : '발전 기전력 ε');
+  if(inited){ updateUI(); }
 }
 return {
   start(){ init(); resize(); if(running) return; running=true; last=null; raf=requestAnimationFrame(frame); },
-  stop(){ running=false; cancelAnimationFrame(raf); }
+  stop(){ running=false; cancelAnimationFrame(raf); },
+  setGen(g){ setGen(g); }
 };
 })();
 
@@ -1717,7 +1813,10 @@ function srgCoil(q){
   const n=smN(q), h=Math.min(Math.max(q.hr||60,1),70)/1000, A=SMF.w*h, lTurn=2*(SMF.w+h)+SMF.lExtra, Na=Math.max(1,q.Na);
   const Pon=MU0*A/EMF.g, Poff=MU0*A/(EMF.g+SMF.tTooth);
   const Isat=EMF.Bsat*EMF.g/(MU0*Na);
-  return {n, R:SMF.rhoCu*lTurn*Na*Na/SMF.Acu, Lon:Na*Na*Pon, Loff:Na*Na*Poff, Isat, Iref:Math.min(Isat,SRG.Imax)};
+  /* 계자 코일이 빠진 자리까지 감는다: 구리 단면적 합 = 발전 코일 자리 + 계자 코일 자리.
+     코일이 두꺼워져 한 바퀴 길이도 늘어난다고 보아 두께 몫(lExtra)을 2배로 잡는다. */
+  const lS=lTurn+SMF.lExtra, AS=SMF.Acu+SMF.AcuF;
+  return {n, R:SMF.rhoCu*lS*Na*Na/AS, Lon:Na*Na*Pon, Loff:Na*Na*Poff, Isat, Iref:Math.min(Isat,SRG.Imax), lS, AS};
 }
 function srgStroke(c,omega,uon,uoff){
   const pitch=2*Math.PI/SMF.Z, dtdu=pitch/omega, du=1/SRG.N, dLmag=2*(c.Lon-c.Loff), V0=SRG.V;
@@ -1880,15 +1979,63 @@ function buildSimple(){
   { const t=document.createElement('p'); t.className='note'; t.id='sm-rnote'; t.style.margin='-2px 0 6px'; $('#na-opt').after(t); }
   $('#sm-reset').addEventListener('click',()=>{ [...SM,...SM_EM].forEach(d=>{ $('#sm-'+d.id).value=d.v; $('#sm-'+d.id+'-r').value=d.v; }); $('#sm-autooff').checked=true; document.querySelector('input[name=sm-gen][value=diode]').checked=true; runSimple(); });
 }
+
+/* ---------- 대조군(테슬라 수준 회생제동) 비교: 지금 조건, 제동 1회 ---------- */
+const TZ={eta:0.70, etaE:0.25, H:32e6, perDay:20};
+function tzUpdate(q,o){
+  const KE=0.5*q.m*Math.pow(q.v0/3.6,2), E=Math.max(o.net,0), T=TZ.eta*KE;
+  const mL=e=>e/(TZ.etaE*TZ.H)*1000, pc=x=>(x*100).toFixed(x<0.1?1:0)+'%';
+  const eS=e=>{ const [a,b]=eTxt(e); return a+' '+b; };
+  $('#tz-cond').innerHTML=`지금 변수(질량 ${fmt(q.m)} kg, ${fmt(q.v0)} km/h → 0, ${q.mode==='srg'?'전력 변환기':'다이오드'} 방식)로 한 번 제동할 때`;
+  const row=(n,v,f,c)=>`<div class="r"><span>${n}</span><b>${v}</b><div class="bar"><i style="width:${Math.max(0,Math.min(100,f*100))}%;background:var(${c})"></i></div></div>`;
+  $('#tz-bars').innerHTML = KE>0 ? row('차의 운동에너지 (100%)',eS(KE),1,'--s4')+row(`대조군 회수 (${pc(TZ.eta)})`,eS(T),TZ.eta,'--s2')+row(`이 장치 순 생산 (${pc(E/KE)})`,eS(E),E/KE,'--s1') : '<p class="note">속력이 0이다.</p>';
+  const dd=(t,v)=>`<dt>${t}</dt><dd>${v}</dd>`;
+  $('#tz-dl').innerHTML = KE>0 ? dd('이 장치 ÷ 대조군', T>0 ? (E/T*100).toFixed(1)+'%' : '–')+
+    dd('연료 환산, 제동 1회 (이 장치 / 대조군)', `${mL(E).toFixed(2)} / ${mL(T).toFixed(1)} mL`)+
+    dd(`연료 환산, 하루 ${TZ.perDay}회`, `${(mL(E)*TZ.perDay).toFixed(1)} mL / ${(mL(T)*TZ.perDay/1000).toFixed(3)} L`) : '';
+}
+/* ---------- 회로도 전환 ---------- */
+function circSet(mode){
+  const srg=mode==='srg';
+  const a=$('#circ-diode'), b=$('#circ-srg'); if(a) a.hidden=srg; if(b) b.hidden=!srg;
+  document.querySelectorAll('.cseg button').forEach(x=>x.setAttribute('aria-pressed', x.dataset.c===mode?'true':'false'));
+}
+function genSet(mode){ const r=document.querySelector(`input[name=sm-gen][value=${mode}]`); if(r && !r.checked){ r.checked=true; runSimple(); } }
+window.M3D_onGen = g=>genSet(g);
+/* ---------- 예상 효과 탭: 기본 세팅으로 다시 계산해 숫자를 채운다 ---------- */
+function smDefQ(mode,v0){
+  const q={mode}; [...SM,...SM_EM].forEach(d=>{ q[d.id]=d.v; }); q.v0=v0; q.em=mode!=='srg'; q.autoOff=true; q.Rf=smRf(q);
+  q.B=Math.min(MU0*q.Nf*q.If/EMF.g,EMF.Bsat); q.Pf=q.If*q.If*q.Rf*smN(q); q.Vf=q.If*q.Rf*smN(q); return q;
+}
+function fxFill(){
+  const N=20, d=57.4, FE=12.6, V0=d/FE, H=32e6, ch=[0.25*0.98*0.55, 0.20*0.98*0.55], KE=0.5*1500*Math.pow(60/3.6,2);
+  const out={}, put=(k,v)=>{ out[k]=v; };
+  for(const [m,k] of [['srg','s'],['diode','d']]){
+    const o=smCalc(smDefQ(m,60)), o50=smCalc(smDefQ(m,50));
+    const loss=o.Ffr*o.xs+o.Ecu, loss50=o50.Ffr*o50.xs+o50.Ecu, E1=Math.max(o.net,0), Ed=N*E1;
+    const dv=ch.map(c=>Ed/c/H), pct=dv.map(x=>x/V0*100), fe=dv.map(x=>d/(V0-x)), yr=dv.map(x=>x*365);
+    put(k+'_E1',(E1/1000).toFixed(2)); put(k+'_eta',(E1/loss*100).toFixed(1)+'%'); put(k+'_eta50',(Math.max(o50.net,0)/loss50*100).toFixed(1)+'%');
+    put(k+'_Ed',(Ed/1000).toFixed(1));
+    put(k+'_dv',`${(dv[0]*1000).toFixed(1)}~${(dv[1]*1000).toFixed(1)}`); put(k+'_pct',`${pct[0].toFixed(2)}~${pct[1].toFixed(2)}%`);
+    put(k+'_feR',`${fe[0].toFixed(2)}~${fe[1].toFixed(2)}`); put(k+'_yr',`${yr[0].toFixed(1)}~${yr[1].toFixed(1)}`);
+    put(k+'_pctR',`${pct[0].toFixed(1)}~${pct[1].toFixed(1)}%`); put(k+'_fe',`${fe[0].toFixed(2)}~${fe[1].toFixed(2)}`);
+    put(k+'_dvR',`${Math.round(dv[0]*1000)}~${Math.round(dv[1]*1000)}`); put(k+'_yrR',`${Math.round(yr[0])}~${Math.round(yr[1])}`);
+    put(k+'_ke',(E1/KE*100).toFixed(1)+'%'); put(k+'_kwh',(Ed/3.6e6).toFixed(3));
+    const dm=Ed/(0.25*H); put(k+'_dvm',(dm*1000).toFixed(1)); put(k+'_pctm',(dm/V0*100).toFixed(2)+'%'); put(k+'_yrm',(dm*365).toFixed(1));
+    put(k+'_ratio',(Ed/(N*0.7*KE)*100).toFixed(1)+'%'); put(k+'_W',(Ed/3600).toFixed(0));
+  }
+  document.querySelectorAll('[data-fx]').forEach(el=>{ const v=out[el.dataset.fx]; if(v!=null) el.textContent=v; });
+  window.__fx=out;
+}
 function runSimple(){
   const q=smParams(), o=smCalc(q);
   { const G=smGeo(q), geo = G.ok ? `철심 ${G.n}개가 위쪽 ${G.S}° 범위에 들어가고 바깥 반지름 ${fmt(G.rOut*100)} cm로 휠 안에 들어간다` :
       `<span class="pill bad">! 이 크기로는 철심이 휠이나 지면 간격(10 cm 가정)을 벗어난다. 철심 ${G.n}개면 다리 끝 길이 ${Math.floor(G.hMax*1000)} mm 이하</span>`;
-    $('#sm-rnote').innerHTML=`${geo} · 다리·등 두께 ${fmt(o.gen.h*1000)} mm · 발전 코일 전체: 저항 <i>r</i> = ${fmt(o.r)} Ω, 인덕턴스 <i>L</i> = ${fmt(o.gen.L*1000)} mH`+(q.mode==='srg' ? '' : ` · 계자 코일 전체 저항 ${fmt(q.Rf*o.gen.n)} Ω`)+` · 자속 변화폭 Δ<i>Φ</i> = ${fmt(o.gen.dphi*1000)} mWb (철심 1개)`; }
+    $('#sm-rnote').innerHTML=`${geo} · 다리·등 두께 ${fmt(o.gen.h*1000)} mm `+(q.mode==='srg' ? '' : ` · 발전 코일 전체: 저항 <i>r</i> = ${fmt(o.r)} Ω, 인덕턴스 <i>L</i> = ${fmt(o.gen.L*1000)} mH · 계자 코일 전체 저항 ${fmt(q.Rf*o.gen.n)} Ω`)+` · 자속 변화폭 Δ<i>Φ</i> = ${fmt(o.gen.dphi*1000)} mWb (철심 1개)`; }
   const srgMode=q.mode==='srg';
   $('#sm-em').hidden=srgMode; $('#sm-srg').hidden=!srgMode;
   if(srgMode){ const c=o.tb.c;
-    $('#sm-srg').innerHTML=`계자 코일을 쓰지 않는다. 철심마다 발전 코일을 변환기로 따로 켜고 끈다. 코일 전류 상한 <i>I</i><sub>ref</sub> = ${fmt(c.Iref)} A (철심 포화 전류 ${fmt(c.Isat)} A와 스위치 허용 전류 ${SRG.Imax} A 중 작은 값) · 배터리 ${SRG.V} V · 켜고 끄는 위치는 속력마다 충전 에너지가 가장 큰 값으로 자동 선택 · 발전 시작 최저 속력 ${isFinite(o.tb.vmin)?fmt(o.tb.vmin*3.6)+' km/h':'없음'}`; }
+    $('#sm-srg').innerHTML=`계자 코일을 쓰지 않는다. 철심마다 코일 하나를 계자 코일 자리까지 써서 감고(구리 단면적 ${fmt(c.AS*1e6)} mm², 저항 ${fmt(c.R*1000)} mΩ, 인덕턴스 ${fmt(c.Loff*1000)}~${fmt(c.Lon*1000)} mH), 변환기로 따로 켜고 끈다. 코일 전류 상한 <i>I</i><sub>ref</sub> = ${fmt(c.Iref)} A (철심 포화 전류 ${fmt(c.Isat)} A와 스위치 허용 전류 ${SRG.Imax} A 중 작은 값) · 배터리 ${SRG.V} V · 켜고 끄는 위치는 속력마다 충전 에너지가 가장 큰 값으로 자동 선택 · 발전 시작 최저 속력 ${isFinite(o.tb.vmin)?fmt(o.tb.vmin*3.6)+' km/h':'없음'}`; }
   if(q.em){ $('#sm-B').value=q.B.toFixed(3); $('#sm-B-r').value=String(q.B);
     $('#sm-Rf').value=q.Rf.toFixed(2);
     { const n=smN(q), over=q.Vf>SMF.Vbat;
@@ -1955,6 +2102,9 @@ function runSimple(){
         ['에너지 회수 효율 (순 생산 ÷ 손실)', (fr+coil)>0 ? pct((E-Eu)/(fr+coil)*100) : '–']);
       return it; }});
   howEnergy(o);
+  tzUpdate(q,o);
+  if(window.M3D && M3D.setGen) M3D.setGen(q.mode);
+  circSet(q.mode);
   if(smView==='how' && !coil.on) drawCoil();
 }
 
@@ -2089,7 +2239,8 @@ function applyMode(){
   if(adv){ smAnim.pause(); coil.stop(); M3D.stop(); show(); } else { vehAnim.pause(); setSmView(smView); }
 }
 $('#adv-toggle').addEventListener('change',e=>{ adv=e.target.checked; try{ localStorage.setItem('rbs-adv',adv?'1':'0'); }catch(err){} applyMode(); });
-buildSimple(); runSimple(); applyMode();
+buildSimple(); runSimple(); applyMode(); fxFill();
+document.querySelectorAll('.cseg button').forEach(b=>b.addEventListener('click',()=>genSet(b.dataset.c)));
 /* 표 칸마다 머리글 이름을 달아 둔다 (좁은 화면에서 칸 위에 표시) */
 document.querySelectorAll('table.parts').forEach(t=>{ const h=[...t.querySelectorAll('thead th')].map(th=>th.textContent.trim());
   t.querySelectorAll('tbody tr').forEach(tr=>[...tr.children].forEach((td,i)=>{ if(h[i]) td.setAttribute('data-label',h[i]); })); });
