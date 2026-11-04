@@ -399,7 +399,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
     <div class="m3-views">
       <button type="button" id="m3-core" aria-pressed="false">U자 철심 확대</button>
     </div>
-    <div class="m3-hint">끌기: 회전 · 휠/두 손가락: 확대</div>
+    <div class="m3-hint">끌기: 회전 · 휠/두 손가락: 확대 · <span id="m3-hz"></span></div>
   </div>
   <div class="m3-grid">
     <div class="m3-card">
@@ -1022,8 +1022,10 @@ let mode='in';
 function resize(){ if(!cv) return; W=cv.clientWidth; H=cv.clientHeight; }
 /* 깊이 버퍼 렌더러: 픽셀마다 가장 가까운 면만 남긴다 */
 let img=null, u32=null, zb=null, bw=0, bh=0, sc=1;
+/* 해상도 자동 조절: 한 장 그리는 시간이 120 Hz(8.3 ms)에 들어가도록 픽셀 수를 줄이거나 늘린다 */
+let rs=1, drawMs=4, fps=60, nAdj=0;
 function ensureBuf(){
-  sc=Math.min(window.devicePixelRatio||1, 1.5);
+  sc=Math.min(window.devicePixelRatio||1, 1.5)*rs;
   let w=Math.max(1,Math.round(W*sc)), h=Math.max(1,Math.round(H*sc));
   const maxPx=1.0e6; if(w*h>maxPx){ const f=Math.sqrt(maxPx/(w*h)); w=Math.round(w*f); h=Math.round(h*f); }
   sc=w/W;
@@ -1217,10 +1219,9 @@ function meas(al,omega){
   return {pA,pB,emf,i,e};
 }
 /* 화면에서 자속이 바뀌는 빈도(느리게 보기 반영)가 화면 갱신으로 따라갈 수 없을 만큼 빠르면, 순간값 대신 한 칸 평균과 최댓값을 보여 준다 */
-const FAST_HZ=6;   /* 1/20배로 볼 때 약 75 km/h */
 function updateUI(){
   const omega=(st.speed/3.6)/RW, srg=st.gen==='srg';
-  const fShow=omega*st.slow*Z/(2*Math.PI), fast= playing && fShow>FAST_HZ;
+  const fShow=omega*st.slow*Z/(2*Math.PI), fast= playing && fShow>fps/4;   /* 쇳조각 한 칸에 4프레임도 안 되면 평균 표시 */
   const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
   const sgn=x=>(x>=0?'+':'−')+Math.abs(x).toFixed(1);
   const bar=(id,v,max)=>{ $(id).style.width=Math.max(0,Math.min(100,v/max*100))+'%'; };
@@ -1241,16 +1242,19 @@ function updateUI(){
     bar('#m3-barS',sA+sB,2*PHI_MAX); set('#m3-valS','평균 '+((sA+sB)*1000).toFixed(2)+' mWb');
     if(srg){ set('#m3-emf','최대 '+mI.toFixed(0)+' A'); set('#m3-e2','최대 ±'+mR.toFixed(1)+' V'); } else set('#m3-emf','±'+mE.toFixed(1)+' V');
   }
-  const fn=$('#m3-fast'); if(fn){ fn.hidden=!fast; if(fast) fn.textContent=`지금 화면에서 쇳조각이 1초에 ${fShow.toFixed(0)}개씩 지나가 숫자가 따라갈 수 없으므로, 쇳조각 한 칸 동안의 평균과 최댓값을 보여 준다. ‘느리게 보기’를 더 느리게 하거나 일시정지하면 순간값이 나온다.`; }
+  const fn=$('#m3-fast'); if(fn){ fn.hidden=!fast; if(fast) fn.textContent=`지금 화면에서 쇳조각이 1초에 ${fShow.toFixed(0)}개씩 지나가 숫자가 따라갈 수 없으므로, 쇳조각 한 칸 동안의 평균과 최댓값을 보여 준다. ‘느리게 보기’를 더 느리게 하거나 일시정지하면 순간값이 나온다. (지금 화면 갱신 ${Math.round(fps)} Hz)`; }
   set('#m3-freq',(omega/(2*Math.PI)*Z).toFixed(1)+' Hz');
   set('#m3-rps',(omega/(2*Math.PI)).toFixed(2)+' 회/s');
 }
 function frame(ts){
   if(!running) return;
   if(last!=null && playing){ alpha -= (st.speed/3.6)/RW*st.slow*Math.min(0.05,(ts-last)/1000); }
+  if(last!=null){ const dt=ts-last; if(dt>0 && dt<200) fps+=(1000/dt-fps)*0.05; }
   last=ts;
-  if(W>0 && H>0) draw();
-  updateUI(); lastUI=ts;   /* 매 프레임 갱신 (빠르면 평균값으로 바뀐다) */
+  updateUI(); lastUI=ts;   /* 게이지는 매 프레임(화면 주사율) 갱신 */
+  if(W>0 && H>0){ const t0=performance.now(); draw(); drawMs+=(performance.now()-t0-drawMs)*0.1;
+    if(++nAdj>=20){ nAdj=0; if(drawMs>6 && rs>0.45) rs=Math.max(0.45,rs*0.88); else if(drawMs<3 && rs<1) rs=Math.min(1,rs*1.08); } }
+  const hz=$('#m3-hz'); if(hz && (nAdj%10)===0) hz.textContent=`화면 갱신 ${Math.round(fps)} Hz`;
   raf=requestAnimationFrame(frame);
 }
 function setView(name){
