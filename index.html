@@ -458,7 +458,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
           <tr><td>계자 코일 저항 <i>R</i><sub>f</sub> (철심 1개)</td><td>0.35 Ω (계산값)</td><td>감은 수로 자동 계산한다. 구리 단면적 합 250 mm²에 140회를 꽉 채우면 선 하나의 단면적은 약 1.8 mm²이고, 한 바퀴 0.258 m × 140회 ≈ 36 m이므로 <i>R</i><sub>f</sub> = <i>ρl</i>/<i>S</i> ≈ 0.35 Ω이다. 철심 8개를 직렬로 이으면 약 2.8 Ω, 17 A에서 필요한 전압은 약 47 V, 소비 전력은 약 800 W이다. 선의 전류 밀도는 약 9.5 A/mm²로 높지만, 제동하는 몇 초 동안만 흐른다.</td></tr>
           <tr><td>철심 수 <i>n</i>, 다리 끝 길이 <i>h</i></td><td>8개, 65 mm</td><td>배치 조건(휠 안, 지면 10 cm)을 지키는 범위에서 다이오드 방식 순이득이 가장 큰 쪽으로 정했다. 철심 6개·60 mm는 회수 효율 약 0.7%, 8개·65 mm는 약 1.0%이다. 철심 10개는 바닥 쪽 철심 때문에 다리 끝 길이가 55 mm 이하로 제한되어 오히려 작다. 철심 8개는 A가 0°, −30°, −60°, −90°, B가 45°, 75°, 105°, 135°이고 아래쪽 135°는 비운다.</td></tr>
           <tr><td>계자 코일 감은 수 <i>N</i><sub>f</sub> (철심 1개)</td><td>140회</td><td>같은 공간에 감으면 전자석 소비 전력은 기자력 <i>N</i><sub>f</sub><i>I</i><sub>f</sub>만으로 정해지고, 필요한 전원 전압이 감은 수에 비례한다. 철심 8개를 직렬로 이어 48 V 배터리로 포화 직전 기자력을 낼 수 있는 가장 많은 감은 수(약 141회)로 정했다.</td></tr>
-          <tr><td>발전 코일 감은 수 <i>N</i><sub>a</sub> (철심 1개)</td><td>17회</td><td>다른 값이 모두 기본값일 때 다이오드 방식 순이득이 가장 큰 감은 수이다. 감은 수가 적으면 기전력이 작고, 많으면 인덕턴스(감은 수의 제곱에 비례)가 커져 전류가 줄어든다. 전력 변환기 방식에서는 16회가 가장 크다.</td></tr>
+          <tr><td>발전 코일 감은 수 <i>N</i><sub>a</sub> (철심 1개)</td><td>17회</td><td>다른 값이 모두 기본값일 때 다이오드 방식 순이득이 가장 큰 감은 수이다. 감은 수가 적으면 기전력이 작고, 많으면 인덕턴스(감은 수의 제곱에 비례)가 커져 전류가 줄어든다. 전력 변환기 방식에서는 16회가 가장 크므로, 발전 방식을 전력 변환기로 바꾸면 기본값이 16회로 바뀐다. 철심 수 8개, 다리 끝 길이 65 mm는 두 방식 모두에서 배치 조건 안의 최적값이다.</td></tr>
           <tr><td>부하 저항 <i>R</i> (고정)</td><td>0.77 Ω</td><td>가정값이다. 48 V 배터리 충전 회로를 저항 하나로 근사했다.</td></tr>
         </tbody>
       </table>
@@ -1955,7 +1955,7 @@ function buildSimple(){
     n.addEventListener('input',()=>{ const x=parseFloat(n.value); if(isFinite(x)) r.value=String(Math.min(d.max,Math.max(d.min,x))); go(); });
   });
   $('#sm-autooff').addEventListener('change',go);
-  document.querySelectorAll('input[name=sm-gen]').forEach(r=>r.addEventListener('change',go));
+  document.querySelectorAll('input[name=sm-gen]').forEach(r=>r.addEventListener('change',()=>{ naSwap(r.value); go(); }));
   /* 자기장은 계자 전류로 계산되므로 B는 표시만 한다 */
   $('#sm-B').readOnly=true; $('#sm-B-r').style.display='none';
   /* 계자 코일 저항도 감은 수로 계산되므로 표시만 한다 */
@@ -1972,11 +1972,15 @@ function circSet(mode){
   const a=$('#circ-diode'), b=$('#circ-srg'); if(a) a.hidden=srg; if(b) b.hidden=!srg;
   document.querySelectorAll('.cseg button').forEach(x=>x.setAttribute('aria-pressed', x.dataset.c===mode?'true':'false'));
 }
-function genSet(mode){ const r=document.querySelector(`input[name=sm-gen][value=${mode}]`); if(r && !r.checked){ r.checked=true; runSimple(); } }
+/* 발전 방식마다 최적 감은 수가 다르다. 감은 수가 다른 방식의 기본값 그대로이면 새 방식의 기본값(최적값)으로 바꾼다 */
+const NA_DEF={diode:17, srg:16};
+function naSwap(mode){ const other= mode==='srg' ? 'diode' : 'srg', el=$('#sm-Na'), sl=$('#sm-Na-r');
+  if(el && Number(el.value)===NA_DEF[other]){ el.value=NA_DEF[mode]; if(sl) sl.value=NA_DEF[mode]; } }
+function genSet(mode){ const r=document.querySelector(`input[name=sm-gen][value=${mode}]`); if(r && !r.checked){ r.checked=true; naSwap(mode); runSimple(); } }
 window.M3D_onGen = g=>genSet(g);
 /* ---------- 예상 효과 탭: 기본 세팅으로 다시 계산해 숫자를 채운다 ---------- */
 function smDefQ(mode,v0){
-  const q={mode}; [...SM,...SM_EM].forEach(d=>{ q[d.id]=d.v; }); q.v0=v0; q.em=mode!=='srg'; q.autoOff=true; q.Rf=smRf(q);
+  const q={mode}; [...SM,...SM_EM].forEach(d=>{ q[d.id]=d.v; }); q.Na=NA_DEF[mode]||q.Na; q.v0=v0; q.em=mode!=='srg'; q.autoOff=true; q.Rf=smRf(q);
   q.B=Math.min(MU0*q.Nf*q.If/EMF.g,EMF.Bsat); q.Pf=q.If*q.If*q.Rf*smN(q); q.Vf=q.If*q.Rf*smN(q); return q;
 }
 function fxFill(){
