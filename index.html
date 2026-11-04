@@ -282,6 +282,12 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
 .m3 .m3-d-ctrl{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:13px}
 .m3 .m3-d-ctrl button{font-family:var(--f-body);font-size:13px;padding:6px 11px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .m3 .m3-d-ctrl label{display:inline-flex;gap:6px;align-items:center;color:var(--ink-2)}
+.m3 .m3-d-acc{margin-top:10px;padding-top:8px;border-top:1px dashed var(--line)}
+.m3 .m3-d-acc .h{font-size:13px;font-weight:600;color:var(--ink-2)}
+.m3 .m3-d-acc .g{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px 14px;margin-top:4px}
+.m3 .m3-d-acc .g div{font-size:12.5px;color:var(--ink-3);display:flex;flex-direction:column;justify-content:space-between}
+.m3 .m3-d-acc .g b{font-family:var(--f-mono);font-weight:500;font-size:18px;color:var(--ink)}
+.m3 .m3-d-acc .g .net b{color:var(--accent)}
 .m3 .m3-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 </style>
 </head>
@@ -447,10 +453,10 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
     <div class="m3-demo" id="m3-demo" hidden>
     <div class="m3-d-head"><b id="m3-d-title"></b><span id="m3-d-ang"></span></div>
     <div class="m3-d-tl" id="m3-d-tl" aria-label="한 칸 진행 막대 (눌러서 이동)">
-      <i style="left:0;width:42%" class="s-off"></i><i style="left:42%;width:8%" class="s-ex"></i><i style="left:50%;width:38%" class="s-hold"></i><i style="left:88%;width:8%" class="s-ret"></i><i style="left:96%;width:4%" class="s-off"></i>
+      <i style="left:0;width:45%" class="s-off"></i><i style="left:45%;width:8%" class="s-ex"></i><i style="left:53%;width:42%" class="s-hold"></i><i style="left:95%;width:4%" class="s-ret"></i><i style="left:99%;width:1%" class="s-off"></i>
       <span class="cur" id="m3-d-cur"></span>
     </div>
-    <div class="m3-d-tlx"><span style="left:21%">대기</span><span style="left:46%">①</span><span style="left:69%">②</span><span style="left:92%">③</span></div>
+    <div class="m3-d-tlx"><span style="left:22%">대기</span><span style="left:49%">①</span><span style="left:74%">②</span><span style="left:97%">③</span></div>
     <div class="m3-d-body">
       <svg id="m3-d-circ" data-k="off" viewBox="0 0 300 150" role="img" aria-label="철심 하나의 비대칭 하프브리지 회로와 지금 전류가 흐르는 길">
         <g class="w" fill="none"><path d="M30 64 V18 H270 M30 86 V132 H270"/><path d="M110 18 V38 M110 52 V62 H170 M80 132 V62 H110"/><path d="M170 94 H230 V104 M230 118 V132 M230 94 H260 V18"/>
@@ -470,13 +476,22 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <div>코일에 거는 전압<b id="m3-d-v">–</b></div><div>배터리<b id="m3-d-b">–</b></div>
       </div>
     </div>
+    <div class="m3-d-acc">
+      <div class="h">누적 에너지<span class="lq">(이번 한 칸, 철심 1개, 저항·스위치 손실 제외)</span></div>
+      <div class="g">
+        <div>소비<span class="lq">(배터리 → 코일)</span><b id="m3-d-use">–</b></div>
+        <div>생산<span class="lq">(코일 → 배터리)</span><b id="m3-d-gen">–</b></div>
+        <div class="net">순 생산<span class="lq">(생산 − 소비)</span><b id="m3-d-net">–</b></div>
+        <div>바퀴가 한 일<span class="lq">(+면 제동, −면 밀어 줌)</span><b id="m3-d-w">–</b></div>
+      </div>
+    </div>
     <p class="m3-d-text" id="m3-d-text"></p>
     <div class="m3-d-ctrl">
       <button type="button" id="m3-d-play">일시정지</button>
-      <button type="button" data-m3-jump="0.30">대기</button><button type="button" data-m3-jump="0.425">① 켜기</button><button type="button" data-m3-jump="0.55">② 붙잡기</button><button type="button" data-m3-jump="0.885">③ 끄기</button>
+      <button type="button" data-m3-jump="0.30">대기</button><button type="button" data-m3-jump="0.455">① 켜기</button><button type="button" data-m3-jump="0.6">② 붙잡기</button><button type="button" data-m3-jump="0.955">③ 끄기</button>
       <label>한 칸 재생 시간 <select id="m3-d-speed"><option value="30">30초</option><option value="15" selected>15초</option><option value="8">8초</option></select></label>
     </div>
-    <p class="m3-note" style="margin:6px 0 0">철심 A 하나를 쇳조각 한 칸(30°) 동안 느리게 보여 준다. 파란 선 = 배터리 → 코일(켬), 초록 선 = 코일 → 배터리(끔). 전류 모양은 대표 각도로 근사했고, 실제 50 km/h에서는 이 한 칸이 약 0.012초에 지나간다.</p>
+    <p class="m3-note" style="margin:6px 0 0">철심 A 하나를 쇳조각 한 칸(30°) 동안 느리게 보여 준다. 파란 선 = 배터리 → 코일(켬), 초록 선 = 코일 → 배터리(끔). 누적 에너지는 ② 구간의 켬·끔 반복을 합친 순 흐름으로 셌고, 한 칸이 끝나면 0부터 다시 센다. 전류 모양은 시뮬레이터가 50 km/h에서 고른 각도에 가깝게 근사했고, 실제 50 km/h에서는 이 한 칸이 약 0.012초에 지나간다.</p>
   </div>
   <div class="m3-grid">
     <div class="m3-card">
@@ -1169,7 +1184,7 @@ function overlap(coreA,al=alpha){ return Math.max(0, 1-Math.abs(phase(coreA,al))
 function dOverlap(coreA,al=alpha){ const d=phase(coreA,al); return Math.abs(d)>=HALF ? 0 : (d>0?1:-1)/HALF; } /* d(겹침)/dα */
 /* 전력 변환기 방식: 쇳조각 한 칸 안의 위치 u (0: 직전 쇳조각과 가운데, 0.5: 정렬, 1: 다음 가운데).
    바퀴가 돌면 α가 줄어 phase가 커지므로, phase < 0이 다가오는 구간, phase > 0이 멀어지는 구간이다. */
-const SRG_P={on:0.42, full:0.5, off:0.88, zero:0.96};
+const SRG_P={on:0.45, full:0.53, off:0.95, zero:0.99};   /* 시뮬레이터가 50 km/h에서 고른 각도(켬 −1.5°, 끔 +14.4°)에 가깝게 */
 function uPos(coreA,al=alpha){ return 0.5 + phase(coreA,al)/TOOTH; }
 function srgCur(coreA,al=alpha){ const u=uPos(coreA,al), p=SRG_P;     /* 전류 / I_ref (모양만 나타낸 근사) */
   if(u<p.on||u>=p.zero) return 0; if(u<p.full) return (u-p.on)/(p.full-p.on); if(u<p.off) return 1; return 1-(u-p.off)/(p.zero-p.off); }
@@ -1264,16 +1279,28 @@ const LABELS_ALL=[
    쇳조각 한 칸(30°)을 u = 0~1로 둔다(0.5 = 정렬). 전류 모양은 srgCur와 같은 대표 각도(켬 0.42, 최대 0.5, 끔 0.88, 0 0.96). */
 const demo={on:false, u:0.25, T:15, playing:true, chop:0};
 const STAGES=[
-  {a:0,    b:0.42, k:'off',  t:'대기: 쇳조각이 다가오는 중',
+  {a:0,    b:0.45, k:'off',  t:'대기: 쇳조각이 다가오는 중',
    d:'스위치 꺼짐, 코일 전류 0. 지금 켜면 자석이 다가오는 쇳조각을 앞으로 당겨 바퀴를 밀어 준다(모터) → 손해라서 기다린다.'},
-  {a:0.42, b:0.5,  k:'ex',   t:'① 켜기 = 에너지 빌려주기',
+  {a:0.45, b:0.53, k:'ex',   t:'① 켜기 = 에너지 빌려주기',
    d:'정렬 직전에 S₁·S₂를 켠다 → 코일에 +48 V → 전류가 0에서 약 149 A까지 빠르게 커진다. 배터리 → 코일로 에너지가 들어가 자기장에 저장된다(배터리 방전).'},
-  {a:0.5,  b:0.88, k:'hold', t:'② 붙잡기 = 발전 + 제동',
+  {a:0.53, b:0.95, k:'hold', t:'② 붙잡기 = 발전 + 제동',
    d:'쇳조각이 멀어지며 틈이 넓어진다 → 인덕턴스 L 감소. 자석이 쇳조각을 당기는 힘을 바퀴가 이기고 떼어 낸다 → 그 일이 코일 에너지로 더해진다(이 힘이 제동력). 전류가 상한을 넘으려 하면 S₁·S₂를 잠깐 꺼 남는 몫을 배터리로 보낸다(켬·끔 빠른 반복).'},
-  {a:0.88, b:0.96, k:'ret',  t:'③ 끄기 = 에너지 돌려받기',
+  {a:0.95, b:0.99, k:'ret',  t:'③ 끄기 = 에너지 돌려받기',
    d:'S₁·S₂를 끈다 → 전류의 관성 때문에 멈추지 못하고 D₁ → 코일 → D₂ → 배터리 +로 흐른다(배터리 충전). 코일 전압은 약 −48 V, 전류는 0까지 줄어든다. 돌려받는 양 = 빌려준 양 + 바퀴의 일 − 열.'},
-  {a:0.96, b:1.01, k:'off',  t:'준비: 다음 쇳조각 전에 전류 0',
+  {a:0.99, b:1.01, k:'off',  t:'준비: 다음 쇳조각 전에 전류 0',
    d:'전류가 0이 되었다. 다음 쇳조각이 다가오기 전에 끝나야 모터 구간(손해)을 피한다. 철심 B는 반 칸 어긋나 있어 A가 쉬는 동안 일한다.'}];
+/* 한 칸 동안의 에너지 흐름(철심 1개, 저항·스위치 손실 제외, 켬·끔 반복은 합친 순 흐름).
+   바퀴 → 전기: dW = −½ i² dL,  자기장: E = ½ L i²,  배터리 순 흐름 = dW − dE  (+면 코일 → 배터리, −면 배터리 → 코일) */
+const DEMO_E=(function(){ const N=1200, cin=new Float64Array(N+1), cout=new Float64Array(N+1), cw=new Float64Array(N+1);
+  const Lu=u=>{ const d=(u-0.5)*TOOTH, ov=Math.max(0,1-Math.abs(d)/HALF); return NSRG*NSRG*PON*(POFF+(1-POFF)*ov); };
+  const iu=u=>{ const p=SRG_P; if(u<p.on||u>=p.zero) return 0; if(u<p.full) return (u-p.on)/(p.full-p.on); if(u<p.off) return 1; return 1-(u-p.off)/(p.zero-p.off); };
+  let a=0,b=0,w=0;
+  for(let k=1;k<=N;k++){ const u0=(k-1)/N, u1=k/N, i0=IREF*iu(u0), i1=IREF*iu(u1), L0=Lu(u0), L1=Lu(u1), im=(i0+i1)/2;
+    const dW=-0.5*im*im*(L1-L0), dE=0.5*L1*i1*i1-0.5*L0*i0*i0, dB=dW-dE;
+    w+=dW; if(dB<0) a+=-dB; else b+=dB; cin[k]=a; cout[k]=b; cw[k]=w; }
+  return {cin,cout,cw,N};
+})();
+function demoE(u){ const k=Math.max(0,Math.min(DEMO_E.N,Math.round(u*DEMO_E.N))); return {use:DEMO_E.cin[k], gen:DEMO_E.cout[k], w:DEMO_E.cw[k]}; }
 function demoStage(u){ return STAGES.find(x=>u>=x.a && u<x.b) || STAGES[0]; }
 function demoState(){
   const u=demo.u, sg=demoStage(u), ov=overlap(CORE_ANG[0]), i=IREF*srgCur(CORE_ANG[0]);
@@ -1460,6 +1487,8 @@ function demoUI(){
   set('#m3-d-i',d.i.toFixed(0)+' A'); set('#m3-d-L',(d.L*1000).toFixed(2)+' mH');
   set('#m3-d-v', d.k==='ex' ? '+48 V' : (d.k==='ret' ? '약 −48 V' : '0 V'));
   set('#m3-d-b', d.k==='ex' ? '방전 (빌려줌)' : (d.k==='ret' ? '충전 (돌려받음)' : '—'));
+  { const e=demoE(d.u), J=x=>(x<0?'−':'')+Math.abs(x).toFixed(2)+' J';
+    set('#m3-d-use',J(e.use)); set('#m3-d-gen',J(e.gen)); set('#m3-d-net',J(e.gen-e.use)); set('#m3-d-w',J(e.w)); }
   const c=$('#m3-d-circ'); if(c) c.setAttribute('data-k',d.k);
   const cur=$('#m3-d-cur'); if(cur) cur.style.left=(d.u*100)+'%';
   const pb=$('#m3-d-play'); if(pb) pb.textContent= demo.playing ? '일시정지' : '재생';
@@ -2693,6 +2722,6 @@ document.querySelectorAll('table.parts').forEach(t=>{ const h=[...t.querySelecto
 })();
 })();
 </script>
-<footer class="upd"><span id="upd-ver">v1.3.1</span></footer>
+<footer class="upd"><span id="upd-ver">v1.3.2</span></footer>
 </body>
 </html>
