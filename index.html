@@ -565,6 +565,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
           <tr><td>철심 수 <i>n</i>, 다리 끝 길이 <i>h</i></td><td>8개, 65 mm</td><td>배치 조건(휠 안, 지면 10 cm) 안에서 순이득 최대, 두 방식 모두 같은 최적값. 10개는 바닥 쪽 철심 때문에 <i>h</i> ≤ 55 mm로 제한돼 오히려 작다. 배치: A 0°·−30°·−60°·−90°, B 45°·75°·105°·135°.</td></tr>
           <tr><td>계자 코일 감은 수 <i>N</i><sub>f</sub> (철심 1개)</td><td>140회</td><td>같은 공간에 감으면 전자석 소비 전력은 기자력 <i>N</i><sub>f</sub><i>I</i><sub>f</sub>만으로 정해지고, 필요한 전원 전압이 감은 수에 비례한다. 철심 8개를 직렬로 이어 48 V 배터리로 포화 직전 기자력을 낼 수 있는 가장 많은 감은 수(약 141회)로 정했다.</td></tr>
           <tr><td>발전 코일 감은 수 <i>N</i><sub>a</sub> (철심 1개)</td><td>16회 (다이오드 방식 17회)</td><td>기본값에서 순이득이 가장 큰 감은 수. 전력 변환기: 감은 수 ↓ → 포화 전류 ↑, 스위치 한계 150 A에 닿는 16회가 최적. 다이오드: 적으면 기전력 ↓, 많으면 인덕턴스(∝ 감은 수²) ↑ → 17회가 최적. 발전 방식을 바꾸면 기본값도 바뀐다.</td></tr>
+          <tr><td>스위치 전류 한계 <i>I</i><sub>max</sub> (전력 변환기)</td><td>149.2 A</td><td>감은 수 16회에서 틈이 포화(1.5 T)되는 전류 <i>B</i><sub>sat</sub><i>g</i>/(<i>μ</i><sub>0</sub><i>N</i><sub>a</sub>) ≈ 149.2 A. 이보다 크게 해도 코일 전류는 포화 전류에서 멈추고, 작게 하면 순 생산이 줄어든다.</td></tr>
           <tr><td>부하 저항 <i>R</i> (고정)</td><td>0.77 Ω</td><td>가정값이다. 48 V 배터리 충전 회로를 저항 하나로 근사했다.</td></tr>
         </tbody>
       </table>
@@ -632,7 +633,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <div class="eq"><i>P</i><sub>b</sub>(<i>v</i>) = <i>n f</i><sub>s</sub> <i>E</i><sub>b</sub>, &nbsp;&nbsp; <i>F</i><sub>gen</sub>(<i>v</i>) = <i>n f</i><sub>s</sub> (<i>E</i><sub>b</sub> + <i>E</i><sub>cu</sub>) / <i>v</i>, &nbsp;&nbsp; <i>f</i><sub>s</sub> = <i>Z v</i> / (2π <i>r</i><sub>w</sub>)</div>
         <h3 style="font-size:15px;margin:14px 0 4px">3. 전류 상한</h3>
         <div class="eq"><i>I</i><sub>ref</sub> = min( <i>B</i><sub>sat</sub> <i>g</i> / (<i>μ</i><sub>0</sub> <i>N</i><sub>a</sub>), <i>I</i><sub>max</sub> )</div>
-        <p>앞쪽: 정렬 시 틈이 포화(1.5 T)되는 전류. <i>I</i><sub>max</sub>: 스위치·배선 한계(기본 150 A 가정, 변수 칸에서 조절). 감은 수 ↓ → 포화 전류 ↑지만 150 A에서 막힘 → 최적 약 16회. 공간이 고정이면 <i>R</i> ∝ <i>N</i><sub>a</sub><sup>2</sup>, <i>I</i><sub>sat</sub> ∝ 1/<i>N</i><sub>a</sub> → 코일 열 <i>RI</i><sup>2</sup>은 감은 수와 거의 무관.</p>
+        <p>앞쪽: 정렬 시 틈이 포화(1.5 T)되는 전류. <i>I</i><sub>max</sub>: 스위치·배선 한계(변수 칸에서 조절, 기본 149.2 A = 감은 수 16회의 포화 전류). 감은 수 ↓ → 포화 전류 ↑지만 150 A에서 막힘 → 최적 약 16회. 공간이 고정이면 <i>R</i> ∝ <i>N</i><sub>a</sub><sup>2</sup>, <i>I</i><sub>sat</sub> ∝ 1/<i>N</i><sub>a</sub> → 코일 열 <i>RI</i><sup>2</sup>은 감은 수와 거의 무관.</p>
         <h3 style="font-size:15px;margin:14px 0 4px">4. 여자 에너지와 순 생산</h3>
         <div class="eq"><i>E</i><sub>in</sub> = ∫<sub>켬</sub> <i>V i</i> d<i>t</i>, &nbsp;&nbsp; <i>E</i><sub>out</sub> = ∫<sub>끔</sub> <i>V i</i> d<i>t</i>, &nbsp;&nbsp; <i>E</i><sub>net</sub> = <i>E</i><sub>out</sub> − <i>E</i><sub>in</sub> = <i>W</i><sub>mech</sub> − <i>E</i><sub>cu</sub></div>
         <p>켤 때: 배터리 → 코일, 여자 에너지 <i>E</i><sub>in</sub>(자기장에 저장, 사라지지 않음). 끌 때: 다이오드로 배터리에 <i>E</i><sub>out</sub> 반환. 쇳조각이 멀어지며(d<i>L</i>/d<i>θ</i> &lt; 0) 기계 일 <i>W</i><sub>mech</sub>가 더해져 <i>E</i><sub>out</sub> &gt; <i>E</i><sub>in</sub>. 화면: 누적 발전량 = <i>E</i><sub>out</sub>, 사용(코일 여자) = <i>E</i><sub>in</sub>, 순 생산 = 차이. 계자 방식과 달리 여자 에너지는 대부분 돌아온다. 주의: 오가는 에너지가 순 생산보다 훨씬 커서(60 km/h: 여자 약 54 kJ, 순 약 5.9 kJ) 변환기 손실 몇 %만으로도 순 생산이 크게 준다.</p>
@@ -2002,7 +2003,7 @@ const SM_EM=[
 ];
 /* 전력 변환기 방식 전용 변수: 스위치·배선이 견디는 전류 한계. 코일 전류 상한 Iref = min(포화 전류, Imax) */
 const SM_SRG=[
-  {id:'Imax', label:'스위치 전류 한계 (철심 1개)', sym:'I<sub>max</sub>', unit:'A', v:150, min:10, max:400, step:0.1},
+  {id:'Imax', label:'스위치 전류 한계 (철심 1개)', sym:'I<sub>max</sub>', unit:'A', v:149.2, min:10, max:400, step:0.1},   /* 기본값: 감은 수 16회에서 철심 포화 전류 1.5 T·2 mm/(μ0·16) ≈ 149.2 A */
 ];
 /* 마찰 브레이크 제동력 Ffr는 입력값(제동 내내 일정). 마찰만의 감속도 af = Ffr/m */
 /* 발전기 구조: 바퀴와 함께 도는 쇳조각 원판 + 차체에 고정한 U자 철심 n개(A, B, A, B, …). 3D 모형 탭과 같은 설계이다.
@@ -2692,6 +2693,6 @@ document.querySelectorAll('table.parts').forEach(t=>{ const h=[...t.querySelecto
 })();
 })();
 </script>
-<footer class="upd"><span id="upd-ver">v1.3.0</span></footer>
+<footer class="upd"><span id="upd-ver">v1.3.1</span></footer>
 </body>
 </html>
