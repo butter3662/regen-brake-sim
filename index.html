@@ -1799,7 +1799,12 @@ function makeAnim(pre){
     for(let k=Math.floor(xl/3)*3;k<xr;k+=3){ ctx.beginPath(); ctx.moveTo(X(k),gy+12); ctx.lineTo(X(k+1.5),gy+12); ctx.stroke(); }
     ctx.restore();
     ctx.font='11px "IBM Plex Mono",monospace'; ctx.textAlign='center'; ctx.fillStyle=C.ink3;
-    for(let d=Math.ceil(xl/10)*10; d<xr; d+=10){ const px=X(d); ctx.strokeStyle=C.ink3; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(px,gy+24); ctx.lineTo(px,gy+30); ctx.stroke(); ctx.fillText(d+' m',px,gy+42); }
+    /* 거리 눈금(10 m 주기)도 한 프레임 이동이 주기에 가까워지면 앞뒤로 튀어 보이므로 흐리게 지운다 */
+    const tickFade=Math.max(0,Math.min(1,(stepM/10-0.12)/0.2));
+    if(tickFade<1){ ctx.save(); ctx.globalAlpha=1-tickFade;
+      for(let d=Math.ceil(xl/10)*10; d<xr; d+=10){ const px=X(d); ctx.strokeStyle=C.ink3; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(px,gy+24); ctx.lineTo(px,gy+30); ctx.stroke(); ctx.fillText(d+' m',px,gy+42); }
+      ctx.restore(); }
+    if(tickFade>0){ ctx.save(); ctx.globalAlpha=tickFade; ctx.textAlign='left'; ctx.fillText(`이동 거리 ${fmt(x)} m (너무 빨라 눈금 생략)`,8,gy+42); ctx.restore(); }
     const xs=A.on.s[6], xso=A.off.s[6];
     ctx.font='11px "Noto Sans KR",sans-serif';
     const flag=(xw,col,txt,dash,row)=>{ const px=X(xw); if(px<-60||px>W+60) return; ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.setLineDash(dash); ctx.beginPath(); ctx.moveTo(px,12+row*14); ctx.lineTo(px,gy+24); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle=col; const right=px>W-120; ctx.textAlign=right?'right':'left'; ctx.fillText(txt,px+(right?-4:4),22+row*14); };
@@ -2537,6 +2542,6 @@ document.querySelectorAll('table.parts').forEach(t=>{ const h=[...t.querySelecto
 })();
 })();
 </script>
-<footer class="upd"><span id="upd-ver">v1.1.2</span></footer>
+<footer class="upd"><span id="upd-ver">v1.1.3</span></footer>
 </body>
 </html>
