@@ -451,8 +451,9 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
           <div>발전기 제동력<b id="m3-fg">–</b></div>
           <div>경과 시간<b id="m3-at">–</b></div>
           <div>누적 순 생산<b id="m3-ae">–</b></div>
+          <div>휴대폰 배터리 환산<b id="m3-amah">–</b></div>
         </div>
-        <p class="m3-note" id="m3-acc-note" style="margin:6px 0 0">이 속력을 유지한 채 발전기를 켜 두었다고 보고, 시뮬레이션 탭의 변수(감은 수, 철심 수 등)로 계산한 순 전력을 화면 속 시간(실제 시간 × 느리게 보기 배율)으로 적분한다. 실제 제동에서는 속력이 줄어들므로 시뮬레이션 탭의 값과는 다르다. 속력이나 발전 방식을 바꾸면 처음부터 다시 쌓는다.</p>
+        <p class="m3-note" id="m3-acc-note" style="margin:6px 0 0">이 속력을 유지한 채 발전기를 켜 두었다고 보고, 시뮬레이션 탭의 변수(감은 수, 철심 수 등)로 계산한 순 전력을 화면 속 시간(실제 시간 × 느리게 보기 배율)으로 적분한다. 실제 제동에서는 속력이 줄어들므로 시뮬레이션 탭의 값과는 다르다. 속력이나 발전 방식을 바꾸면 처음부터 다시 쌓는다. 휴대폰 배터리 환산은 에너지를 휴대폰 배터리 공칭 전압 3.85 V로 나눈 전하량이다(mAh = <i>E</i>[J] ÷ 3.85 ÷ 3.6).</p>
       </div>
       <p class="m3-note" data-gen="diode" hidden>A 철심(0°, −30°, −60°, −90°)과 B 철심(45°, 75°, 105°, 135°)은 쇳조각 간격의 반 칸만큼 어긋나 있어서, 한쪽 자속이 커지면 다른 쪽은 작아진다. 계자 코일은 Φ<sub>A</sub> + Φ<sub>B</sub>(거의 일정)를, 반대로 이은 발전 코일은 Φ<sub>A</sub> − Φ<sub>B</sub>를 느낀다.</p>
       <p class="m3-note" data-gen="srg">계자 코일이 없고, 철심마다 코일 하나(16회)를 두 다리에 나눠 감는다(초록). 쇳조각이 정렬하기 직전에 변환기가 +48 V를 걸어 전류를 세우고(여자), 쇳조각이 멀어지는 동안 전류를 유지해 제동 토크를 만들고, 다음 쇳조각이 오기 전에 −48 V로 전류를 0으로 되돌린다(배터리로 회수). 그래서 자속은 전류가 흐르는 구간에만 생긴다. 회전 기전력 <i>iω</i> d<i>L</i>/d<i>θ</i>가 음수인 구간(멀어질 때)에 기계 에너지가 전기로 바뀐다. 전류 모양은 켜고 끄는 각도를 대표값으로 둔 근사이다.</p>
@@ -499,7 +500,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
     <div class="card">
       <h2>시뮬레이션 화면 읽는 법</h2>
       <h3 style="font-size:15px;margin:6px 0 4px">주행 애니메이션</h3>
-      <p>아래 ‘누적 에너지’에서 사용 에너지는 전자석이 쓴 에너지이고, 순 생산은 발전량에서 이를 뺀 값이다. 에너지 회수 효율은 그 시각까지의 순 생산(발전량 − 전자석 소비)을 손실된 에너지(마찰 브레이크 열 + 발전 코일 저항 열)로 나눈 값으로, 열로 버린 에너지에 비해 쓸 수 있는 전기를 얼마나 얻었는지 나타낸다. 분모가 손실이라 100%를 넘을 수 있다. 재생 막대를 끝으로 옮기면 제동 전체의 값과 정지 거리를 볼 수 있다. 변수 칸의 전자석 안내 줄에는 계자 전원 전압과 손익분기 속력을 표시한다. 손실된 에너지는 차의 운동에너지 중 전기로 저장되지 못하고 열이 된 몫으로, 마찰 브레이크 열과 발전 코일 저항 열을 더한 것이다. 위 조건으로 제동하는 모습을 실제 시간 비율로 재생하며, 값을 바꾸면 처음부터 다시 재생된다. 차 위 화살표는 마찰 브레이크(주황)와 발전기(파랑)의 제동력이다. 전선 위 점선이 빠를수록 발전 전류가 크고, 배터리 칸은 최종 발전량 대비 누적 비율이다. 회색 점선 차는 발전기 없이 마찰 브레이크만으로 서는 차이므로, 두 차의 정지 위치 차이가 발전기가 제동을 도운 정도이다.</p>
+      <p>아래 ‘누적 에너지’에서 사용 에너지는 전자석이 쓴 에너지이고, 순 생산은 발전량에서 이를 뺀 값이다. ‘순 생산 (휴대폰 배터리 환산)’은 순 생산 에너지를 리튬이온 휴대폰 배터리의 공칭 전압 3.85 V로 나눠 mAh로 바꾼 값이다(mAh = <i>E</i>[J] ÷ 3.85 V ÷ 3.6, 1 mAh = 3.6 C). mAh는 전하량이라 전압을 정해야 에너지와 바꿀 수 있고, 장치의 48 V 배터리 기준으로는 이 값의 약 1/12이다. 에너지 회수 효율은 그 시각까지의 순 생산(발전량 − 전자석 소비)을 손실된 에너지(마찰 브레이크 열 + 발전 코일 저항 열)로 나눈 값으로, 열로 버린 에너지에 비해 쓸 수 있는 전기를 얼마나 얻었는지 나타낸다. 분모가 손실이라 100%를 넘을 수 있다. 재생 막대를 끝으로 옮기면 제동 전체의 값과 정지 거리를 볼 수 있다. 변수 칸의 전자석 안내 줄에는 계자 전원 전압과 손익분기 속력을 표시한다. 손실된 에너지는 차의 운동에너지 중 전기로 저장되지 못하고 열이 된 몫으로, 마찰 브레이크 열과 발전 코일 저항 열을 더한 것이다. 위 조건으로 제동하는 모습을 실제 시간 비율로 재생하며, 값을 바꾸면 처음부터 다시 재생된다. 차 위 화살표는 마찰 브레이크(주황)와 발전기(파랑)의 제동력이다. 전선 위 점선이 빠를수록 발전 전류가 크고, 배터리 칸은 최종 발전량 대비 누적 비율이다. 회색 점선 차는 발전기 없이 마찰 브레이크만으로 서는 차이므로, 두 차의 정지 위치 차이가 발전기가 제동을 도운 정도이다.</p>
       <h3 style="font-size:15px;margin:14px 0 4px">그래프</h3>
       <ul class="plain">
         <li><b>계자 전류와 에너지</b>: 다른 값은 그대로 두고 계자 전류 <i>I</i><sub>f</sub>만 바꾼 결과이다. 철심이 포화되기 전에는 발전량과 전자석 소비가 모두 <i>I</i><sub>f</sub><sup>2</sup>에 비례해 함께 커진다. 포화 뒤에는 자기장이 더 커지지 않아 발전량은 그대로인데 소비만 늘어 순이득이 줄어든다.</li>
@@ -750,6 +751,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
           <tr><td>제동 1회 순 생산 <i>E</i><sub>1</sub> (60 km/h → 0)</td><td><span data-fx="s_E1">–</span> kJ (회수 효율 <span data-fx="s_eta">–</span>)</td><td><span data-fx="d_E1">–</span> kJ (회수 효율 <span data-fx="d_eta">–</span>)</td><td><span data-fx="t_E1">–</span> kJ (회수 효율 <span data-fx="t_eta">–</span>)</td></tr>
           <tr><td>운동에너지 대비 (1회 208 kJ)</td><td><span data-fx="s_ke">–</span></td><td><span data-fx="d_ke">–</span></td><td>70%</td></tr>
           <tr><td>하루 순 생산 <i>E</i><sub>d</sub> (20회)</td><td><span data-fx="s_Ed">–</span> kJ</td><td><span data-fx="d_Ed">–</span> kJ</td><td><span data-fx="t_Ed">–</span> kJ</td></tr>
+          <tr><td>하루 순 생산 (휴대폰 배터리 환산)</td><td><span data-fx="s_mAh">–</span></td><td><span data-fx="d_mAh">–</span></td><td><span data-fx="t_mAh">–</span></td></tr>
           <tr><td>하루 절약 연료 Δ<i>V</i></td><td><span data-fx="s_dv">–</span> mL</td><td><span data-fx="d_dv">–</span> mL</td><td><span data-fx="t_dv">–</span> mL</td></tr>
           <tr><td>연비 개선율 Δ<i>V</i>/<i>V</i><sub>0</sub></td><td><span data-fx="s_pct">–</span></td><td><span data-fx="d_pct">–</span></td><td><span data-fx="t_pct">–</span></td></tr>
           <tr><td>연비 (기준 12.6 km/L)</td><td><span data-fx="s_feR">–</span> km/L</td><td><span data-fx="d_feR">–</span> km/L</td><td><span data-fx="t_feR">–</span> km/L</td></tr>
@@ -757,7 +759,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         </tbody>
       </table>
       </div>
-      <p class="note">범위의 앞쪽은 엔진 열효율 25%, 뒤쪽은 20%로 가정한 값이다. * 대조군은 같은 차가 제동할 때마다 운동에너지의 70%를 회수한다고 단순 가정했다(마찰 브레이크 없음, 손실은 나머지 30%라 회수 효율이 100%를 넘는다). 대조군의 회수량은 차량 전기 부하만으로 다 쓰기 어려워 바퀴를 굴리는 데 써야 하므로, 엔진 열효율로만 나눠 환산했다(<i>η</i><sub>b</sub><i>η</i><sub>a</sub> 없음). 두 장치를 같은 기준으로 맞춘 비교는 아래 칸에 있다. 제동 1회 값은 시뮬레이션 탭에서 다른 값은 모두 기본값으로 두고 <i>v</i><sub>0</sub>만 60 km/h로 바꿔 얻었다. 기본값인 50 km/h에서의 회수 효율은 전력 변환기 방식 <span data-fx="s_eta50">–</span>, 다이오드 방식 <span data-fx="d_eta50">–</span>이다. 이 값들은 페이지를 열 때 시뮬레이션 모형으로 다시 계산해 넣는다.</p>
+      <p class="note">범위의 앞쪽은 엔진 열효율 25%, 뒤쪽은 20%로 가정한 값이다. 휴대폰 배터리 환산은 에너지를 리튬이온 휴대폰 배터리 공칭 전압 3.85 V로 나눈 전하량이다(mAh = <i>E</i>[J] ÷ 3.85 V ÷ 3.6). 5,000 mAh 휴대폰 배터리는 약 19 Wh이다. * 대조군은 같은 차가 제동할 때마다 운동에너지의 70%를 회수한다고 단순 가정했다(마찰 브레이크 없음, 손실은 나머지 30%라 회수 효율이 100%를 넘는다). 대조군의 회수량은 차량 전기 부하만으로 다 쓰기 어려워 바퀴를 굴리는 데 써야 하므로, 엔진 열효율로만 나눠 환산했다(<i>η</i><sub>b</sub><i>η</i><sub>a</sub> 없음). 두 장치를 같은 기준으로 맞춘 비교는 아래 칸에 있다. 제동 1회 값은 시뮬레이션 탭에서 다른 값은 모두 기본값으로 두고 <i>v</i><sub>0</sub>만 60 km/h로 바꿔 얻었다. 기본값인 50 km/h에서의 회수 효율은 전력 변환기 방식 <span data-fx="s_eta50">–</span>, 다이오드 방식 <span data-fx="d_eta50">–</span>이다. 이 값들은 페이지를 열 때 시뮬레이션 모형으로 다시 계산해 넣는다.</p>
     </div>
 
     <div class="card">
@@ -1236,10 +1238,11 @@ function accStep(dt){ accPower(); if(acc.P!=null){ acc.E+=acc.P*dt; acc.t+=dt; }
 function accUI(){
   const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
   if(acc.P==null){ accPower(); }
-  if(acc.P==null){ ['#m3-pw','#m3-fg','#m3-at','#m3-ae'].forEach(id=>set(id,'–')); return; }
+  if(acc.P==null){ ['#m3-pw','#m3-fg','#m3-at','#m3-ae','#m3-amah'].forEach(id=>set(id,'–')); return; }
   const pw=Math.abs(acc.P)>=1000 ? (acc.P/1000).toFixed(2)+' kW' : acc.P.toFixed(0)+' W';
   const E=acc.E, eT=Math.abs(E)>=1000 ? (E/1000).toFixed(2)+' kJ' : E.toFixed(0)+' J';
   set('#m3-pw',pw); set('#m3-fg',acc.F.toFixed(0)+' N'); set('#m3-at',acc.t.toFixed(acc.t<10?2:1)+' s'); set('#m3-ae',eT);
+  set('#m3-amah', typeof window.M3D_mAh==='function' ? window.M3D_mAh(E) : (E/3.85/3.6).toFixed(0)+' mAh');
 }
 /* 각도 al에서의 측정값 */
 function meas(al,omega){
@@ -2074,6 +2077,11 @@ function smDefQ(mode,v0){
   const q={mode}; [...SM,...SM_EM].forEach(d=>{ q[d.id]=d.v; }); q.Na=NA_DEF[mode]||q.Na; q.v0=v0; q.em=mode!=='srg'; q.autoOff=true; q.Rf=smRf(q);
   q.B=Math.min(MU0*q.Nf*q.If/EMF.g,EMF.Bsat); q.Pf=q.If*q.If*q.Rf*smN(q); q.Vf=q.If*q.Rf*smN(q); return q;
 }
+/* 휴대폰 배터리 환산: 전하량 Q = E / V, 1 mAh = 3.6 C. 리튬이온 휴대폰 배터리 공칭 전압 3.85 V 기준 */
+const PHONE_V=3.85;
+function mAhVal(E){ return E/PHONE_V/3.6; }
+function mAhTxt(E){ const q=mAhVal(E); return (q<0?'−':'')+Math.round(Math.abs(q)).toLocaleString('ko-KR')+' mAh'; }
+window.M3D_mAh=mAhTxt;
 function fxFill(){
   const N=20, d=57.4, FE=12.6, V0=d/FE, H=32e6, ch=[0.25*0.98*0.55, 0.20*0.98*0.55], KE=0.5*1500*Math.pow(60/3.6,2);
   const out={}, put=(k,v)=>{ out[k]=v; };
@@ -2082,7 +2090,7 @@ function fxFill(){
     const loss=o.Ffr*o.xs+o.Ecu, loss50=o50.Ffr*o50.xs+o50.Ecu, E1=Math.max(o.net,0), Ed=N*E1;
     const dv=ch.map(c=>Ed/c/H), pct=dv.map(x=>x/V0*100), fe=dv.map(x=>d/(V0-x)), yr=dv.map(x=>x*365);
     put(k+'_E1',(E1/1000).toFixed(2)); put(k+'_eta',(E1/loss*100).toFixed(1)+'%'); put(k+'_eta50',(Math.max(o50.net,0)/loss50*100).toFixed(1)+'%');
-    put(k+'_Ed',(Ed/1000).toFixed(1));
+    put(k+'_Ed',(Ed/1000).toFixed(1)); put(k+'_mAh',mAhTxt(Ed));
     put(k+'_dv',`${(dv[0]*1000).toFixed(1)}~${(dv[1]*1000).toFixed(1)}`); put(k+'_pct',`${pct[0].toFixed(2)}~${pct[1].toFixed(2)}%`);
     put(k+'_feR',`${fe[0].toFixed(2)}~${fe[1].toFixed(2)}`); put(k+'_yr',`${yr[0].toFixed(1)}~${yr[1].toFixed(1)}`);
     put(k+'_pctR',`${pct[0].toFixed(1)}~${pct[1].toFixed(1)}%`); put(k+'_fe',`${fe[0].toFixed(2)}~${fe[1].toFixed(2)}`);
@@ -2092,7 +2100,7 @@ function fxFill(){
     put(k+'_ratio',(Ed/(N*0.7*KE)*100).toFixed(1)+'%'); put(k+'_W',(Ed/3600).toFixed(0));
   }
   { const T1=0.7*KE, Ed=N*T1, dv=[0.25,0.20].map(e=>Ed/(e*H)), pct=dv.map(x=>x/V0*100);
-    put('t_E1',(T1/1000).toFixed(0)); put('t_eta',(0.7/0.3*100).toFixed(0)+'%'); put('t_Ed',(Ed/1000).toFixed(0));
+    put('t_E1',(T1/1000).toFixed(0)); put('t_eta',(0.7/0.3*100).toFixed(0)+'%'); put('t_Ed',(Ed/1000).toFixed(0)); put('t_mAh',mAhTxt(Ed));
     put('t_dv',`${(dv[0]*1000).toFixed(0)}~${(dv[1]*1000).toFixed(0)}`); put('t_pct',`${pct[0].toFixed(1)}~${pct[1].toFixed(1)}%`);
     put('t_pctR',`${pct[0].toFixed(0)}~${pct[1].toFixed(0)}%`);
     put('t_feR',dv.map(x=>(d/(V0-x)).toFixed(2)).join('~')); put('t_yr',dv.map(x=>(x*365).toFixed(0)).join('~')); }
@@ -2170,6 +2178,7 @@ function runSimple(){
         ['누적 발전량 E',eF(E),'e-gen'],
         [srgMode ? '누적 사용 에너지 (코일 여자)' : '누적 사용 에너지 (전자석)', eF(Eu),'e-use'],
         ['순 생산 에너지 (발전 − 사용)',eF(E-Eu),'e-net'],
+        ['순 생산 (휴대폰 배터리 환산)',mAhTxt(E-Eu),'e-net'],
         ['손실된 에너지 (마찰 + 코일 열)',eF(fr+coil),'e-loss'],
         ['에너지 회수 효율 (순 생산 ÷ 손실)', (fr+coil)>0 ? pct((E-Eu)/(fr+coil)*100) : '–']);
       return it; }});
