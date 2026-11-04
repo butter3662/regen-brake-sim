@@ -316,20 +316,20 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
   <div id="sv-how" hidden>
     <div class="card">
       <h2>한눈에 보는 흐름</h2>
-      <p class="cap">브레이크를 밟으면 두 가지 제동이 동시에 일어난다. 위 줄은 마찰 제동, 아래 두 줄은 전자기유도 제동과 발전이다.</p>
+      <p class="cap">브레이크를 밟으면 두 가지 제동이 동시에 일어난다. 첫 줄은 마찰 제동, 다음 두 줄은 전력 변환기 방식의 발전과 제동이다(시뮬레이션 기본 방식).</p>
       <div class="flow">
         <div class="frow"><span class="chip">브레이크 페달</span><span class="arr">→</span><span class="chip o">캘리퍼가 패드로 디스크를 누름</span><span class="arr">→</span><span class="chip o">마찰력 <i>F</i><sub>fr</sub>: 운동에너지 → 열</span></div>
-        <div class="frow"><span class="chip b">계자 전류 <i>I</i><sub>f</sub></span><span class="arr">→</span><span class="chip b">고정된 U자 철심 <i>n</i>개(기본 4개)에 자속 <i>Φ</i></span><span class="arr">→</span><span class="chip">바퀴와 함께 쇳조각 12개 회전 <i>ω</i><sub>w</sub> = <i>v</i>/<i>r</i><sub>w</sub></span><span class="arr">→</span><span class="chip b">틈이 메워졌다 비워짐: <i>Φ</i><sub>on</sub> ↔ <i>Φ</i><sub>off</sub></span><span class="arr">→</span><span class="chip b">발전 코일에 유도 기전력 <i>ε</i></span><span class="arr">→</span><span class="chip b">정류 (교류→직류)</span><span class="arr">→</span><span class="chip g">배터리 충전</span></div>
-        <div class="frow"><span class="chip b">유도전류 <i>I</i></span><span class="arr">→</span><span class="chip b">자속 변화를 방해 (렌츠 법칙)</span><span class="arr">→</span><span class="chip b">쇳조각의 회전을 방해: 발전기 제동력 <i>F</i><sub>gen</sub></span></div>
+        <div class="frow"><span class="chip">바퀴와 함께 쇳조각 12개 회전 <i>ω</i><sub>w</sub> = <i>v</i>/<i>r</i><sub>w</sub></span><span class="arr">→</span><span class="chip b">위치 센서: 쇳조각이 철심에 정렬하기 직전</span><span class="arr">→</span><span class="chip b">스위치 켬: 배터리 → 코일, 자속 생성 (여자)</span><span class="arr">→</span><span class="chip b">쇳조각이 멀어짐: 인덕턴스 <i>L</i> 감소</span><span class="arr">→</span><span class="chip b">스위치 끔: 코일 전류가 다이오드를 거쳐 배터리로</span><span class="arr">→</span><span class="chip g">빌려준 에너지 + 바퀴의 일 = 배터리 충전</span></div>
+        <div class="frow"><span class="chip b">전류가 흐르는 철심이 멀어지는 쇳조각을 당김</span><span class="arr">→</span><span class="chip b">쇳조각의 회전을 방해: 발전기 제동력 <i>F</i><sub>gen</sub></span></div>
         <div class="frow"><span class="chip">두 힘 <i>F</i><sub>fr</sub> + <i>F</i><sub>gen</sub>이 함께 차를 감속</span></div>
       </div>
     </div>
 
     <div class="card">
-      <h2>쇳조각이 지나갈 때 기전력이 생기는 과정</h2>
-      <p class="cap">원판 둘레를 바깥에서 내려다보고 한 줄로 편 그림이다. 쇳조각(진한 회색)이 왼쪽으로 지나가며 철심의 두 다리 사이 틈을 메웠다가 비운다. 위쪽은 차 바깥쪽 다리로 계자 코일(보라)이 감겨 있고, 아래쪽은 안쪽 다리로 발전 코일(주황)이 감겨 있다. 두 다리를 잇는 철심 등은 원판보다 바깥(보는 사람 쪽)에 있어서 반투명하게 그렸다. 틈이 메워질수록 자속 경로(빨간 점선)가 진해진다. 철심 B는 A보다 쇳조각 간격의 1.5칸 뒤에 있어서, A의 자속이 커질 때 B의 자속은 작아진다. 실제 움직임은 너무 빨라 100배 느리게 보여 준다.</p>
-      <canvas id="how-coil" role="img" aria-label="쇳조각이 U자 철심 사이를 지나가는 그림과 자속·기전력 그래프"></canvas>
-      <div class="legend" style="margin-top:6px"><span><i class="sw" style="border-top-color:var(--s1)"></i>철심 A의 자속 <i>Φ</i><sub>A</sub></span><span><i class="sw" style="border-top-color:var(--s4)"></i>철심 B의 자속 <i>Φ</i><sub>B</sub></span><span><i class="sw" style="border-top-color:var(--s2);border-top-style:dashed"></i>발전 기전력 <i>ε</i> (발전 코일 전체 합)</span></div>
+      <h2>쇳조각이 지나갈 때 전류와 자속이 바뀌는 과정</h2>
+      <p class="cap" id="how-cap">원판 둘레를 바깥에서 내려다보고 한 줄로 편 그림이다. 쇳조각(진한 회색)이 왼쪽으로 지나가며 철심의 두 다리 사이 틈을 메웠다가 비운다. 철심마다 코일 하나(초록)를 두 다리에 나눠 감았다. 쇳조각이 다가와 정렬하기 직전에 변환기가 코일에 +48 V를 걸어 전류를 세우고(여자), 쇳조각이 멀어지는 동안 전류를 유지하다가(발전), −48 V를 걸어 전류를 배터리로 돌려보낸다(회수). 자속(빨간 점선)은 전류가 흐를 때만 생긴다. 철심 B는 A보다 쇳조각 간격의 1.5칸 뒤에 있어서 A와 번갈아 일한다. 실제 움직임은 너무 빨라 100배 느리게 보여 주고, 오른쪽 그래프는 실제 속력에서 계산한 전류와 자속이다.</p>
+      <canvas id="how-coil" role="img" aria-label="쇳조각이 U자 철심 사이를 지나가는 그림과 코일 전류·자속 그래프"></canvas>
+      <div class="legend" style="margin-top:6px" id="how-legend"></div>
       <div class="srow" style="max-width:420px">
         <label for="how-v">속력 <i>v</i></label>
         <span class="sval"><input id="how-v" type="number" inputmode="decimal" min="0" step="1" value="50"><span class="u">km/h</span></span>
@@ -344,6 +344,31 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
       <ol class="steps">
         <li><b>회전 전달.</b> 쇳조각 원판은 바퀴 허브에 붙어 바퀴와 같은 각속도로 돈다. 기어는 없다. 바퀴는 미끄러지지 않고 구르므로 바퀴 각속도와 쇳조각이 철심 앞을 지나가는 빈도는 다음과 같다.
           <div class="eq"><i>ω</i><sub>w</sub> = <i>v</i> / <i>r</i><sub>w</sub>, &nbsp;&nbsp; <i>f</i> = <i>Z ω</i><sub>w</sub> / 2π</div></li>
+        <li><b>자기 회로와 인덕턴스.</b> 철심마다 코일 하나(<i>N</i><sub>a</sub>회)를 감는다. 코일에 전류 <i>i</i>가 흐르면 자속은 철심 → 틈 → 쇳조각 → 틈 → 철심으로 돈다. 철은 공기보다 자속이 훨씬 잘 통하므로 자기 저항은 공기 틈이 거의 다 차지한다고 보았다. 쇳조각이 틈을 메우면 공기 틈의 합이 <i>g</i> = 2 mm, 비우면 <i>g</i> + <i>t</i> = 18 mm이므로, 코일의 인덕턴스가 원판 각도 <i>θ</i>에 따라 바뀐다.
+          <div class="eq"><i>L</i>(<i>θ</i>) = <i>N</i><sub>a</sub><sup>2</sup> [<i>𝒫</i><sub>off</sub> + (<i>𝒫</i><sub>on</sub> − <i>𝒫</i><sub>off</sub>) × 겹침(<i>θ</i>)], &nbsp;&nbsp; <i>𝒫</i><sub>on</sub> = <i>μ</i><sub>0</sub><i>A</i>/<i>g</i>, &nbsp;&nbsp; <i>𝒫</i><sub>off</sub> = <i>μ</i><sub>0</sub><i>A</i>/(<i>g</i>+<i>t</i>), &nbsp;&nbsp; <i>Φ</i> = <i>N</i><sub>a</sub> <i>𝒫</i> <i>i</i></div>
+          <i>𝒫</i>는 퍼미언스(자속이 지나가기 쉬운 정도), <i>A</i>는 다리 끝 단면적, 겹침은 쇳조각과 다리가 겹친 비율(0~1)이다. 기본값(16회, <i>h</i> = 65 mm)에서 <i>L</i><sub>on</sub> ≈ 0.41 mH, <i>L</i><sub>off</sub> ≈ 0.045 mH이다. 틈의 자기장이 포화(1.5 T 가정)를 넘지 않도록 전류는 <i>I</i><sub>sat</sub> = <i>B</i><sub>sat</sub><i>g</i>/(<i>μ</i><sub>0</sub><i>N</i><sub>a</sub>) ≈ 149 A와 스위치 허용 전류 150 A 중 작은 값 <i>I</i><sub>ref</sub>까지만 흘린다.</li>
+        <li><b>전압식과 에너지.</b> 코일 하나의 전압식에 전류를 곱하면 에너지가 어디로 가는지 보인다.
+          <div class="eq"><i>v</i> = <i>R i</i> + d(<i>L i</i>)/d<i>t</i> = <i>R i</i> + <i>L</i> d<i>i</i>/d<i>t</i> + <i>i ω</i> d<i>L</i>/d<i>θ</i></div>
+          <div class="eq"><i>v i</i> = <i>R i</i><sup>2</sup> + d(½<i>L i</i><sup>2</sup>)/d<i>t</i> + <i>T ω</i>, &nbsp;&nbsp; <i>T</i> = ½ <i>i</i><sup>2</sup> d<i>L</i>/d<i>θ</i></div>
+          <i>v</i>는 코일에 거는 전압, <i>R</i>은 코일 저항, <i>ω</i>는 원판 각속도, <i>T</i>는 원판에 걸리는 전자기 토크이다. <i>vi</i>는 배터리와 오가는 전력, <i>Ri</i><sup>2</sup>은 저항 열, ½<i>Li</i><sup>2</sup>은 코일 자기장에 저장된 에너지, <i>Tω</i>는 기계 일률이다. 쇳조각이 다가올 때(d<i>L</i>/d<i>θ</i> &gt; 0) 전류가 있으면 <i>T</i> &gt; 0이라 원판을 끌어당겨 가속하는 모터가 되고, 멀어질 때(d<i>L</i>/d<i>θ</i> &lt; 0) 전류가 있으면 <i>T</i> &lt; 0이라 회전을 붙잡는 제동 토크가 되어 바퀴의 운동에너지 −<i>Tω</i>가 전기로 바뀐다. 토크가 <i>i</i><sup>2</sup>에 비례하므로 전류 방향은 상관없고, 한 방향으로만 전류를 흘리는 회로로 충분하다.</li>
+        <li><b>스위칭 한 주기.</b> 철심마다 스위치 2개와 다이오드 2개(비대칭 하프브리지)가 있고, 쇳조각 하나가 지나갈 때마다 다음을 반복한다.
+          <ol class="plain" style="margin:6px 0 0;padding-left:1.2em">
+            <li><b>여자 (켜는 각도 <i>θ</i><sub>on</sub>, 정렬 직전):</b> 두 스위치를 켜 코일에 +48 V를 건다. 전류가 d<i>i</i>/d<i>t</i> ≈ <i>V</i>/<i>L</i>로 커지고, 배터리가 여자 에너지 <i>E</i><sub>in</sub>을 코일에 빌려준다. 정렬 근처는 d<i>L</i>/d<i>θ</i> ≈ 0이라 모터로 손해 보는 몫이 작다.</li>
+            <li><b>발전 (정렬 뒤):</b> 쇳조각이 멀어지며 d<i>L</i>/d<i>θ</i> &lt; 0이 된다. 변환기는 +48 V와 −48 V를 번갈아 걸어 전류를 <i>I</i><sub>ref</sub> 근처로 유지하고, 이 동안 제동 토크가 생긴다.</li>
+            <li><b>회수 (끄는 각도 <i>θ</i><sub>off</sub>):</b> 두 스위치를 끈다. 코일 전류는 끊기지 않고 다이오드 두 개를 거쳐 배터리 + 쪽으로 밀려 들어가며, 코일에는 −48 V가 걸려 전류가 0까지 줄어든다. 다음 쇳조각이 다가오기 전에 0이 되어야 모터 구간을 피한다.</li>
+          </ol>
+          <div class="eq"><i>E</i><sub>out</sub> − <i>E</i><sub>in</sub> = <i>W</i><sub>mech</sub> − <i>E</i><sub>cu</sub> &gt; 0</div>
+          <i>E</i><sub>out</sub>은 배터리가 돌려받은 에너지, <i>W</i><sub>mech</sub>는 바퀴에서 빼앗은 기계 일, <i>E</i><sub>cu</sub>는 코일 저항 열이다. 여자 에너지는 쓰고 버리는 것이 아니라 빌려주는 것이고, 바퀴의 일만큼 더 돌아온다. 시뮬레이터는 속력마다 <i>θ</i><sub>on</sub>, <i>θ</i><sub>off</sub> 조합을 여러 개 계산해 순 생산이 가장 큰 것을 고른다.</li>
+        <li><b>제동력.</b> 철심 <i>n</i>개가 바퀴에서 빼앗는 평균 기계 전력을 <i>P</i><sub>m</sub>이라 하면, 이 전력은 차의 운동에너지에서 나오므로 발전기 제동력은 그 전력을 속력으로 나눈 값이다.
+          <div class="eq"><i>F</i><sub>gen</sub> = <i>P</i><sub>m</sub> / <i>v</i></div>
+          토크가 <i>i</i><sup>2</sup>에 비례하고 전류가 <i>I</i><sub>ref</sub>에서 막히므로, 기본값에서 발전기 제동력은 200 N 이하로 마찰 브레이크(5100 N)보다 훨씬 작다. 아주 느리면 빌려준 여자 에너지를 다 돌려받지 못하므로, 그 속력(기본값 약 5 km/h) 아래에서는 변환기를 쉬고 마찰 브레이크만 쓴다. 전류를 흘리지 않으면 철심이 쇳조각을 당기지 않으므로, 제동하지 않을 때는 주행을 방해하지 않는다.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>비교용: 계자 코일 + 다이오드 방식</h2>
+      <p class="cap">시뮬레이션 탭에서 ‘다이오드 정류 + 계자 코일’을 고르면 이 방식으로 계산한다(위의 그림도 이 방식으로 바뀐다). 철심 구조와 쇳조각 원판은 같고, 철심마다 계자 코일(직류 전자석)과 발전 코일을 따로 감는다. 스위치 없이 다이오드 정류기만 쓰므로 회로가 단순하지만, 계자 전력(기본값 약 800 W)이 계속 열로 사라지고 발전 코일의 인덕턴스 때문에 전류가 늦게 자라서, 같은 철심으로 순 생산이 전력 변환기 방식의 절반 이하이다.</p>
+      <ol class="steps">
         <li><b>자기 회로.</b> 계자 코일이 만드는 자속은 철심 → 틈 → 쇳조각 → 틈 → 철심으로 돈다. 철은 공기보다 자속이 훨씬 잘 통하므로 자기 저항은 공기 틈이 거의 다 차지한다고 보았다. 쇳조각이 틈을 메우면 공기 틈의 합이 <i>g</i> = 2 mm, 비우면 <i>g</i> + <i>t</i> = 18 mm가 된다.
           <div class="eq"><i>Φ</i><sub>on</sub> = <i>μ</i><sub>0</sub> <i>N</i><sub>f</sub> <i>I</i><sub>f</sub> <i>A</i> / <i>g</i>, &nbsp;&nbsp; <i>Φ</i><sub>off</sub> = <i>μ</i><sub>0</sub> <i>N</i><sub>f</sub> <i>I</i><sub>f</sub> <i>A</i> / (<i>g</i> + <i>t</i>), &nbsp;&nbsp; Δ<i>Φ</i> = <i>Φ</i><sub>on</sub> − <i>Φ</i><sub>off</sub></div>
           철심이 포화되면 <i>Φ</i><sub>on</sub>은 <i>B</i><sub>sat</sub><i>A</i>(<i>B</i><sub>sat</sub> = 1.5 T 가정)에서 멈춘다.</li>
@@ -356,17 +381,6 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <li><b>렌츠 법칙에 의한 제동.</b> 유도전류는 자신을 만든 자속 변화를 방해하는 방향으로 흐르고, 그 결과 쇳조각이 틈으로 들어가고 나오는 움직임을 방해하는 힘이 생긴다. 회로 전체에서 쓰이는 전력 <i>P</i>는 차의 운동에너지에서 나오므로 발전기 제동력은 그 전력을 속력으로 나눈 값이다.
           <div class="eq"><i>F</i><sub>gen</sub> = <i>P</i> / <i>v</i></div>
           차가 거의 멈추면 발전기 제동력은 0에 가까워지므로 정지 직전에는 마찰 브레이크가 대부분의 제동을 맡는다. 반대로 아주 빠를 때도 인덕턴스 때문에 전력이 상한에서 멈추므로 제동력은 오히려 줄어든다. 발전 코일에 전류를 흘리지 않으면 A와 B가 쇳조각을 당기는 힘이 서로 상쇄되어, 손실을 빼면 주행을 방해하지 않는다.</li>
-      </ol>
-    </div>
-
-    <div class="card">
-      <h2>전력 변환기 방식 (시뮬레이션 기본 방식)</h2>
-      <p class="cap">시뮬레이션의 기본 방식이다. 위에서 설명한 철심 구조와 자속 변화는 그대로 두고, 계자 코일 없이 철심마다 코일 하나가 자화와 발전을 모두 한다. 위의 계자 코일 + 다이오드 방식은 비교용으로 남겨 두었다.</p>
-      <ol class="steps">
-        <li><b>켬: 배터리가 전류를 밀어 넣는다.</b> 쇳조각이 철심과 정렬해 인덕턴스가 클 때 스위치를 켜면 배터리 전압이 코일에 걸려 전류가 d<i>i</i>/d<i>t</i> = <i>V</i>/<i>L</i>로 빠르게 커진다. 다이오드 방식처럼 작은 기전력으로 전류가 자라기를 기다리지 않는다. 이때 배터리는 코일에 ½<i>LI</i><sup>2</sup>을 빌려준다.</li>
-        <li><b>끔: 쇳조각이 떨어져 나가며 전류를 배터리로 밀어낸다.</b> 쇳조각이 멀어지기 시작하면 스위치를 끈다. 전류는 다이오드를 지나 배터리로 거꾸로 흐른다. 철심은 쇳조각을 붙잡으려고 당기는데 바퀴가 억지로 떼어 내므로, 그 일이 전기로 바뀌어 빌려준 것보다 많은 에너지가 배터리로 돌아온다. 떼어 내는 힘이 제동력이다.
-          <div class="eq"><i>v</i> = <i>R i</i> + <i>L</i> d<i>i</i>/d<i>t</i> + <i>i ω</i> d<i>L</i>/d<i>θ</i>, &nbsp;&nbsp; <i>T</i> = ½ <i>i</i><sup>2</sup> |d<i>L</i>/d<i>θ</i>|</div></li>
-        <li><b>제어.</b> 켜고 끄는 위치와 전류 크기를 회전 위치 센서 신호에 맞춰 정하므로, 계자 코일의 전력 소비가 없고 제동력을 원하는 만큼 조절할 수 있다. 대신 스위치, 마이크로컨트롤러, 위치 센서가 필요하다.</li>
       </ol>
     </div>
 
@@ -2097,7 +2111,110 @@ const coil={on:false,raf:0,last:null,th:Math.PI/5,
     this.raf=requestAnimationFrame(loop); },
   stop(){ this.on=false; cancelAnimationFrame(this.raf); }
 };
+
+
+const HOW_CAP={srg:null, diode:'원판 둘레를 바깥에서 내려다보고 한 줄로 편 그림이다(비교용 다이오드 방식). 쇳조각(진한 회색)이 왼쪽으로 지나가며 철심의 두 다리 사이 틈을 메웠다가 비운다. 위쪽은 차 바깥쪽 다리로 계자 코일(보라)이 감겨 있고, 아래쪽은 안쪽 다리로 발전 코일(주황)이 감겨 있다. 틈이 메워질수록 자속 경로(빨간 점선)가 진해진다. 철심 B는 A보다 쇳조각 간격의 1.5칸 뒤에 있어서, A의 자속이 커질 때 B의 자속은 작아진다. 실제 움직임은 너무 빨라 100배 느리게 보여 준다.'};
+let howLegMode='';
+function howLegend(m){ if(howLegMode===m) return; howLegMode=m; const cap=$('#how-cap'); if(HOW_CAP.srg==null) HOW_CAP.srg=cap.innerHTML; cap.innerHTML=HOW_CAP[m];
+  $('#how-legend').innerHTML = m==='srg'
+    ? '<span><i class="sw" style="border-top-color:var(--s1)"></i>철심 A의 자속·전류</span><span><i class="sw" style="border-top-color:var(--s4)"></i>철심 B의 자속·전류</span><span>실선: 자속 <i>Φ</i>, 점선: 코일 전류 <i>i</i></span>'
+    : '<span><i class="sw" style="border-top-color:var(--s1)"></i>철심 A의 자속 <i>Φ</i><sub>A</sub></span><span><i class="sw" style="border-top-color:var(--s4)"></i>철심 B의 자속 <i>Φ</i><sub>B</sub></span><span><i class="sw" style="border-top-color:var(--s2);border-top-style:dashed"></i>발전 기전력 <i>ε</i> (발전 코일 전체 합)</span>'; }
+/* 전력 변환기 방식: 지금 속력에서 코일 하나의 정상 상태 전류 파형 i(x) (x: 쇳조각 한 칸 안의 위치, 0.5가 정렬) */
+const waveCache=new Map();
+function srgWave(q,omega){
+  const tb=srgTable(q), c=tb.c, v=omega*SMF.rw, key=[Math.round(q.Na),c.n,Math.round(q.hr),Math.round(v*20)].join('|');
+  if(waveCache.has(key)) return waveCache.get(key);
+  const M=240, I=new Float64Array(M), cnt=new Float64Array(M), out={I, uon:0, uoff:0, on:false, c};
+  if(v>0 && isFinite(tb.vmin) && v>=tb.vmin){
+    let k=0; while(k<tb.v.length-1 && tb.v[k+1]<=v) k++; if(k<tb.v.length-1 && v-tb.v[k]>tb.v[k+1]-v) k++;
+    const uon=tb.uon[k], uoff=tb.uoff[k]; out.uon=uon; out.uoff=uoff; out.on=uoff>uon;
+    if(out.on){ const pitch=2*Math.PI/SMF.Z, dtdu=pitch/omega, du=1/SRG.N, dLmag=2*(c.Lon-c.Loff), V0=SRG.V; let i=0, u=0;
+      while(u<1.5){ const uu=u<1?u:u-1, Lu=c.Loff+(c.Lon-c.Loff)*Math.max(0,1-Math.abs(uu-0.5)/0.5), dL= uu<0.5 ? dLmag : -dLmag;
+        const on=u>=uon && u<uoff; if(!on && u>=uoff && i<=0) break;
+        const V= on ? (i<c.Iref ? V0 : -V0) : (u>=uoff ? -V0 : 0);
+        let ni=i+(dtdu*(V-c.R*i)-i*dL)/Lu*du; if(ni<0) ni=0;
+        const idx=Math.floor((u%1)*M)%M; I[idx]+=ni; cnt[idx]+=1; i=ni; u+=du; }
+      for(let k=0;k<M;k++) if(cnt[k]>0) I[k]/=cnt[k]; }   /* 칸마다 평균 (스위칭 잔물결은 평균으로 본다) */
+  }
+  if(waveCache.size>200) waveCache.clear(); waveCache.set(key,out); return out;
+}
+function drawCoilSrg(){
+  const cv=$('#how-coil'); const W=cv.clientWidth, H=cv.clientHeight; if(!W||!H) return;
+  const dpr=window.devicePixelRatio||1;
+  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
+  const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0); const C=colors();
+  const cs=getComputedStyle(document.documentElement), s4=cs.getPropertyValue('--s4').trim(), COIL='#1d9e75';
+  const q=smParams(), w=coil.omega(), Z=SMF.Z, pitch=2*Math.PI/Z, wv=srgWave(q,w), c=wv.c, M=wv.I.length;
+  const h=Math.min(Math.max(q.hr||60,1),70)/1000, A=SMF.w*h, Pon=MU0*A/EMF.g, Poff=MU0*A/(EMF.g+SMF.tTooth), phiMax=EMF.Bsat*A;
+  const u=coil.th/pitch;
+  const dOf=(cc,uu)=>{ let d=((cc+uu)%1+1)%1; if(d>0.5) d-=1; return d; };        /* d < 0: 다가옴, d > 0: 멀어짐 */
+  const ov=(cc,uu)=>Math.max(0,1-2*Math.abs(dOf(cc,uu)));
+  const xOf=(cc,uu)=>0.5+dOf(cc,uu);                                                   /* 변환기 기준 위치 (0.5 = 정렬) */
+  const iAt=(cc,uu)=>{ const x=xOf(cc,uu); return wv.I[Math.min(M-1,Math.floor(x*M))]; };
+  const phi=(cc,uu)=>Math.min(q.Na*(Poff+(Pon-Poff)*ov(cc,uu))*iAt(cc,uu), phiMax);
+  const state=(cc,uu)=>{ if(!wv.on) return '꺼짐'; const x=xOf(cc,uu), i=iAt(cc,uu);
+    if(x>=wv.uon && x<0.5) return '여자 (+48 V)'; if(x>=0.5 && x<wv.uoff) return '발전 (전류 유지)'; if(i>0.5) return '회수 (−48 V)'; return '꺼짐'; };
+  const cA=0, cB=1.5;
+  ctx.fillStyle=C.sky; ctx.fillRect(0,0,W,H);
+  const narrow=W<560, lw= narrow? W : W*0.5, lh= narrow? H*0.5 : H;
+  const P=Math.min(lw/3.7, lh*0.95), cy=lh*0.52, xA=lw*0.5-0.75*P, xB=xA+cB*P;
+  const tt=P*0.2, gap=P*0.06, legH=P*0.17, tw=P*0.5;
+  ctx.save(); ctx.beginPath(); ctx.rect(0,0,lw,lh); ctx.clip();
+  ctx.fillStyle=C.rim; ctx.globalAlpha=0.9; ctx.fillRect(0,cy-tt*0.35,lw,tt*0.7); ctx.globalAlpha=1;
+  for(let k=Math.floor(u)-2;k<=Math.floor(u)+6;k++){ const x=xA+(k-u)*P; if(x<-P||x>lw+P) continue; ctx.fillStyle=C.ink2; ctx.fillRect(x-tw/2,cy-tt/2,tw,tt); }
+  const core=(xc,cc,name)=>{
+    const e=phi(cc,u)/phiMax, yT=cy-tt/2-gap-legH, yB=cy+tt/2+gap, on=iAt(cc,u)>0.5;
+    ctx.fillStyle=C.disc; ctx.globalAlpha=0.28; ctx.fillRect(xc-tw/2,yT-6,tw,yB+legH+6-(yT-6)); ctx.globalAlpha=1;
+    ctx.fillStyle=C.disc; ctx.fillRect(xc-tw/2,yT,tw,legH); ctx.fillRect(xc-tw/2,yB,tw,legH);
+    const coilBox=y=>{ ctx.strokeStyle=COIL; ctx.globalAlpha= on?1:0.45; ctx.lineWidth= on?3.5:2.5; ctx.strokeRect(xc-tw/2-5,y-3,tw+10,legH+6);
+      ctx.lineWidth=1; ctx.beginPath(); for(let i=1;i<6;i++){ const xx=xc-tw/2-5+(tw+10)*i/6; ctx.moveTo(xx,y-3); ctx.lineTo(xx,y+legH+3); } ctx.stroke(); ctx.globalAlpha=1; };
+    coilBox(yT); coilBox(yB);
+    if(e>0.005){ ctx.strokeStyle=C.crit||'#e24b4a'; ctx.globalAlpha=0.2+0.8*e; ctx.lineWidth=1.5+2.5*e; ctx.setLineDash([5,4]);
+      const xl=xc-tw*0.18, xr=xc+tw/2+12;
+      ctx.beginPath(); ctx.moveTo(xl,yT+legH*0.3); ctx.lineTo(xl,yB+legH*0.7); ctx.lineTo(xr,yB+legH*0.7); ctx.lineTo(xr,yT+legH*0.3); ctx.closePath(); ctx.stroke();
+      ctx.setLineDash([]); ctx.globalAlpha=1; }
+    ctx.fillStyle=C.ink; ctx.font='600 12px "Noto Sans KR",sans-serif'; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText(name,xc,yT-12);
+    ctx.font='11px "Noto Sans KR",sans-serif'; ctx.fillStyle= on ? COIL : C.ink3; ctx.fillText(state(cc,u),xc,yB+legH+18);
+    ctx.font='11px "IBM Plex Mono",monospace'; ctx.fillStyle=C.ink2; ctx.fillText(`${fmt(iAt(cc,u))} A`,xc,yB+legH+33);
+  };
+  core(xA,cA,'철심 A'); core(xB,cB,'철심 B');
+  ctx.restore();
+  ctx.fillStyle=C.ink3; ctx.font='11px "Noto Sans KR",sans-serif'; ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+  ctx.fillText('← 쇳조각 이동',8,14); ctx.fillText('코일 하나를 두 다리에 나눠 감음',8,lh-8);
+  /* 그래프: 위 자속, 아래 코일 전류 (쇳조각 2칸) */
+  const gx0= narrow? 46 : lw+46, gx1=W-14, gy0= narrow? lh+16 : 18, gy1=H-24, mid=(gy0+gy1)/2;
+  const pT=[gy0, mid-10], pB=[mid+10, gy1];
+  const X=f=>gx0+(gx1-gx0)*f/2;
+  ctx.strokeStyle=C.line; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(gx0,pT[1]); ctx.lineTo(gx1,pT[1]); ctx.moveTo(gx0,pB[1]); ctx.lineTo(gx1,pB[1]);
+  ctx.moveTo(gx0,pT[0]); ctx.lineTo(gx0,pT[1]); ctx.moveTo(gx0,pB[0]); ctx.lineTo(gx0,pB[1]); ctx.stroke();
+  const Imax=Math.max(c.Iref,1e-9), yPhi=v=>pT[1]-(pT[1]-pT[0])*v/phiMax, yI=i=>pB[1]-(pB[1]-pB[0]-4)*i/Imax;
+  const u0=Math.floor(u/2)*2;
+  const plot=(fn,col,dash)=>{ ctx.strokeStyle=col; ctx.lineWidth=2; ctx.setLineDash(dash); ctx.beginPath();
+    for(let i=0;i<=240;i++){ const f=2*i/240, y=fn(u0+f); i?ctx.lineTo(X(f),y):ctx.moveTo(X(f),y); } ctx.stroke(); ctx.setLineDash([]); };
+  plot(uu=>yPhi(phi(cA,uu)),C.s1,[]); plot(uu=>yPhi(phi(cB,uu)),s4,[]);
+  plot(uu=>yI(iAt(cA,uu)),C.s1,[6,4]); plot(uu=>yI(iAt(cB,uu)),s4,[6,4]);
+  const fx=X(u-u0);
+  ctx.strokeStyle=C.ink3; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(fx,gy0); ctx.lineTo(fx,gy1); ctx.stroke();
+  const dot=(y,col)=>{ ctx.fillStyle=col; ctx.strokeStyle=C.surface; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(fx,y,5,0,2*Math.PI); ctx.fill(); ctx.stroke(); };
+  dot(yPhi(phi(cA,u)),C.s1); dot(yPhi(phi(cB,u)),s4); dot(yI(iAt(cA,u)),C.s1); dot(yI(iAt(cB,u)),s4);
+  ctx.fillStyle=C.ink3; ctx.font='11px "IBM Plex Mono",monospace'; ctx.textAlign='right'; ctx.textBaseline='middle';
+  ctx.fillText('Φmax',gx0-4,yPhi(phiMax)); ctx.fillText('0',gx0-4,pT[1]); ctx.fillText('Iref',gx0-4,yI(Imax)); ctx.fillText('0',gx0-4,pB[1]);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='11px "Noto Sans KR",sans-serif';
+  ctx.fillText('0',X(0),gy1+15); ctx.fillText('1칸',X(1),gy1+15); ctx.fillText('2칸',X(2)-10,gy1+15);
+  const halo=(t,x,y)=>{ ctx.lineWidth=4; ctx.strokeStyle=C.sky; ctx.lineJoin='round'; ctx.strokeText(t,x,y); ctx.fillStyle=C.ink2; ctx.fillText(t,x,y); };
+  ctx.textAlign='right'; ctx.font='600 11px "Noto Sans KR",sans-serif'; halo('자속 Φ',gx1,pT[0]+10); halo('코일 전류 i',gx1,pB[0]+10);
+  const deg=x=>{ const d=(x-0.5)*360/Z; return (d<0?'−':'+')+fmt(Math.abs(d)); };
+  const iA=iAt(cA,u), d=dOf(cA,u), dLdth= Math.abs(d)<0.5 ? (d<0?1:-1)*2*(c.Lon-c.Loff)/pitch : 0, eRot=iA*w*dLdth;
+  $('#how-hud').innerHTML=[['바퀴 각속도 ω<sub>w</sub>',fmt(w)+' rad/s'],['쇳조각 통과 빈도 f',fmt(Z*w/(2*Math.PI))+' Hz'],
+    ['L<sub>on</sub> / L<sub>off</sub> (코일 1개)',fmt(c.Lon*1000)+' / '+fmt(c.Loff*1000)+' mH'],['전류 상한 I<sub>ref</sub>',fmt(c.Iref)+' A'],
+    ['켜는·끄는 각도 (정렬 기준)', wv.on ? `${deg(wv.uon)}° / ${deg(wv.uoff)}°` : '변환기 쉼'],
+    ['지금 철심 A 전류 i',fmt(iA)+' A'],['지금 철심 A 회전 기전력 iω dL/dθ',(eRot<-1e-9?'−':'')+fmt(Math.abs(eRot))+' V']].map(i=>`<div>${i[0]}<b>${i[1]}</b></div>`).join('');
+  $('#how-src').innerHTML=`시뮬레이션 탭의 값 <i>N</i><sub>a</sub> = ${Math.round(q.Na)}회, 다리 끝 길이 ${Math.round(q.hr)} mm, 배터리 48 V와 쇳조각 ${Z}개, 틈 1 mm × 2(쇳조각이 없으면 18 mm), 타이어 반지름 ${SMF.rw} m로 계산한다. 켜고 끄는 각도는 시뮬레이션이 이 속력에서 순 생산이 가장 크도록 고른 값이다. 그림의 틈은 보이도록 실제보다 넓게 그렸다.`+(wv.on?'':' 지금 속력은 변환기가 이득을 낼 수 있는 최저 속력보다 느려서 변환기를 쉰다.');
+}
 function drawCoil(){
+  if(smParams().mode==='srg'){ drawCoilSrg(); howLegend('srg'); return; } howLegend('diode');
   const cv=$('#how-coil'); const W=cv.clientWidth, H=cv.clientHeight; if(!W||!H) return;
   const dpr=window.devicePixelRatio||1;
   if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
@@ -2178,7 +2295,7 @@ function howEnergy(o){
   const fr= o.fric ? o.Ffr*o.xs : 0, el= o.E+(o.Ecu||0), left=Math.max(0,o.K0-fr-el);
   const rows=[
     {n:'마찰 브레이크 열', v:fr/1000, c:'--s2'},
-    {n:'부하로 간 전기에너지 (발전량 E)', v:o.E/1000, c:'--s1'},
+    {n: o.srg ? '배터리에 쌓인 순 전기에너지' : '부하로 간 전기에너지 (발전량 E)', v:o.E/1000, c:'--s1'},
     {n:'코일 저항 열', v:(o.Ecu||0)/1000, c:'--s3'}];
   if(left>o.K0*1e-3) rows.push({n:'남은 운동에너지 (아직 굴러가는 몫)', v:left/1000, c:'--s4'});
   breakdown($('#how-brk'), rows, o.K0/1000, 'kJ');
