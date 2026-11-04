@@ -422,7 +422,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <div class="m3-row"><label class="lb" for="m3-slow">느리게 보기</label>
           <select id="m3-slow"><option value="0.02">1/50배</option><option value="0.05" selected>1/20배</option><option value="0.2">1/5배</option><option value="1">실제 속도</option></select></div>
         <div class="m3-row"><label class="lb" for="m3-q">화질</label>
-          <select id="m3-q"><option value="hi" selected>선명하게</option><option value="auto">부드럽게 (주사율 우선)</option></select></div>
+          <select id="m3-q"><option value="hi" selected>선명하게 (기기 해상도)</option><option value="auto">부드럽게 (낮은 해상도, 주사율 우선)</option></select></div>
         <div class="m3-row"><label class="lb" for="m3-tire">타이어·휠</label>
           <select id="m3-tire"><option value="1">보이기</option><option value="0.22" selected>반투명</option><option value="0">숨기기</option></select></div>
       </div>
@@ -1048,9 +1048,11 @@ let rs=1, drawMs=4, fps=60, nAdj=0;
 /* 누적 에너지: 화면 속 시간(실제 시간 × 느리게 보기 배율)으로 순 전력을 적분 */
 const acc={E:0, t:0, P:null, F:null, key:'', n:0};
 function ensureBuf(){
-  sc=Math.min(window.devicePixelRatio||1, 1.5)*rs;
+  /* 선명하게: 기기 화면 해상도 그대로(픽셀 상한 400만). 부드럽게: CSS 픽셀 1배 이하(상한 100만)에서 그리는 시간에 맞춰 자동 조절 */
+  const hi= st.quality!=='auto', dpr=window.devicePixelRatio||1;
+  sc= hi ? Math.min(dpr,3) : Math.min(dpr,1)*rs;
   let w=Math.max(1,Math.round(W*sc)), h=Math.max(1,Math.round(H*sc));
-  const maxPx=1.0e6; if(w*h>maxPx){ const f=Math.sqrt(maxPx/(w*h)); w=Math.round(w*f); h=Math.round(h*f); }
+  const maxPx= hi ? 4.0e6 : 1.0e6; if(w*h>maxPx){ const f=Math.sqrt(maxPx/(w*h)); w=Math.round(w*f); h=Math.round(h*f); }
   sc=w/W;
   if(w!==bw||h!==bh){ bw=w; bh=h; cv.width=bw; cv.height=bh; img=ctx.createImageData(bw,bh); u32=new Uint32Array(img.data.buffer); zb=new Float32Array(bw*bh); }
 }
@@ -1297,7 +1299,7 @@ function frame(ts){
   if(W>0 && H>0){ const t0=performance.now(); draw(); drawMs+=(performance.now()-t0-drawMs)*0.1;
     if(++nAdj>=20){ nAdj=0;
       if(st.quality!=='auto') rs=1;   /* 선명하게: 해상도 고정 */
-      else if(drawMs>7 && rs>0.7) rs=Math.max(0.7,rs*0.92); else if(drawMs<4 && rs<1) rs=Math.min(1,rs*1.05); } }
+      else if(drawMs>7 && rs>0.6) rs=Math.max(0.6,rs*0.92); else if(drawMs<4 && rs<1) rs=Math.min(1,rs*1.05); } }
   const hz=$('#m3-hz'); if(hz && (nAdj%10)===0) hz.textContent=`화면 갱신 ${Math.round(fps)} Hz`;
   raf=requestAnimationFrame(frame);
 }
@@ -2466,6 +2468,6 @@ document.querySelectorAll('table.parts').forEach(t=>{ const h=[...t.querySelecto
 })();
 })();
 </script>
-<footer class="upd">업데이트 <span id="upd-t" data-build="26/11/04/10/48">26/11/04/10/48</span></footer>
+<footer class="upd">업데이트 <span id="upd-t" data-build="26/11/04/10/50">26/11/04/10/50</span></footer>
 </body>
 </html>
