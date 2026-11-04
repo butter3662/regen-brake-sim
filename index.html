@@ -57,16 +57,8 @@ nav.tabs{display:flex;gap:6px;margin:20px 0 16px;border-bottom:1px solid var(--l
 nav.tabs a{padding:9px 14px;color:var(--ink-2);text-decoration:none;font-family:var(--f-display);font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px}
 nav.tabs a[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
 nav.tabs a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+table.parts.basis.fxt td:not(:first-child){white-space:normal;font-family:var(--f-body);font-size:14px}
 .layout{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start}
-.tzbars{display:flex;flex-direction:column;gap:8px;margin:0 0 10px}
-.tzbars .r{display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:13px}
-.tzbars .r span{color:var(--ink-2)}
-.tzbars .r b{font-family:var(--f-mono);font-weight:500;font-variant-numeric:tabular-nums}
-.tzbars .bar{grid-column:1/-1;height:9px;border-radius:5px;background:var(--line);overflow:hidden}
-.tzbars .bar i{display:block;height:100%;min-width:2px}
-.tzdl{display:grid;grid-template-columns:1fr auto;gap:3px 10px;margin:0;font-size:13px}
-.tzdl dt{color:var(--ink-2)}
-.tzdl dd{margin:0;font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
 .cseg{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}
 .cseg button{font-size:13px;padding:5px 10px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .cseg button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);font-weight:500}
@@ -318,13 +310,6 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
           <div class="chart" id="sm-c2"></div>
         </div>
       </div>
-      <div class="card tz" id="tz-card">
-      <h2>대조군과 비교: 테슬라 수준 회생제동</h2>
-      <p class="note" id="tz-cond" style="margin:0 0 8px"></p>
-      <div class="tzbars" id="tz-bars"></div>
-      <dl class="tzdl" id="tz-dl"></dl>
-      <p class="note" style="margin:6px 0 0">대조군은 같은 차가 제동할 때마다 운동에너지 ½<i>mv</i><sub>0</sub><sup>2</sup>의 70%를 회수한다고 단순 가정했다. 연료 환산은 두 경우 모두 회수 에너지가 엔진이 할 일을 대신한다고 보고 엔진 열효율 25%, 휘발유 32 MJ/L로 나눴다. 자세한 근거는 ‘예상 효과’ 탭에 있다.</p>
-    </div>
     </div>
   </div>
   </div>
@@ -727,25 +712,26 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
   <div id="sv-fx" hidden>
     <div class="card">
       <h2>예상 효과: 시내 주행 연비</h2>
-      <p>기본 세팅(전력 변환기 방식)을 그대로 단 차가 시내에서 0 → 60 km/h → 0을 3분 주기로 하루 20회 반복한다고 가정하면, 연비는 약 <b><span data-fx="s_pctR">–</span></b> 좋아진다. 쏘나타 디 엣지 2.0 가솔린의 복합연비 12.6 km/L가 약 <b><span data-fx="s_fe">–</span> km/L</b>가 되는 정도이고, 하루 약 <span data-fx="s_dvR">–</span> mL, 1년이면 약 <span data-fx="s_yrR">–</span> L의 휘발유를 아낀다.</p>
+      <p>기본 세팅(전력 변환기 방식)을 그대로 단 차가 시내에서 0 → 60 km/h → 0을 3분 주기로 하루 20회 반복한다고 가정하면, 연비는 약 <b><span data-fx="s_pctR">–</span></b> 좋아진다. 같은 조건에서 테슬라 수준 회생제동(대조군)은 약 <span data-fx="t_pctR">–</span>이다. 쏘나타 디 엣지 2.0 가솔린의 복합연비 12.6 km/L가 약 <b><span data-fx="s_fe">–</span> km/L</b>가 되는 정도이고, 하루 약 <span data-fx="s_dvR">–</span> mL, 1년이면 약 <span data-fx="s_yrR">–</span> L의 휘발유를 아낀다.</p>
       <div class="tblwrap">
-      <table class="parts basis">
-        <thead><tr><th>항목</th><th>전력 변환기 방식</th><th>다이오드 방식</th></tr></thead>
+      <table class="parts basis fxt">
+        <thead><tr><th>항목</th><th>전력 변환기 방식</th><th>다이오드 방식</th><th>대조군: 테슬라 수준 회생제동 *</th></tr></thead>
         <tbody>
-          <tr><td>제동 1회 순 생산 <i>E</i><sub>1</sub> (60 km/h → 0)</td><td><span data-fx="s_E1">–</span> kJ (회수 효율 <span data-fx="s_eta">–</span>)</td><td><span data-fx="d_E1">–</span> kJ (회수 효율 <span data-fx="d_eta">–</span>)</td></tr>
-          <tr><td>하루 순 생산 <i>E</i><sub>d</sub> (20회)</td><td><span data-fx="s_Ed">–</span> kJ</td><td><span data-fx="d_Ed">–</span> kJ</td></tr>
-          <tr><td>하루 절약 연료 Δ<i>V</i></td><td><span data-fx="s_dv">–</span> mL</td><td><span data-fx="d_dv">–</span> mL</td></tr>
-          <tr><td>연비 개선율 Δ<i>V</i>/<i>V</i><sub>0</sub></td><td><span data-fx="s_pct">–</span></td><td><span data-fx="d_pct">–</span></td></tr>
-          <tr><td>연비 (기준 12.6 km/L)</td><td><span data-fx="s_feR">–</span> km/L</td><td><span data-fx="d_feR">–</span> km/L</td></tr>
-          <tr><td>1년(365일) 절약 연료</td><td><span data-fx="s_yr">–</span> L</td><td><span data-fx="d_yr">–</span> L</td></tr>
+          <tr><td>제동 1회 순 생산 <i>E</i><sub>1</sub> (60 km/h → 0)</td><td><span data-fx="s_E1">–</span> kJ (회수 효율 <span data-fx="s_eta">–</span>)</td><td><span data-fx="d_E1">–</span> kJ (회수 효율 <span data-fx="d_eta">–</span>)</td><td><span data-fx="t_E1">–</span> kJ (회수 효율 <span data-fx="t_eta">–</span>)</td></tr>
+          <tr><td>운동에너지 대비 (1회 208 kJ)</td><td><span data-fx="s_ke">–</span></td><td><span data-fx="d_ke">–</span></td><td>70%</td></tr>
+          <tr><td>하루 순 생산 <i>E</i><sub>d</sub> (20회)</td><td><span data-fx="s_Ed">–</span> kJ</td><td><span data-fx="d_Ed">–</span> kJ</td><td><span data-fx="t_Ed">–</span> kJ</td></tr>
+          <tr><td>하루 절약 연료 Δ<i>V</i></td><td><span data-fx="s_dv">–</span> mL</td><td><span data-fx="d_dv">–</span> mL</td><td><span data-fx="t_dv">–</span> mL</td></tr>
+          <tr><td>연비 개선율 Δ<i>V</i>/<i>V</i><sub>0</sub></td><td><span data-fx="s_pct">–</span></td><td><span data-fx="d_pct">–</span></td><td><span data-fx="t_pct">–</span></td></tr>
+          <tr><td>연비 (기준 12.6 km/L)</td><td><span data-fx="s_feR">–</span> km/L</td><td><span data-fx="d_feR">–</span> km/L</td><td><span data-fx="t_feR">–</span> km/L</td></tr>
+          <tr><td>1년(365일) 절약 연료</td><td><span data-fx="s_yr">–</span> L</td><td><span data-fx="d_yr">–</span> L</td><td><span data-fx="t_yr">–</span> L</td></tr>
         </tbody>
       </table>
       </div>
-      <p class="note">범위의 앞쪽은 엔진 열효율 25%, 뒤쪽은 20%로 가정한 값이다. 제동 1회 값은 시뮬레이션 탭에서 다른 값은 모두 기본값으로 두고 <i>v</i><sub>0</sub>만 60 km/h로 바꿔 얻었다. 기본값인 50 km/h에서의 회수 효율은 전력 변환기 방식 <span data-fx="s_eta50">–</span>, 다이오드 방식 <span data-fx="d_eta50">–</span>이다. 이 값들은 페이지를 열 때 시뮬레이션 모형으로 다시 계산해 넣는다.</p>
+      <p class="note">범위의 앞쪽은 엔진 열효율 25%, 뒤쪽은 20%로 가정한 값이다. * 대조군은 같은 차가 제동할 때마다 운동에너지의 70%를 회수한다고 단순 가정했다(마찰 브레이크 없음, 손실은 나머지 30%라 회수 효율이 100%를 넘는다). 대조군의 회수량은 차량 전기 부하만으로 다 쓰기 어려워 바퀴를 굴리는 데 써야 하므로, 엔진 열효율로만 나눠 환산했다(<i>η</i><sub>b</sub><i>η</i><sub>a</sub> 없음). 두 장치를 같은 기준으로 맞춘 비교는 아래 칸에 있다. 제동 1회 값은 시뮬레이션 탭에서 다른 값은 모두 기본값으로 두고 <i>v</i><sub>0</sub>만 60 km/h로 바꿔 얻었다. 기본값인 50 km/h에서의 회수 효율은 전력 변환기 방식 <span data-fx="s_eta50">–</span>, 다이오드 방식 <span data-fx="d_eta50">–</span>이다. 이 값들은 페이지를 열 때 시뮬레이션 모형으로 다시 계산해 넣는다.</p>
     </div>
 
     <div class="card">
-      <h2>대조군: 테슬라 수준 회생제동 (단순 환산)</h2>
+      <h2>대조군 계산과 같은 기준 비교</h2>
       <p>차체와 주행 조건(1500 kg, 0 → 60 km/h → 0, 3분 주기, 하루 20회)은 그대로 두고, 전기차(테슬라) 수준의 회생제동이 제동할 때마다 운동에너지의 70%를 회수한다고 단순하게 가정한 대조군이다. 전기차 회생제동 시스템의 효율은 보통 60~70%로 소개되고, 바퀴 → 배터리, 배터리 → 바퀴 변환이 각각 약 80%여서 왕복 약 64%라는 설명도 있다. 대조군은 마찰 브레이크 없이 모든 제동을 회생제동으로 한다고 보았다.</p>
       <div class="eq"><i>E</i><sub>d</sub> = 20 × ½ <i>m v</i><sub>0</sub><sup>2</sup> × <i>η</i><sub>r</sub> = 20 × 208 kJ × 0.70 ≈ 2.92 MJ = 0.810 kWh</div>
       <div class="eq">Δ<i>V</i> = <i>E</i><sub>d</sub> / (<i>η</i><sub>e</sub> <i>H</i>) = 0.810 kWh / (0.25 × 8.89 kWh/L) = 0.810 / 2.225 ≈ 0.364 L</div>
@@ -1980,20 +1966,6 @@ function buildSimple(){
   $('#sm-reset').addEventListener('click',()=>{ [...SM,...SM_EM].forEach(d=>{ $('#sm-'+d.id).value=d.v; $('#sm-'+d.id+'-r').value=d.v; }); $('#sm-autooff').checked=true; document.querySelector('input[name=sm-gen][value=diode]').checked=true; runSimple(); });
 }
 
-/* ---------- 대조군(테슬라 수준 회생제동) 비교: 지금 조건, 제동 1회 ---------- */
-const TZ={eta:0.70, etaE:0.25, H:32e6, perDay:20};
-function tzUpdate(q,o){
-  const KE=0.5*q.m*Math.pow(q.v0/3.6,2), E=Math.max(o.net,0), T=TZ.eta*KE;
-  const mL=e=>e/(TZ.etaE*TZ.H)*1000, pc=x=>(x*100).toFixed(x<0.1?1:0)+'%';
-  const eS=e=>{ const [a,b]=eTxt(e); return a+' '+b; };
-  $('#tz-cond').innerHTML=`지금 변수(질량 ${fmt(q.m)} kg, ${fmt(q.v0)} km/h → 0, ${q.mode==='srg'?'전력 변환기':'다이오드'} 방식)로 한 번 제동할 때`;
-  const row=(n,v,f,c)=>`<div class="r"><span>${n}</span><b>${v}</b><div class="bar"><i style="width:${Math.max(0,Math.min(100,f*100))}%;background:var(${c})"></i></div></div>`;
-  $('#tz-bars').innerHTML = KE>0 ? row('차의 운동에너지 (100%)',eS(KE),1,'--s4')+row(`대조군 회수 (${pc(TZ.eta)})`,eS(T),TZ.eta,'--s2')+row(`이 장치 순 생산 (${pc(E/KE)})`,eS(E),E/KE,'--s1') : '<p class="note">속력이 0이다.</p>';
-  const dd=(t,v)=>`<dt>${t}</dt><dd>${v}</dd>`;
-  $('#tz-dl').innerHTML = KE>0 ? dd('이 장치 ÷ 대조군', T>0 ? (E/T*100).toFixed(1)+'%' : '–')+
-    dd('연료 환산, 제동 1회 (이 장치 / 대조군)', `${mL(E).toFixed(2)} / ${mL(T).toFixed(1)} mL`)+
-    dd(`연료 환산, 하루 ${TZ.perDay}회`, `${(mL(E)*TZ.perDay).toFixed(1)} mL / ${(mL(T)*TZ.perDay/1000).toFixed(3)} L`) : '';
-}
 /* ---------- 회로도 전환 ---------- */
 function circSet(mode){
   const srg=mode==='srg';
@@ -2024,6 +1996,11 @@ function fxFill(){
     const dm=Ed/(0.25*H); put(k+'_dvm',(dm*1000).toFixed(1)); put(k+'_pctm',(dm/V0*100).toFixed(2)+'%'); put(k+'_yrm',(dm*365).toFixed(1));
     put(k+'_ratio',(Ed/(N*0.7*KE)*100).toFixed(1)+'%'); put(k+'_W',(Ed/3600).toFixed(0));
   }
+  { const T1=0.7*KE, Ed=N*T1, dv=[0.25,0.20].map(e=>Ed/(e*H)), pct=dv.map(x=>x/V0*100);
+    put('t_E1',(T1/1000).toFixed(0)); put('t_eta',(0.7/0.3*100).toFixed(0)+'%'); put('t_Ed',(Ed/1000).toFixed(0));
+    put('t_dv',`${(dv[0]*1000).toFixed(0)}~${(dv[1]*1000).toFixed(0)}`); put('t_pct',`${pct[0].toFixed(1)}~${pct[1].toFixed(1)}%`);
+    put('t_pctR',`${pct[0].toFixed(0)}~${pct[1].toFixed(0)}%`);
+    put('t_feR',dv.map(x=>(d/(V0-x)).toFixed(2)).join('~')); put('t_yr',dv.map(x=>(x*365).toFixed(0)).join('~')); }
   document.querySelectorAll('[data-fx]').forEach(el=>{ const v=out[el.dataset.fx]; if(v!=null) el.textContent=v; });
   window.__fx=out;
 }
@@ -2102,7 +2079,6 @@ function runSimple(){
         ['에너지 회수 효율 (순 생산 ÷ 손실)', (fr+coil)>0 ? pct((E-Eu)/(fr+coil)*100) : '–']);
       return it; }});
   howEnergy(o);
-  tzUpdate(q,o);
   if(window.M3D && M3D.setGen) M3D.setGen(q.mode);
   circSet(q.mode);
   if(smView==='how' && !coil.on) drawCoil();
