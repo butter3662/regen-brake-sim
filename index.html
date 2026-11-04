@@ -219,6 +219,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
 .m3 .m3-stage{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--m3-stage)}
 .m3 canvas{display:block;width:100%;height:min(64vh,620px);min-height:360px;touch-action:none;cursor:grab}
 .m3 canvas:active{cursor:grabbing}
+.m3 #m3-ov{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;min-height:0;cursor:auto;touch-action:none}
 .m3 .m3-views{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:6px;flex-wrap:wrap}
 .m3 .m3-views button,.m3 .m3-ctrl button{font-family:var(--f-body);font-size:13px;padding:6px 11px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .m3 .m3-views button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);font-weight:500}
@@ -444,6 +445,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
   <p class="m3-sub">최종 설계안(쇳조각 원판 + 고정 U자 철심)의 3D 모형이다. 화면을 끌어서 돌려 보고, 두 손가락이나 마우스 휠로 확대한다. ‘U자 철심 확대’를 누르면 철심 하나의 구조와 자속 경로를 가까이서 본다. ‘작동 과정 보기’는 전력 변환기 방식에서 쇳조각 하나가 지나갈 때 일어나는 일(켜기 → 붙잡기 → 끄기)을 회로와 함께 느리게 보여 준다.</p>
   <div class="m3-stage">
     <canvas id="m3-cv" aria-label="회생제동 발전 장치 3D 모형"></canvas>
+    <canvas id="m3-ov" aria-hidden="true"></canvas>
     <div class="m3-views">
       <button type="button" id="m3-core" aria-pressed="false">U자 철심 확대</button>
       <button type="button" id="m3-demo-btn" aria-pressed="false">작동 과정 보기 (슬로 모션)</button>
@@ -1062,6 +1064,8 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
 </div>
 
 <script>
+/* innerHTML은 내용이 바뀔 때만 다시 쓴다(매 프레임 DOM 재생성 방지) */
+function setH(el,h){ if(el && el._h!==h){ el._h=h; el.innerHTML=h; } }
 /* ---------- 3D 모형 (쇳조각 원판 + 고정 U자 철심) ---------- */
 window.M3D=(function(){
 "use strict";
@@ -1119,7 +1123,7 @@ CORE_ANG.forEach((a,i)=>{
 });
 
 /* 카메라 */
-let cv, ctx, W=0, H=0, dpr=1;
+let cv, ov, ctx, gl=null, W=0, H=0, dpr=1;   /* cv: WebGL로 3D를 그리는 캔버스(조작 대상), ov: 그 위에 자속·이름표를 그리는 2D 캔버스 */
 const cam={yaw:2.45, pitch:0.38, dist:1.05, tx:0, ty:0, tz:-0.09};
 const VIEWS={
   in:{yaw:2.45,pitch:0.38,dist:1.05,t:[0,0,-0.09]}, out:{yaw:0.55,pitch:0.3,dist:1.15,t:[0,0,-0.09]},
@@ -1141,7 +1145,8 @@ function ensureBuf(){
   let w=Math.max(1,Math.round(W*sc)), h=Math.max(1,Math.round(H*sc));
   const maxPx= hi ? 4.0e6 : 1.0e6; if(w*h>maxPx){ const f=Math.sqrt(maxPx/(w*h)); w=Math.round(w*f); h=Math.round(h*f); }
   sc=w/W;
-  if(w!==bw||h!==bh){ bw=w; bh=h; cv.width=bw; cv.height=bh; img=ctx.createImageData(bw,bh); u32=new Uint32Array(img.data.buffer); zb=new Float32Array(bw*bh); }
+  if(w!==bw||h!==bh){ bw=w; bh=h; ov.width=bw; ov.height=bh; img=ctx.createImageData(bw,bh); u32=new Uint32Array(img.data.buffer); zb=new Float32Array(bw*bh); }
+  zsc=sc;
 }
 function pack(r,g,b){ return (255<<24)|((b&255)<<16)|((g&255)<<8)|(r&255); }
 /* 삼각형 래스터화. w = 1/z (클수록 가까움) */
@@ -1205,10 +1210,19 @@ function alphaOf(m){
   }
   return 1;
 }
-function css(n){ return getComputedStyle(cv).getPropertyValue(n).trim() || getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+const cssCache={}; let cssAge=0;
+function css(n){ /* 색 변수는 30프레임마다만 다시 읽는다(getComputedStyle이 느림) */
+  if(cssCache[n]!=null && cssAge<30) return cssCache[n];
+  const v=getComputedStyle(cv).getPropertyValue(n).trim() || getComputedStyle(document.documentElement).getPropertyValue(n).trim(); cssCache[n]=v; return v; }
 
+/* 화면 글자·막대는 값이 바뀔 때만 고친다(매 프레임 DOM 쓰기와 레이아웃 계산 줄이기) */
+const elC={};
+function elQ(id){ let e=elC[id]; if(!e || !e.isConnected){ e=$(id); elC[id]=e; } return e; }
+function setT(id,v){ const e=elQ(id); if(e && e._t!==v){ e._t=v; e.textContent=v; } }
+function barT(id,v,max){ const e=elQ(id); if(!e) return; const w=Math.max(0,Math.min(100,v/max*100)).toFixed(1)+'%'; if(e._w!==w){ e._w=w; e.style.width=w; } }
 function draw(){
-  ensureBuf();
+  if(gl){ drawGL(); return; }
+  ensureBuf(); ctx.setTransform(1,0,0,1,0,0);
   const bg=css('--m3-stage'); const bgc=hex(bg.length===7?bg:'#e9eef3');
   u32.fill(pack(bgc[0],bgc[1],bgc[2])); zb.fill(0);
   const glowE=CORE_ANG.map(a=> st.gen==='srg' ? srgFlux(a) : overlap(a));
@@ -1245,6 +1259,104 @@ function draw(){
       tri(t.sx[i0],t.sy[i0],t.sw[i0], t.sx[i1],t.sy[i1],t.sw[i1], t.sx[i2],t.sy[i2],t.sw[i2], t.r,t.g,t.b,t.alp); } }
   ctx.putImageData(img,0,0);
   ctx.setTransform(sc,0,0,sc,0,0);
+  if(st.flux) drawFlux(glowE);
+  if(st.labels) drawLabels();
+}
+/* ---------- WebGL 렌더러 (GPU) ----------
+   소프트웨어 렌더러와 같은 카메라·조명 식을 셰이더로 옮겼다. 모서리는 GPU 멀티샘플(MSAA)로 부드럽게 한다.
+   이름표 가림 판정에 쓰는 깊이는 작은 해상도로 CPU에서 따로 구한다. */
+let dpN=0, dpKey='', dpA=NaN, zsc=1, glP=null, glU={}, glMeshes=null, glW=0, glH=0, ovS=1;
+const VS=`attribute vec3 aP; attribute vec3 aN;
+uniform float uRot,uYaw,uPitch,uDist,uF,uNear,uFar; uniform vec3 uT; uniform vec2 uHalf;
+varying vec3 vC; varying vec3 vN;
+vec3 rz(vec3 p,float a){ float c=cos(a), s=sin(a); return vec3(p.x*c+p.y*s, -p.x*s+p.y*c, p.z); }
+vec3 cam(vec3 q,float d,float tr){ float cy=cos(uYaw), sy=sin(uYaw), cp=cos(uPitch), sp=sin(uPitch);
+  float x1=q.x*cy-q.z*sy, z1=q.x*sy+q.z*cy; return vec3(x1, q.y*cp-z1*sp, d*tr-(q.y*sp+z1*cp)); }
+void main(){ vec3 p=rz(aP,uRot); vec3 c=cam(p-uT,uDist,1.0); vC=c; vN=cam(rz(aN,uRot),0.0,0.0);
+  float a=(uFar+uNear)/(uFar-uNear), b=-2.0*uFar*uNear/(uFar-uNear);
+  gl_Position=vec4(uF*c.x/uHalf.x, uF*c.y/uHalf.y, a*c.z+b, c.z); }`;
+const FS=`precision mediump float; uniform vec3 uCol; uniform float uA; uniform vec3 uL; varying vec3 vC; varying vec3 vN;
+void main(){ vec3 n=normalize(vN); if(dot(n,vC)>0.0) n=-n; float k=0.42+0.62*max(0.0,dot(n,uL)); gl_FragColor=vec4(min(uCol*k,vec3(1.0)),uA); }`;
+function glInit(){
+  const c=cv; let g=null;
+  try{ g=c.getContext('webgl',{antialias:true,alpha:false,premultipliedAlpha:false,preserveDrawingBuffer:false}) || c.getContext('experimental-webgl',{antialias:true}); }catch(e){ g=null; }
+  if(!g) return false;
+  const sh=(t,src)=>{ const o=g.createShader(t); g.shaderSource(o,src); g.compileShader(o); if(!g.getShaderParameter(o,g.COMPILE_STATUS)) throw new Error(g.getShaderInfoLog(o)); return o; };
+  try{ const pr=g.createProgram(); g.attachShader(pr,sh(g.VERTEX_SHADER,VS)); g.attachShader(pr,sh(g.FRAGMENT_SHADER,FS)); g.linkProgram(pr);
+    if(!g.getProgramParameter(pr,g.LINK_STATUS)) return false; glP=pr; }catch(e){ return false; }
+  gl=g; gl.useProgram(glP);
+  ['uRot','uYaw','uPitch','uDist','uF','uNear','uFar','uT','uHalf','uCol','uA','uL'].forEach(n=>glU[n]=gl.getUniformLocation(glP,n));
+  glU.aP=gl.getAttribLocation(glP,'aP'); glU.aN=gl.getAttribLocation(glP,'aN');
+  /* 메시마다 삼각형 버퍼(면 법선 포함)를 한 번만 만든다 */
+  glMeshes=meshes.map(m=>{ const P=[], N=[];
+    for(const fc of m.faces){ const p0=m.verts[fc[0]], p1=m.verts[fc[1]], p2=m.verts[fc[2]];
+      const u=[p1[0]-p0[0],p1[1]-p0[1],p1[2]-p0[2]], w=[p2[0]-p0[0],p2[1]-p0[1],p2[2]-p0[2]];
+      let n=[u[1]*w[2]-u[2]*w[1], u[2]*w[0]-u[0]*w[2], u[0]*w[1]-u[1]*w[0]]; const nl=Math.hypot(...n)||1; n=n.map(x=>x/nl);
+      for(let t=1;t+1<fc.length;t++) for(const i of [fc[0],fc[t],fc[t+1]]){ P.push(...m.verts[i]); N.push(...n); } }
+    const bp=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,bp); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(P),gl.STATIC_DRAW);
+    const bn=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,bn); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(N),gl.STATIC_DRAW);
+    let cx=0,cy=0,cz=0; m.verts.forEach(v=>{ cx+=v[0]; cy+=v[1]; cz+=v[2]; }); const k=m.verts.length;
+    return {m, bp, bn, n:P.length/3, c:[cx/k,cy/k,cz/k]}; });
+  gl.enableVertexAttribArray(glU.aP); gl.enableVertexAttribArray(glU.aN);
+  cv.addEventListener('webglcontextlost',e=>{ e.preventDefault(); gl=null; },false);
+  return true;
+}
+/* 이름표 가림 판정용 작은 깊이 버퍼 (불투명 면만) */
+function depthPass(){
+  const s=Math.min(1, 260/Math.max(1,W)); const w=Math.max(1,Math.round(W*s)), h=Math.max(1,Math.round(H*s));
+  if(w!==bw||h!==bh){ bw=w; bh=h; zb=new Float32Array(w*h); }
+  zsc=s; zb.fill(0);
+  const f=Math.min(W,H)*1.15*s, hx=w/2, hy=h/2;
+  for(const m of meshes){ if(alphaOf(m)<1) continue;
+    const a=m.group==='wheel'?alpha:0, cvx=m.verts.map(p=>toCam(a?rotZ(p,a):p));
+    for(const fc of m.faces){ let skip=false; for(const i of fc) if(cvx[i][2]<0.03){ skip=true; break; } if(skip) continue;
+      for(let t=1;t+1<fc.length;t++){ const q=[fc[0],fc[t],fc[t+1]].map(i=>cvx[i]);
+        triZ(hx+f*q[0][0]/q[0][2],hy-f*q[0][1]/q[0][2],1/q[0][2], hx+f*q[1][0]/q[1][2],hy-f*q[1][1]/q[1][2],1/q[1][2], hx+f*q[2][0]/q[2][2],hy-f*q[2][1]/q[2][2],1/q[2][2]); } } }
+}
+function triZ(x0,y0,w0,x1,y1,w1,x2,y2,w2){
+  let area=(x1-x0)*(y2-y0)-(x2-x0)*(y1-y0); if(area===0) return;
+  if(area<0){ let t; t=x1;x1=x2;x2=t; t=y1;y1=y2;y2=t; t=w1;w1=w2;w2=t; area=-area; }
+  const minX=Math.max(0,Math.floor(Math.min(x0,x1,x2))), maxX=Math.min(bw-1,Math.ceil(Math.max(x0,x1,x2)));
+  const minY=Math.max(0,Math.floor(Math.min(y0,y1,y2))), maxY=Math.min(bh-1,Math.ceil(Math.max(y0,y1,y2)));
+  if(minX>maxX||minY>maxY) return; const inv=1/area;
+  const A0=-(y2-y1), A1=-(y0-y2), A2=-(y1-y0);
+  for(let y=minY;y<=maxY;y++){ const py=y+0.5, px=minX+0.5;
+    let e0=(x2-x1)*(py-y1)-(y2-y1)*(px-x1), e1=(x0-x2)*(py-y2)-(y0-y2)*(px-x2), e2=(x1-x0)*(py-y0)-(y1-y0)*(px-x0), k=y*bw+minX;
+    for(let x=minX;x<=maxX;x++,k++,e0+=A0,e1+=A1,e2+=A2){
+      if(e0<0||e1<0||e2<0) continue; const w=(e0*w0+e1*w1+e2*w2)*inv; if(w>zb[k]) zb[k]=w; } }
+}
+function drawGL(){
+  const hi= st.quality!=='auto', d=window.devicePixelRatio||1;
+  sc= hi ? Math.min(d,3) : Math.min(d,1)*rs;
+  const w=Math.max(1,Math.round(W*sc)), h=Math.max(1,Math.round(H*sc));
+  if(w!==glW||h!==glH){ glW=w; glH=h; cv.width=w; cv.height=h; }
+  ovS=Math.min(d,2); const ow=Math.round(W*ovS), oh=Math.round(H*ovS); if(ov.width!==ow||ov.height!==oh){ ov.width=ow; ov.height=oh; }
+  const bg=css('--m3-stage'), bgc=hex(bg.length===7?bg:'#e9eef3');
+  gl.viewport(0,0,w,h); gl.clearColor(bgc[0]/255,bgc[1]/255,bgc[2]/255,1); gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.disable(gl.CULL_FACE);
+  const Lv=[-0.35,0.55,-0.75], Ln=Math.hypot(...Lv);
+  gl.uniform3f(glU.uL,Lv[0]/Ln,Lv[1]/Ln,Lv[2]/Ln); gl.uniform1f(glU.uYaw,cam.yaw); gl.uniform1f(glU.uPitch,cam.pitch); gl.uniform1f(glU.uDist,cam.dist);
+  gl.uniform3f(glU.uT,cam.tx,cam.ty,cam.tz); gl.uniform1f(glU.uF,Math.min(W,H)*1.15); gl.uniform2f(glU.uHalf,W/2,H/2);
+  gl.uniform1f(glU.uNear,0.03); gl.uniform1f(glU.uFar,20);
+  const glowE=CORE_ANG.map(a=> st.gen==='srg' ? srgFlux(a) : overlap(a));
+  const colOf=m=>{ let rgb=m.rgb; if(m.coil && st.gen==='srg') rgb=SRGC;
+    if(m.glow!=null){ const e=glowE[m.glow]*0.85; rgb=[0,1,2].map(i=>m.rgb[i]+(GLOW[i]-m.rgb[i])*e); } return rgb; };
+  const drawM=(g,alp)=>{ const rgb=colOf(g.m); gl.uniform3f(glU.uCol,rgb[0]/255,rgb[1]/255,rgb[2]/255); gl.uniform1f(glU.uA,alp);
+    gl.uniform1f(glU.uRot, g.m.group==='wheel'?alpha:0);
+    gl.bindBuffer(gl.ARRAY_BUFFER,g.bp); gl.vertexAttribPointer(glU.aP,3,gl.FLOAT,false,0,0);
+    gl.bindBuffer(gl.ARRAY_BUFFER,g.bn); gl.vertexAttribPointer(glU.aN,3,gl.FLOAT,false,0,0);
+    gl.drawArrays(gl.TRIANGLES,0,g.n); };
+  const trans=[];
+  gl.disable(gl.BLEND); gl.depthMask(true);
+  for(const g of glMeshes){ const alp=alphaOf(g.m); if(alp<=0) continue; if(alp>=1) drawM(g,1); else trans.push({g,alp,d:toCam(g.m.group==='wheel'?rotZ(g.c,alpha):g.c)[2]}); }
+  trans.sort((p,q)=>q.d-p.d);
+  gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
+  for(const t of trans) drawM(t.g,t.alp);
+  gl.depthMask(true); gl.disable(gl.BLEND);
+  ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,ov.width,ov.height); ctx.setTransform(ovS,0,0,ovS,0,0);
+  /* 가림 판정용 깊이는 시점·회전이 바뀌었을 때만, 최대 3프레임에 한 번 다시 구한다 */
+  const dk=[cam.yaw,cam.pitch,cam.dist,cam.tx,cam.ty,cam.tz,mode,st.tire,W,H].join(',');
+  if(st.labels && (++dpN>=3 || dk!==dpKey) && (dk!==dpKey || Math.abs(alpha-dpA)>1e-4)){ dpN=0; dpKey=dk; dpA=alpha; depthPass(); }
   if(st.flux) drawFlux(glowE);
   if(st.labels) drawLabels();
 }
@@ -1338,8 +1450,12 @@ function drawLabels(){
     const c=toCam(l.p()); if(c[2]<0.03) continue;
     const [x,y]=proj(c); if(x<2||y<2||x>W-2||y>H-2) continue;
     /* 가려짐 판정: 깊이 버퍼에 더 가까운 면이 있으면 점을 속이 빈 원으로 그린다 */
-    let hid=false; const px=Math.floor(x*sc), py=Math.floor(y*sc);
-    if(px>=0&&py>=0&&px<bw&&py<bh){ hid = zb[py*bw+px] > (1/c[2])*1.004; }
+    let hid=false; const px=Math.floor(x*zsc), py=Math.floor(y*zsc);
+    if(px>=0&&py>=0&&px<bw&&py<bh){
+      /* GPU 모드의 깊이 버퍼는 저해상도라, 모서리 위 점이 옆 면에 가려진 것으로 잘못 보이지 않게 주변 3×3 칸 모두 더 가까울 때만 가림 */
+      const r= gl ? 1 : 0; let zmin=Infinity;
+      for(let dy=-r;dy<=r;dy++) for(let dx=-r;dx<=r;dx++){ const qx=Math.min(bw-1,Math.max(0,px+dx)), qy=Math.min(bh-1,Math.max(0,py+dy)); zmin=Math.min(zmin,zb[qy*bw+qx]); }
+      hid = zmin > (1/c[2])*1.004; }
     const sxn=(l.sx!=null ? l.sx : (x>W/2?1:-1)), syn=(l.sy!=null ? l.sy : (y>H/2?1:-1));
     const txt= typeof l.t==='function' ? l.t() : l.t;
     const dx=sxn*34, tw=ctx.measureText(txt).width+12;
@@ -1371,12 +1487,12 @@ function accPower(){
 }
 function accStep(dt){ accPower(); if(acc.P!=null){ acc.E+=acc.P*dt; acc.t+=dt; } }
 function accUI(){
-  const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
+  const set=setT;
   if(acc.P==null){ accPower(); }
   if(acc.P==null){ ['#m3-pw','#m3-fg','#m3-at','#m3-ae','#m3-amah'].forEach(id=>set(id,'–')); return; }
   const pw=Math.abs(acc.P)>=1000 ? (acc.P/1000).toFixed(2)+' kW' : acc.P.toFixed(0)+' W';
   const E=acc.E, eT=Math.abs(E)>=1000 ? (E/1000).toFixed(2)+' kJ' : E.toFixed(0)+' J';
-  { const n=$('#m3-acc-st'); if(n){ n.hidden=!acc.note; n.textContent=acc.note; } }
+  { const n=elQ('#m3-acc-st'); if(n){ if(n.hidden!==!acc.note) n.hidden=!acc.note; setT('#m3-acc-st',acc.note); } }
   set('#m3-pw',pw); set('#m3-fg',acc.F.toFixed(0)+' N'); set('#m3-at',acc.t.toFixed(acc.t<10?2:1)+' s'); set('#m3-ae',eT);
   set('#m3-amah', typeof window.M3D_mAh==='function' ? window.M3D_mAh(E) : (E/3.85/3.6).toFixed(0)+' mAh');
 }
@@ -1394,9 +1510,9 @@ function meas(al,omega){
 function updateUI(){
   const omega=(st.speed/3.6)/RW, srg=st.gen==='srg';
   const fShow=omega*st.slow*Z/(2*Math.PI), fast= playing && fShow>fps/4;   /* 쇳조각 한 칸에 4프레임도 안 되면 평균 표시 */
-  const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
+  const set=setT;
   const sgn=x=>(x>=0?'+':'−')+Math.abs(x).toFixed(1);
-  const bar=(id,v,max)=>{ $(id).style.width=Math.max(0,Math.min(100,v/max*100))+'%'; };
+  const bar=barT;
   if(!fast){
     const m=meas(alpha,omega);
     bar('#m3-barA',m.pA,PHI_MAX); set('#m3-valA',(m.pA*1000).toFixed(2)+' mWb');
@@ -1414,7 +1530,7 @@ function updateUI(){
     bar('#m3-barS',sA+sB,2*PHI_MAX); set('#m3-valS','평균 '+((sA+sB)*1000).toFixed(2)+' mWb');
     if(srg){ set('#m3-emf','최대 '+mI.toFixed(0)+' A'); set('#m3-e2','최대 ±'+mR.toFixed(1)+' V'); } else set('#m3-emf','±'+mE.toFixed(1)+' V');
   }
-  const fn=$('#m3-fast'); if(fn){ fn.hidden=!fast; if(fast) fn.textContent=`너무 빠름(쇳조각 ${fShow.toFixed(0)}개/s, 화면 ${Math.round(fps)} Hz) → 한 칸 평균·최댓값 표시. 순간값: 더 느리게 보기 또는 일시정지.`; }
+  const fn=elQ('#m3-fast'); if(fn){ if(fn.hidden!==!fast) fn.hidden=!fast; if(fast) setT('#m3-fast',`너무 빠름(쇳조각 ${fShow.toFixed(0)}개/s, 화면 ${Math.round(fps)} Hz) → 한 칸 평균·최댓값 표시. 순간값: 더 느리게 보기 또는 일시정지.`); }
   set('#m3-freq',(omega/(2*Math.PI)*Z).toFixed(1)+' Hz');
   set('#m3-rps',(omega/(2*Math.PI)).toFixed(2)+' 회/s');
   accUI();
@@ -1430,11 +1546,12 @@ function frame(ts){
   last=ts;
   updateUI(); lastUI=ts;   /* 게이지는 매 프레임(화면 주사율) 갱신 */
   if(demo.on) demoUI();
+  cssAge = cssAge>=30 ? 0 : cssAge+1;
   if(W>0 && H>0){ const t0=performance.now(); draw(); drawMs+=(performance.now()-t0-drawMs)*0.1;
     if(++nAdj>=20){ nAdj=0;
       if(st.quality!=='auto') rs=1;   /* 선명하게: 해상도 고정 */
       else if(drawMs>7 && rs>0.6) rs=Math.max(0.6,rs*0.92); else if(drawMs<4 && rs<1) rs=Math.min(1,rs*1.05); } }
-  const hz=$('#m3-hz'); if(hz && (nAdj%10)===0) hz.textContent=`화면 갱신 ${Math.round(fps)} Hz`;
+  if((nAdj%10)===0) setT('#m3-hz',`화면 갱신 ${Math.round(fps)} Hz`);
   raf=requestAnimationFrame(frame);
 }
 function setView(name){
@@ -1444,7 +1561,8 @@ function setView(name){
 let inited=false;
 function init(){
   if(inited) return; inited=true;
-  cv=$('#m3-cv'); ctx=cv.getContext('2d');
+  cv=$('#m3-cv'); ov=$('#m3-ov'); ctx=ov.getContext('2d');
+  let ok=false; try{ ok=glInit(); }catch(e){ ok=false; } if(!ok){ gl=null; }   /* WebGL이 안 되면 기존 소프트웨어 렌더러 */
   new ResizeObserver(resize).observe(cv); resize();
   const ptrs=new Map(); let pinch0=null;
   cv.addEventListener('pointerdown',e=>{ cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(ptrs.size===2){ const [a,b]=[...ptrs.values()]; pinch0={d:Math.hypot(a.x-b.x,a.y-b.y), dist:cam.dist}; } });
@@ -1481,7 +1599,7 @@ function init(){
 }
 /* 작동 과정 패널 갱신 */
 function demoUI(){
-  const d=demoState(), set=(id,v)=>{ const e=$(id); if(e && e.textContent!==v) e.textContent=v; };
+  const d=demoState(), set=setT;
   set('#m3-d-title',d.sg.t); set('#m3-d-text',d.sg.d);
   set('#m3-d-ang',`쇳조각 위치: 정렬 기준 ${d.deg<0?'−':'+'}${Math.abs(d.deg).toFixed(1)}°`);
   set('#m3-d-i',d.i.toFixed(0)+' A'); set('#m3-d-L',(d.L*1000).toFixed(2)+' mH');
@@ -1489,9 +1607,9 @@ function demoUI(){
   set('#m3-d-b', d.k==='ex' ? '방전 (빌려줌)' : (d.k==='ret' ? '충전 (돌려받음)' : '—'));
   { const e=demoE(d.u), J=x=>(x<0?'−':'')+Math.abs(x).toFixed(2)+' J';
     set('#m3-d-use',J(e.use)); set('#m3-d-gen',J(e.gen)); set('#m3-d-net',J(e.gen-e.use)); set('#m3-d-w',J(e.w)); }
-  const c=$('#m3-d-circ'); if(c) c.setAttribute('data-k',d.k);
-  const cur=$('#m3-d-cur'); if(cur) cur.style.left=(d.u*100)+'%';
-  const pb=$('#m3-d-play'); if(pb) pb.textContent= demo.playing ? '일시정지' : '재생';
+  const c=elQ('#m3-d-circ'); if(c && c._k!==d.k){ c._k=d.k; c.setAttribute('data-k',d.k); }
+  const cur=elQ('#m3-d-cur'); if(cur){ const l=(d.u*100).toFixed(2)+'%'; if(cur._l!==l){ cur._l=l; cur.style.left=l; } }
+  set('#m3-d-play', demo.playing ? '일시정지' : '재생');
 }
 function demoStart(){
   if(!inited) return; demo.on=true; demo.playing=true;
@@ -1853,8 +1971,10 @@ function stateAt(r,t){
 }
 function hexRGB(h){ h=h.trim().replace('#',''); if(h.length===3) h=h.split('').map(c=>c+c).join(''); return [0,2,4].map(i=>parseInt(h.substr(i,2),16)); }
 function mixC(a,b,u){ const pa=hexRGB(a), pb=hexRGB(b); return 'rgb('+pa.map((v,i)=>Math.round(v+(pb[i]-v)*u)).join(',')+')'; }
-function colors(){ const cs=getComputedStyle(document.documentElement); const g=n=>cs.getPropertyValue(n).trim();
-  return {ink:g('--ink'),ink2:g('--ink-2'),ink3:g('--ink-3'),line:g('--line'),surface:g('--surface'),s1:g('--s1'),s2:g('--s2'),s3:g('--s3'),crit:g('--crit'),
+let colC=null, colT=0;
+function colors(){ const now=performance.now(); if(colC && now-colT<500) return colC;   /* 색 변수는 0.5초마다만 다시 읽는다 */
+  const cs=getComputedStyle(document.documentElement); const g=n=>cs.getPropertyValue(n).trim(); colT=now;
+  return colC={ink:g('--ink'),ink2:g('--ink-2'),ink3:g('--ink-3'),line:g('--line'),surface:g('--surface'),s1:g('--s1'),s2:g('--s2'),s3:g('--s3'),crit:g('--crit'),
     car:g('--car'),glass:g('--glass'),tire:g('--tire'),disc:g('--disc'),rim:g('--rim'),road:g('--road'),sky:g('--sky')}; }
 function arrowL(ctx,x,y,len,col,label,C){
   ctx.fillStyle=C.ink2; ctx.font='11px "Noto Sans KR",sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText(label,x+6,y);
@@ -1988,7 +2108,7 @@ function makeAnim(pre){
     const items= A.hudItems ? A.hudItems({t:A.t,st,v,x,F})
       : [['시간 t',fmt(A.t)+' s'],['속력 v',fmt(v*3.6)+' km/h'],['이동 거리 x',fmt(x)+' m'],[A.iLabel,fmt(F.I)+' A'],
          ['발전기 제동력',fmt(F.Fgen)+' N'],['마찰 제동력',fmt(F.Ffr)+' N'],['발전 전력 P',Pt],[A.eLabel,Et]];
-    el('hud').innerHTML=items.map(i=> i.sep ? `<div class="hud-sep">${labQ(i.sep)}</div>` : `<div class="${i[2]||''}">${labQ(i[0])}<b>${i[1]}</b></div>`).join('');
+    setH(el('hud'),items.map(i=> i.sep ? `<div class="hud-sep">${labQ(i.sep)}</div>` : `<div class="${i[2]||''}">${labQ(i[0])}<b>${i[1]}</b></div>`).join(''));
     const sc=el('scrub'); if(document.activeElement!==sc) sc.value=String(A.T>0?Math.min(1000,Math.round(A.t/A.T*1000)):(A.endless?1000:0));
   }
   A.set=o=>{
@@ -2510,11 +2630,11 @@ function drawCoilSrg(){
   ctx.textAlign='right'; ctx.font='600 11px "Noto Sans KR",sans-serif'; halo('자속 Φ',gx1,pT[0]+10); halo('코일 전류 i',gx1,pB[0]+10);
   const deg=x=>{ const d=(x-0.5)*360/Z; return (d<0?'−':'+')+fmt(Math.abs(d)); };
   const iA=iAt(cA,u), d=dOf(cA,u), dLdth= Math.abs(d)<0.5 ? (d<0?1:-1)*2*(c.Lon-c.Loff)/pitch : 0, eRot=iA*w*dLdth;
-  $('#how-hud').innerHTML=[['바퀴 각속도 ω<sub>w</sub>',fmt(w)+' rad/s'],['쇳조각 통과 빈도 f',fmt(Z*w/(2*Math.PI))+' Hz'],
+  setH($('#how-hud'),[['바퀴 각속도 ω<sub>w</sub>',fmt(w)+' rad/s'],['쇳조각 통과 빈도 f',fmt(Z*w/(2*Math.PI))+' Hz'],
     ['L<sub>on</sub> / L<sub>off</sub> (코일 1개)',fmt(c.Lon*1000)+' / '+fmt(c.Loff*1000)+' mH'],['전류 상한 I<sub>ref</sub>',fmt(c.Iref)+' A'],
     ['켜는·끄는 각도 (정렬 기준)', wv.on ? `${deg(wv.uon)}° / ${deg(wv.uoff)}°` : '변환기 쉼'],
-    ['지금 철심 A 전류 i',fmt(iA)+' A'],['지금 철심 A 회전 기전력 iω dL/dθ',(eRot<-1e-9?'−':'')+fmt(Math.abs(eRot))+' V']].map(i=>`<div>${labQ(i[0])}<b>${i[1]}</b></div>`).join('');
-  $('#how-src').innerHTML=`시뮬레이션 탭의 값 <i>N</i><sub>a</sub> = ${Math.round(q.Na)}회, 다리 끝 길이 ${Math.round(q.hr)} mm, 배터리 48 V와 쇳조각 ${Z}개, 틈 1 mm × 2(쇳조각이 없으면 18 mm), 타이어 반지름 ${SMF.rw} m로 계산한다. 켜고 끄는 각도는 시뮬레이션이 이 속력에서 순 생산이 가장 크도록 고른 값이다. 그림의 틈은 보이도록 실제보다 넓게 그렸다.`+(wv.on?'':' 지금 속력은 변환기가 이득을 낼 수 있는 최저 속력보다 느려서 변환기를 쉰다.');
+    ['지금 철심 A 전류 i',fmt(iA)+' A'],['지금 철심 A 회전 기전력 iω dL/dθ',(eRot<-1e-9?'−':'')+fmt(Math.abs(eRot))+' V']].map(i=>`<div>${labQ(i[0])}<b>${i[1]}</b></div>`).join(''));
+  setH($('#how-src'),`시뮬레이션 탭의 값 <i>N</i><sub>a</sub> = ${Math.round(q.Na)}회, 다리 끝 길이 ${Math.round(q.hr)} mm, 배터리 48 V와 쇳조각 ${Z}개, 틈 1 mm × 2(쇳조각이 없으면 18 mm), 타이어 반지름 ${SMF.rw} m로 계산한다. 켜고 끄는 각도는 시뮬레이션이 이 속력에서 순 생산이 가장 크도록 고른 값이다. 그림의 틈은 보이도록 실제보다 넓게 그렸다.`+(wv.on?'':' 지금 속력은 변환기가 이득을 낼 수 있는 최저 속력보다 느려서 변환기를 쉰다.'));
 }
 function drawCoil(){
   if(smParams().mode==='srg'){ drawCoilSrg(); howLegend('srg'); return; } howLegend('diode');
@@ -2588,11 +2708,11 @@ function drawCoil(){
   const halo=(t,x,y)=>{ ctx.lineWidth=4; ctx.strokeStyle=C.sky; ctx.lineJoin='round'; ctx.strokeText(t,x,y); ctx.fillStyle=C.ink2; ctx.fillText(t,x,y); };
   ctx.textAlign='right'; ctx.font='600 11px "Noto Sans KR",sans-serif'; halo('자속 Φ',gx1,pT[1]-6); halo('기전력 ε',gx1,(pB[0]+pB[1])/2-6);
   const eNow=epsAt(u+1e-6);
-  $('#how-hud').innerHTML=[['바퀴 각속도 ω<sub>w</sub>',fmt(w)+' rad/s'],['쇳조각 통과 빈도 f',fmt(Z*w/(2*Math.PI))+' Hz'],
+  setH($('#how-hud'),[['바퀴 각속도 ω<sub>w</sub>',fmt(w)+' rad/s'],['쇳조각 통과 빈도 f',fmt(Z*w/(2*Math.PI))+' Hz'],
     ['Φ<sub>on</sub> / Φ<sub>off</sub>',fmt(g.phiOn*1000)+' / '+fmt(g.phiOff*1000)+' mWb'],
     ['지금 Φ<sub>A</sub>',fmt(phi(cA,u)*1000)+' mWb'],['지금 Φ<sub>B</sub>',fmt(phi(cB,u)*1000)+' mWb'],
-    ['기전력 크기 Kv',fmt(Emag)+' V'],['지금 기전력 ε',fmt(eNow)+' V']].map(i=>`<div>${labQ(i[0])}<b>${i[1]}</b></div>`).join('');
-  $('#how-src').innerHTML=`시뮬레이션 탭의 값 <i>N</i><sub>f</sub> = ${fmt(q.Nf)}회, <i>I</i><sub>f</sub> = ${fmt(q.If)} A, <i>N</i><sub>a</sub> = ${fmt(q.Na)}회와 쇳조각 ${Z}개, 틈 1 mm × 2(쇳조각이 없으면 18 mm), 타이어 반지름 ${SMF.rw} m로 계산한다. 그림의 틈은 보이도록 실제보다 넓게 그렸다.`;
+    ['기전력 크기 Kv',fmt(Emag)+' V'],['지금 기전력 ε',fmt(eNow)+' V']].map(i=>`<div>${labQ(i[0])}<b>${i[1]}</b></div>`).join(''));
+  setH($('#how-src'),`시뮬레이션 탭의 값 <i>N</i><sub>f</sub> = ${fmt(q.Nf)}회, <i>I</i><sub>f</sub> = ${fmt(q.If)} A, <i>N</i><sub>a</sub> = ${fmt(q.Na)}회와 쇳조각 ${Z}개, 틈 1 mm × 2(쇳조각이 없으면 18 mm), 타이어 반지름 ${SMF.rw} m로 계산한다. 그림의 틈은 보이도록 실제보다 넓게 그렸다.`);
 }
 function howEnergy(o){
   const fr= o.fric ? o.Ffr*o.xs : 0, el= o.E+(o.Ecu||0), left=Math.max(0,o.K0-fr-el);
@@ -2669,12 +2789,12 @@ buildSimple(); runSimple(); applyMode(); fxFill();
       if(a.m3 && window.M3D && M3D.setState) M3D.setState(a.m3); },350);
   }
   restore();
-  let busy=false;
+  let busy=false; const VRE=new RegExp('<span id="upd'+'-ver">([^<]+)</span>');   /* 이 코드 자체와는 맞지 않도록 나눠 씀 */
   async function check(){
     const cur=curVer(); if(busy || document.hidden || !cur) return; busy=true;
     try{
       const r=await fetch(location.pathname+'?vc='+Date.now(),{cache:'no-store'}); if(!r.ok) return;
-      const doc=new DOMParser().parseFromString(await r.text(),'text/html'), el=doc.getElementById('upd-ver'); const nv=el&&el.textContent.trim();
+      const mm=(await r.text()).match(VRE); const nv=mm&&mm[1].trim();   /* 페이지 전체를 DOM으로 해석하지 않고 버전 글자만 찾는다 */
       if(!nv || nv===cur) return;
       let tried=null; try{ tried=sessionStorage.getItem(TRY); }catch(e){}
       if(tried===nv) return;                                   /* 이미 한 번 시도함(배포 중) → 반복하지 않음 */
@@ -2722,6 +2842,6 @@ document.querySelectorAll('table.parts').forEach(t=>{ const h=[...t.querySelecto
 })();
 })();
 </script>
-<footer class="upd"><span id="upd-ver">v1.3.2</span></footer>
+<footer class="upd"><span id="upd-ver">v1.4.0</span></footer>
 </body>
 </html>
