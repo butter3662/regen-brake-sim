@@ -244,6 +244,9 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
 .m3 .m3-legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--ink-2);margin-top:10px}
 .m3 .m3-legend span{display:inline-flex;align-items:center;gap:6px}
 .m3 [hidden]{display:none!important}
+.m3 .m3-acc{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+.m3 .m3-acc-h{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13.5px;color:var(--ink-2);font-weight:500}
+.m3 .m3-acc-h button{font-family:var(--f-body);font-size:12.5px;padding:4px 10px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .m3 .m3-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 </style>
 </head>
@@ -414,6 +417,8 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <div class="m3-row"><label class="lb" for="m3-spd">차량 속력</label><input type="range" id="m3-spd" min="0" max="150" step="1" value="10"><output id="m3-spdo">10 km/h</output></div>
         <div class="m3-row"><label class="lb" for="m3-slow">느리게 보기</label>
           <select id="m3-slow"><option value="0.02">1/50배</option><option value="0.05" selected>1/20배</option><option value="0.2">1/5배</option><option value="1">실제 속도</option></select></div>
+        <div class="m3-row"><label class="lb" for="m3-q">화질</label>
+          <select id="m3-q"><option value="hi" selected>선명하게</option><option value="auto">부드럽게 (주사율 우선)</option></select></div>
         <div class="m3-row"><label class="lb" for="m3-tire">타이어·휠</label>
           <select id="m3-tire"><option value="1">보이기</option><option value="0.22" selected>반투명</option><option value="0">숨기기</option></select></div>
       </div>
@@ -438,6 +443,16 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <div data-gen="srg">회전 기전력 (철심 A)<b id="m3-e2">–</b></div>
         <div>자속 변화 빈도<b id="m3-freq">–</b></div>
         <div>바퀴 회전수<b id="m3-rps">–</b></div>
+      </div>
+      <div class="m3-acc">
+        <div class="m3-acc-h"><span>누적 에너지 생산 (화면 속 시간 기준)</span><button type="button" id="m3-acc-reset">초기화</button></div>
+        <div class="m3-big">
+          <div>배터리로 가는 순 전력<b id="m3-pw">–</b></div>
+          <div>발전기 제동력<b id="m3-fg">–</b></div>
+          <div>경과 시간<b id="m3-at">–</b></div>
+          <div>누적 순 생산<b id="m3-ae">–</b></div>
+        </div>
+        <p class="m3-note" id="m3-acc-note" style="margin:6px 0 0">이 속력을 유지한 채 발전기를 켜 두었다고 보고, 시뮬레이션 탭의 변수(감은 수, 철심 수 등)로 계산한 순 전력을 화면 속 시간(실제 시간 × 느리게 보기 배율)으로 적분한다. 실제 제동에서는 속력이 줄어들므로 시뮬레이션 탭의 값과는 다르다. 속력이나 발전 방식을 바꾸면 처음부터 다시 쌓는다.</p>
       </div>
       <p class="m3-note" data-gen="diode" hidden>A 철심(0°, −30°, −60°, −90°)과 B 철심(45°, 75°, 105°, 135°)은 쇳조각 간격의 반 칸만큼 어긋나 있어서, 한쪽 자속이 커지면 다른 쪽은 작아진다. 계자 코일은 Φ<sub>A</sub> + Φ<sub>B</sub>(거의 일정)를, 반대로 이은 발전 코일은 Φ<sub>A</sub> − Φ<sub>B</sub>를 느낀다.</p>
       <p class="m3-note" data-gen="srg">계자 코일이 없고, 철심마다 코일 하나(16회)를 두 다리에 나눠 감는다(초록). 쇳조각이 정렬하기 직전에 변환기가 +48 V를 걸어 전류를 세우고(여자), 쇳조각이 멀어지는 동안 전류를 유지해 제동 토크를 만들고, 다음 쇳조각이 오기 전에 −48 V로 전류를 0으로 되돌린다(배터리로 회수). 그래서 자속은 전류가 흐르는 구간에만 생긴다. 회전 기전력 <i>iω</i> d<i>L</i>/d<i>θ</i>가 음수인 구간(멀어질 때)에 기계 에너지가 전기로 바뀐다. 전류 모양은 켜고 끄는 각도를 대표값으로 둔 근사이다.</p>
@@ -1024,6 +1039,8 @@ function resize(){ if(!cv) return; W=cv.clientWidth; H=cv.clientHeight; }
 let img=null, u32=null, zb=null, bw=0, bh=0, sc=1;
 /* 해상도 자동 조절: 한 장 그리는 시간이 120 Hz(8.3 ms)에 들어가도록 픽셀 수를 줄이거나 늘린다 */
 let rs=1, drawMs=4, fps=60, nAdj=0;
+/* 누적 에너지: 화면 속 시간(실제 시간 × 느리게 보기 배율)으로 순 전력을 적분 */
+const acc={E:0, t:0, P:null, F:null, key:'', n:0};
 function ensureBuf(){
   sc=Math.min(window.devicePixelRatio||1, 1.5)*rs;
   let w=Math.max(1,Math.round(W*sc)), h=Math.max(1,Math.round(H*sc));
@@ -1066,7 +1083,7 @@ function proj(c){ const f=Math.min(W,H)*1.15; return [W/2 + f*c[0]/c[2], H/2 - f
 /* 상태 */
 let alpha=0, last=null, raf=0, running=false, lastUI=0;
 let playing=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
-const st={speed:10, slow:0.05, tire:0.22, brake:true, labels:true, flux:true, gen:'srg'};
+const st={quality:'hi', speed:10, slow:0.05, tire:0.22, brake:true, labels:true, flux:true, gen:'srg'};
 function phase(coreA,al=alpha){ let d=((coreA - al) % TOOTH + TOOTH) % TOOTH; if(d>TOOTH/2) d-=TOOTH; return d; }
 function overlap(coreA,al=alpha){ return Math.max(0, 1-Math.abs(phase(coreA,al))/HALF); }               /* 겹침 비율 0~1 */
 function dOverlap(coreA,al=alpha){ const d=phase(coreA,al); return Math.abs(d)>=HALF ? 0 : (d>0?1:-1)/HALF; } /* d(겹침)/dα */
@@ -1208,6 +1225,22 @@ function drawLabels(){
 }
 
 /* 측정값 */
+/* 순 전력 P(W)와 발전기 제동력 F(N): 시뮬레이터 페이지면 window.M3D_power가 시뮬레이션 모형으로 계산해 준다 */
+function accPower(){
+  const key=st.speed+'|'+st.gen;
+  if(key!==acc.key){ acc.key=key; acc.E=0; acc.t=0; }
+  if(acc.n--<=0 || acc.P==null){ acc.n=30;
+    const f=window.M3D_power; if(typeof f==='function'){ const r=f(st.speed/3.6, st.gen); acc.P=r.P; acc.F=r.F; } else { acc.P=null; acc.F=null; } }
+}
+function accStep(dt){ accPower(); if(acc.P!=null){ acc.E+=acc.P*dt; acc.t+=dt; } }
+function accUI(){
+  const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
+  if(acc.P==null){ accPower(); }
+  if(acc.P==null){ ['#m3-pw','#m3-fg','#m3-at','#m3-ae'].forEach(id=>set(id,'–')); return; }
+  const pw=Math.abs(acc.P)>=1000 ? (acc.P/1000).toFixed(2)+' kW' : acc.P.toFixed(0)+' W';
+  const E=acc.E, eT=Math.abs(E)>=1000 ? (E/1000).toFixed(2)+' kJ' : E.toFixed(0)+' J';
+  set('#m3-pw',pw); set('#m3-fg',acc.F.toFixed(0)+' N'); set('#m3-at',acc.t.toFixed(acc.t<10?2:1)+' s'); set('#m3-ae',eT);
+}
 /* 각도 al에서의 측정값 */
 function meas(al,omega){
   const srg=st.gen==='srg', A=CORE_ANG[0], B=CORE_ANG[1];
@@ -1245,15 +1278,19 @@ function updateUI(){
   const fn=$('#m3-fast'); if(fn){ fn.hidden=!fast; if(fast) fn.textContent=`지금 화면에서 쇳조각이 1초에 ${fShow.toFixed(0)}개씩 지나가 숫자가 따라갈 수 없으므로, 쇳조각 한 칸 동안의 평균과 최댓값을 보여 준다. ‘느리게 보기’를 더 느리게 하거나 일시정지하면 순간값이 나온다. (지금 화면 갱신 ${Math.round(fps)} Hz)`; }
   set('#m3-freq',(omega/(2*Math.PI)*Z).toFixed(1)+' Hz');
   set('#m3-rps',(omega/(2*Math.PI)).toFixed(2)+' 회/s');
+  accUI();
 }
 function frame(ts){
   if(!running) return;
   if(last!=null && playing){ alpha -= (st.speed/3.6)/RW*st.slow*Math.min(0.05,(ts-last)/1000); }
-  if(last!=null){ const dt=ts-last; if(dt>0 && dt<200) fps+=(1000/dt-fps)*0.05; }
+  if(last!=null){ const dt=ts-last; if(dt>0 && dt<200) fps+=(1000/dt-fps)*0.05;
+    if(playing) accStep(Math.min(0.05,dt/1000)*st.slow); }
   last=ts;
   updateUI(); lastUI=ts;   /* 게이지는 매 프레임(화면 주사율) 갱신 */
   if(W>0 && H>0){ const t0=performance.now(); draw(); drawMs+=(performance.now()-t0-drawMs)*0.1;
-    if(++nAdj>=20){ nAdj=0; if(drawMs>6 && rs>0.45) rs=Math.max(0.45,rs*0.88); else if(drawMs<3 && rs<1) rs=Math.min(1,rs*1.08); } }
+    if(++nAdj>=20){ nAdj=0;
+      if(st.quality!=='auto') rs=1;   /* 선명하게: 해상도 고정 */
+      else if(drawMs>7 && rs>0.7) rs=Math.max(0.7,rs*0.92); else if(drawMs<4 && rs<1) rs=Math.min(1,rs*1.05); } }
   const hz=$('#m3-hz'); if(hz && (nAdj%10)===0) hz.textContent=`화면 갱신 ${Math.round(fps)} Hz`;
   raf=requestAnimationFrame(frame);
 }
@@ -1287,6 +1324,9 @@ function init(){
   $('#m3-brake').addEventListener('change',e=>{ st.brake=e.target.checked; });
   $('#m3-labels').addEventListener('change',e=>{ st.labels=e.target.checked; });
   $('#m3-flux').addEventListener('change',e=>{ st.flux=e.target.checked; });
+  { const ab=$('.m3-acc'); if(ab && typeof window.M3D_power!=='function') ab.hidden=true; }   /* 단독 3D 페이지에는 발전 모형이 없다 */
+  const qs=$('#m3-q'); if(qs) qs.addEventListener('change',e=>{ st.quality=e.target.value; if(st.quality!=='auto') rs=1; });
+  const ar=$('#m3-acc-reset'); if(ar) ar.addEventListener('click',()=>{ acc.E=0; acc.t=0; acc.n=0; });
   const gs=$('#m3-gen'); if(gs) gs.addEventListener('change',e=>{ setGen(e.target.value); if(typeof window.M3D_onGen==='function') window.M3D_onGen(st.gen); });
   setGen(st.gen);
 }
@@ -1302,7 +1342,8 @@ function setGen(g){
 return {
   start(){ init(); resize(); if(running) return; running=true; last=null; raf=requestAnimationFrame(frame); },
   stop(){ running=false; cancelAnimationFrame(raf); },
-  setGen(g){ setGen(g); }
+  setGen(g){ setGen(g); },
+  paramsChanged(){ acc.n=0; acc.E=0; acc.t=0; }
 };
 })();
 
@@ -2017,6 +2058,17 @@ function naSwap(mode){ const other= mode==='srg' ? 'diode' : 'srg', el=$('#sm-Na
   if(el && Number(el.value)===NA_DEF[other]){ el.value=NA_DEF[mode]; if(sl) sl.value=NA_DEF[mode]; } }
 function genSet(mode){ const r=document.querySelector(`input[name=sm-gen][value=${mode}]`); if(r && !r.checked){ r.checked=true; naSwap(mode); runSimple(); } }
 window.M3D_onGen = g=>genSet(g);
+/* 3D 모형의 누적 에너지: 지금 변수로 속력 v(m/s)를 유지할 때 배터리로 가는 순 전력과 발전기 제동력 */
+let m3pc={key:'', o:null, q:null};
+window.M3D_power=(v,gen)=>{
+  const q=smParams(); q.mode=gen; q.em= gen!=='srg'; if(gen!==smRead().mode) q.Na=NA_DEF[gen];
+  const key=gen+'|'+[...SM,...SM_EM].map(d=>q[d.id]).join(',')+'|'+q.autoOff;
+  if(m3pc.key!==key){ m3pc={key, q, o:smCalc(Object.assign({},q,{v0:Math.max(q.v0,1)}))}; }
+  const o=m3pc.o; if(!(v>0)) return {P:0,F:0};
+  if(gen==='srg'){ const on= isFinite(o.tb.vmin) && v>=o.tb.vmin; return {P: on?o.Pb(v):0, F: on?o.Fg(v):0}; }
+  const fieldOn = !(q.autoOff) || v>o.vBE;
+  return {P: fieldOn ? o.Pb(v)-(o.Pf||0) : 0, F: fieldOn ? o.Fg(v) : 0};
+};
 /* ---------- 예상 효과 탭: 기본 세팅으로 다시 계산해 숫자를 채운다 ---------- */
 function smDefQ(mode,v0){
   const q={mode}; [...SM,...SM_EM].forEach(d=>{ q[d.id]=d.v; }); q.Na=NA_DEF[mode]||q.Na; q.v0=v0; q.em=mode!=='srg'; q.autoOff=true; q.Rf=smRf(q);
@@ -2123,6 +2175,7 @@ function runSimple(){
       return it; }});
   howEnergy(o);
   if(window.M3D && M3D.setGen) M3D.setGen(q.mode);
+  if(window.M3D && M3D.paramsChanged) M3D.paramsChanged();
   circSet(q.mode);
   if(smView==='how' && !coil.on) drawCoil();
 }
