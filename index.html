@@ -411,7 +411,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
           <label class="m3-chk" for="m3-flux"><input type="checkbox" id="m3-flux" checked> 자속 경로</label></div>
         <div class="m3-row"><label class="lb" for="m3-gen">발전 방식</label>
           <select id="m3-gen"><option value="srg" selected>전력 변환기 (계자 코일 없음)</option><option value="diode">다이오드 정류 + 계자 코일</option></select></div>
-        <div class="m3-row"><label class="lb" for="m3-spd">차량 속력</label><input type="range" id="m3-spd" min="0" max="150" step="1" value="50"><output id="m3-spdo">50 km/h</output></div>
+        <div class="m3-row"><label class="lb" for="m3-spd">차량 속력</label><input type="range" id="m3-spd" min="0" max="150" step="1" value="10"><output id="m3-spdo">10 km/h</output></div>
         <div class="m3-row"><label class="lb" for="m3-slow">느리게 보기</label>
           <select id="m3-slow"><option value="0.02">1/50배</option><option value="0.05" selected>1/20배</option><option value="0.2">1/5배</option><option value="1">실제 속도</option></select></div>
         <div class="m3-row"><label class="lb" for="m3-tire">타이어·휠</label>
@@ -1066,7 +1066,7 @@ function proj(c){ const f=Math.min(W,H)*1.15; return [W/2 + f*c[0]/c[2], H/2 - f
 /* 상태 */
 let alpha=0, last=null, raf=0, running=false, lastUI=0;
 let playing=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
-const st={speed:50, slow:0.05, tire:0.22, brake:true, labels:true, flux:true, gen:'srg'};
+const st={speed:10, slow:0.05, tire:0.22, brake:true, labels:true, flux:true, gen:'srg'};
 function phase(coreA,al=alpha){ let d=((coreA - al) % TOOTH + TOOTH) % TOOTH; if(d>TOOTH/2) d-=TOOTH; return d; }
 function overlap(coreA,al=alpha){ return Math.max(0, 1-Math.abs(phase(coreA,al))/HALF); }               /* 겹침 비율 0~1 */
 function dOverlap(coreA,al=alpha){ const d=phase(coreA,al); return Math.abs(d)>=HALF ? 0 : (d>0?1:-1)/HALF; } /* d(겹침)/dα */
