@@ -1699,7 +1699,7 @@ function arrowL(ctx,x,y,len,col,label,C){
   ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-len+7,y); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(x-len,y); ctx.lineTo(x-len+9,y-5); ctx.lineTo(x-len+9,y+5); ctx.closePath(); ctx.fill();
 }
-function drawWheel(ctx,x,y,R,th,heat,ghost,C){
+function drawWheel(ctx,x,y,R,th,heat,ghost,C,blur=0){
   ctx.beginPath(); ctx.arc(x,y,R,0,2*Math.PI);
   if(ghost){ ctx.stroke(); }
   else { ctx.fillStyle=C.tire; ctx.fill(); }
@@ -1712,6 +1712,9 @@ function drawWheel(ctx,x,y,R,th,heat,ghost,C){
   }
   ctx.save(); ctx.strokeStyle=ghost?C.ink3:C.rim; ctx.lineWidth=Math.max(1.5,R*0.09); ctx.lineCap='round';
   if(ghost) ctx.setLineDash([]);
+  /* 모션 블러: 한 프레임에 바퀴살이 크게 돌면(역회전처럼 보이는 착시) 바퀴살을 흐리게 하고 번진 원으로 바꾼다 */
+  if(blur>0){ ctx.save(); ctx.globalAlpha*=0.45*blur; ctx.lineWidth=R*0.7; ctx.beginPath(); ctx.arc(x,y,R*0.5,0,2*Math.PI); ctx.stroke(); ctx.restore(); }
+  ctx.globalAlpha*=Math.max(0,1-blur);
   for(let k=0;k<5;k++){ const a=th+k*2*Math.PI/5; ctx.beginPath(); ctx.moveTo(x+Math.cos(a)*R*0.14,y+Math.sin(a)*R*0.14); ctx.lineTo(x+Math.cos(a)*R*0.86,y+Math.sin(a)*R*0.86); ctx.stroke(); }
   ctx.restore();
   if(!ghost){ ctx.beginPath(); ctx.arc(x,y,R*0.14,0,2*Math.PI); ctx.fillStyle=C.rim; ctx.fill(); }
@@ -1748,8 +1751,8 @@ function drawCar(ctx,cx,gy,s,rw,th,o,C){
   }
   ctx.restore();
   ctx.save(); if(o.ghost){ ctx.globalAlpha=0.7; ctx.setLineDash([5,4]); ctx.strokeStyle=C.ink3; ctx.lineWidth=1.5; }
-  drawWheel(ctx,rx,by,R,th,o.ghost?0:o.heat,o.ghost,C);
-  drawWheel(ctx,fx,by,R,th,o.ghost?0:o.heat,o.ghost,C);
+  drawWheel(ctx,rx,by,R,th,o.ghost?0:o.heat,o.ghost,C,o.blur||0);
+  drawWheel(ctx,fx,by,R,th,o.ghost?0:o.heat,o.ghost,C,o.blur||0);
   ctx.restore();
 }
 /* 애니메이션 하나 = 캔버스 + 실시간 표시 + 재생 조작. pre-anim, pre-hud, pre-play, pre-restart, pre-rate, pre-scrub 요소를 쓴다.
@@ -1757,14 +1760,14 @@ function drawCar(ctx,cx,gy,s,rw,th,o,C){
 function makeAnim(pre){
   const el=id=>$('#'+pre+'-'+id);
   const A={on:null,off:null,forces:null,rw:0.3,iLabel:'발전 전류 I',eLabel:'누적 발전량',
-    t:0,T:0,playing:false,rate:1,last:null,phase:0,raf:0,maxPfr:1,maxI:1,maxF:1};
+    t:0,T:0,playing:false,rate:1,last:null,phase:0,raf:0,maxPfr:1,maxI:1,maxF:1,fps:60};
   const visible=()=>el('anim').offsetParent!==null;
   const canPlay=()=>A.T>0||A.endless;
   function sync(){ el('play').textContent = A.playing ? '일시정지' : (!A.endless && A.T>0 && A.t>=A.T ? '다시 재생' : '재생'); }
   function start(){ cancelAnimationFrame(A.raf); A.last=null; A.raf=requestAnimationFrame(tick); }
   function tick(ts){
     if(!A.playing) return;
-    if(A.last!=null){ const dtr=Math.min(0.1,(ts-A.last)/1000);
+    if(A.last!=null){ const dtr=Math.min(0.1,(ts-A.last)/1000); if(dtr>0) A.fps+=(1/dtr-A.fps)*0.1;
       const v=stateAt(A.on,A.t)[0]; const I=v>0?A.forces(v).I:0;
       A.phase += 90*dtr*(I/A.maxI); A.t+=dtr*A.rate; }
     A.last=ts;
@@ -1788,7 +1791,13 @@ function makeAnim(pre){
     ctx.fillStyle=C.road; ctx.fillRect(0,gy,W,24);
     ctx.strokeStyle=C.surface; ctx.lineWidth=2;
     const xl=x-X0/s, xr=x+(W-X0)/s;
+    /* 한 프레임 동안 움직이는 거리(m). 차선(3 m 주기)·바퀴살(72° 주기)이 이 주기에 가까워지면 착시가 생기므로 흐리게 한다 */
+    const stepM= A.playing ? v*A.rate/Math.max(20,A.fps) : 0, rw0=A.rw>0?A.rw:0.3;
+    const roadBlur=Math.max(0,Math.min(1,(stepM/3-0.15)/0.25)), wheelBlur=Math.max(0,Math.min(1,((stepM/rw0)/(2*Math.PI/5)-0.12)/0.2));
+    if(roadBlur>0){ ctx.save(); ctx.globalAlpha=0.5*roadBlur; ctx.beginPath(); ctx.moveTo(0,gy+12); ctx.lineTo(W,gy+12); ctx.stroke(); ctx.restore(); }
+    ctx.save(); ctx.globalAlpha=1-roadBlur;
     for(let k=Math.floor(xl/3)*3;k<xr;k+=3){ ctx.beginPath(); ctx.moveTo(X(k),gy+12); ctx.lineTo(X(k+1.5),gy+12); ctx.stroke(); }
+    ctx.restore();
     ctx.font='11px "IBM Plex Mono",monospace'; ctx.textAlign='center'; ctx.fillStyle=C.ink3;
     for(let d=Math.ceil(xl/10)*10; d<xr; d+=10){ const px=X(d); ctx.strokeStyle=C.ink3; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(px,gy+24); ctx.lineTo(px,gy+30); ctx.stroke(); ctx.fillText(d+' m',px,gy+42); }
     const xs=A.on.s[6], xso=A.off.s[6];
@@ -1799,8 +1808,8 @@ function makeAnim(pre){
     if(offStops && (!onStops || Math.abs(xso-xs)>0.3)) flag(xso,C.ink3,`발전기 없음 정지 ${fmt(xso)} m`,[2,3],1);
     if(onStops) flag(xs,C.s1,`정지 위치 ${fmt(xs)} m`,[5,3],0);
     const rw=A.rw>0?A.rw:0.3;
-    drawCar(ctx,X(xo-half),gy,s,rw,xo/rw,{ghost:true},C);
-    drawCar(ctx,X(x-half),gy,s,rw,x/rw,{ghost:false,heat:A.maxPfr>0?F.Ffr*v/A.maxPfr:0,I:F.I,phase:A.phase,batt:A.on.s[1]>0?st[1]/A.on.s[1]:0},C);
+    drawCar(ctx,X(xo-half),gy,s,rw,xo/rw,{ghost:true,blur:wheelBlur},C);
+    drawCar(ctx,X(x-half),gy,s,rw,x/rw,{ghost:false,blur:wheelBlur,heat:A.maxPfr>0?F.Ffr*v/A.maxPfr:0,I:F.I,phase:A.phase,batt:A.on.s[1]>0?st[1]/A.on.s[1]:0},C);
     const ax=X(x-half)-2.2*s+2, maxLen=Math.max(0,Math.min(2.8*s, ax-8)), yTop=gy-Math.max(4,rw*s)-1.2*s-16;
     arrowL(ctx,ax,yTop-15,F.Ffr/A.maxF*maxLen,C.s2,`마찰 ${fmt(F.Ffr)} N`,C);
     arrowL(ctx,ax,yTop,F.Fgen/A.maxF*maxLen,C.s1,`발전기 ${fmt(F.Fgen)} N`,C);
@@ -2528,6 +2537,6 @@ document.querySelectorAll('table.parts').forEach(t=>{ const h=[...t.querySelecto
 })();
 })();
 </script>
-<footer class="upd"><span id="upd-ver">v1.1.1</span></footer>
+<footer class="upd"><span id="upd-ver">v1.1.2</span></footer>
 </body>
 </html>
