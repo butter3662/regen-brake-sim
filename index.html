@@ -272,8 +272,8 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
     <div class="panel params">
       <h3>발전 방식</h3>
       <div class="genseg" role="radiogroup" aria-label="발전 방식">
-        <label><input type="radio" name="sm-gen" value="diode" checked> 다이오드 정류 + 계자 코일</label>
-        <label><input type="radio" name="sm-gen" value="srg"> 전력 변환기 (계자 코일 없음)</label>
+        <label><input type="radio" name="sm-gen" value="srg" checked> 전력 변환기 (기본, 계자 코일 없음)</label>
+        <label><input type="radio" name="sm-gen" value="diode"> 다이오드 정류 + 계자 코일 (비교용)</label>
       </div>
       <p class="note" id="sm-srg" hidden style="margin:2px 0 8px"></p>
       <h3>변수</h3>
@@ -360,8 +360,8 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
     </div>
 
     <div class="card">
-      <h2>전력 변환기 방식 (선택)</h2>
-      <p class="cap">시뮬레이션 탭에서 ‘전력 변환기’를 고르면 이 방식으로 계산한다. 계자 코일 없이 발전 코일 하나가 자화와 발전을 모두 한다.</p>
+      <h2>전력 변환기 방식 (시뮬레이션 기본 방식)</h2>
+      <p class="cap">시뮬레이션의 기본 방식이다. 위에서 설명한 철심 구조와 자속 변화는 그대로 두고, 계자 코일 없이 철심마다 코일 하나가 자화와 발전을 모두 한다. 위의 계자 코일 + 다이오드 방식은 비교용으로 남겨 두었다.</p>
       <ol class="steps">
         <li><b>켬: 배터리가 전류를 밀어 넣는다.</b> 쇳조각이 철심과 정렬해 인덕턴스가 클 때 스위치를 켜면 배터리 전압이 코일에 걸려 전류가 d<i>i</i>/d<i>t</i> = <i>V</i>/<i>L</i>로 빠르게 커진다. 다이오드 방식처럼 작은 기전력으로 전류가 자라기를 기다리지 않는다. 이때 배터리는 코일에 ½<i>LI</i><sup>2</sup>을 빌려준다.</li>
         <li><b>끔: 쇳조각이 떨어져 나가며 전류를 배터리로 밀어낸다.</b> 쇳조각이 멀어지기 시작하면 스위치를 끈다. 전류는 다이오드를 지나 배터리로 거꾸로 흐른다. 철심은 쇳조각을 붙잡으려고 당기는데 바퀴가 억지로 떼어 내므로, 그 일이 전기로 바뀌어 빌려준 것보다 많은 에너지가 배터리로 돌아온다. 떼어 내는 힘이 제동력이다.
@@ -396,7 +396,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
           <label class="m3-chk" for="m3-brake"><input type="checkbox" id="m3-brake" checked> 브레이크</label>
           <label class="m3-chk" for="m3-flux"><input type="checkbox" id="m3-flux" checked> 자속 경로</label></div>
         <div class="m3-row"><label class="lb" for="m3-gen">발전 방식</label>
-          <select id="m3-gen"><option value="diode" selected>다이오드 정류 + 계자 코일</option><option value="srg">전력 변환기 (계자 코일 없음)</option></select></div>
+          <select id="m3-gen"><option value="srg" selected>전력 변환기 (계자 코일 없음)</option><option value="diode">다이오드 정류 + 계자 코일</option></select></div>
         <div class="m3-row"><label class="lb" for="m3-spd">차량 속력</label><input type="range" id="m3-spd" min="0" max="150" step="1" value="50"><output id="m3-spdo">50 km/h</output></div>
         <div class="m3-row"><label class="lb" for="m3-slow">느리게 보기</label>
           <select id="m3-slow"><option value="0.02">1/50배</option><option value="0.05" selected>1/20배</option><option value="0.2">1/5배</option><option value="1">실제 속도</option></select></div>
@@ -407,9 +407,9 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         <span><i style="background:#6b6a65"></i>쇳조각</span>
         <span><i style="background:#d3d1c7"></i>원판 (비자성)</span>
         <span><i style="background:#b4b2a9"></i>U자 철심</span>
-        <span data-gen="diode"><i style="background:#afa9ec"></i>계자 코일</span>
-        <span data-gen="diode"><i style="background:#ef9f27"></i>발전 코일</span>
-        <span data-gen="srg" hidden><i style="background:#1d9e75"></i>코일 (자화 + 발전 겸용)</span>
+        <span data-gen="diode" hidden><i style="background:#afa9ec"></i>계자 코일</span>
+        <span data-gen="diode" hidden><i style="background:#ef9f27"></i>발전 코일</span>
+        <span data-gen="srg"><i style="background:#1d9e75"></i>코일 (자화 + 발전 겸용)</span>
         <span><i style="background:#e24b4a"></i>자속이 클수록 붉게</span>
       </div>
     </div>
@@ -419,16 +419,16 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
       <div class="m3-meter"><span>Φ<sub>B</sub> (철심 B)</span><div class="m3-bar"><i id="m3-barB" style="background:var(--m3-phiB)"></i></div><b id="m3-valB">–</b></div>
       <div class="m3-meter"><span>Φ<sub>A</sub> + Φ<sub>B</sub></span><div class="m3-bar"><i id="m3-barS" style="background:var(--m3-sum)"></i></div><b id="m3-valS">–</b></div>
       <div class="m3-big">
-        <div><span id="m3-emf-l">발전 기전력 ε</span><b id="m3-emf">–</b></div>
-        <div data-gen="srg" hidden>회전 기전력 (철심 A)<b id="m3-e2">–</b></div>
+        <div><span id="m3-emf-l">철심 A 코일 전류 i</span><b id="m3-emf">–</b></div>
+        <div data-gen="srg">회전 기전력 (철심 A)<b id="m3-e2">–</b></div>
         <div>자속 변화 빈도<b id="m3-freq">–</b></div>
         <div>바퀴 회전수<b id="m3-rps">–</b></div>
       </div>
-      <p class="m3-note" data-gen="diode">A 철심(0°, −30°, −60°, −90°)과 B 철심(45°, 75°, 105°, 135°)은 쇳조각 간격의 반 칸만큼 어긋나 있어서, 한쪽 자속이 커지면 다른 쪽은 작아진다. 계자 코일은 Φ<sub>A</sub> + Φ<sub>B</sub>(거의 일정)를, 반대로 이은 발전 코일은 Φ<sub>A</sub> − Φ<sub>B</sub>를 느낀다.</p>
-      <p class="m3-note" data-gen="srg" hidden>계자 코일이 없고, 철심마다 코일 하나(17회)를 두 다리에 나눠 감는다(초록). 쇳조각이 정렬하기 직전에 변환기가 +48 V를 걸어 전류를 세우고(여자), 쇳조각이 멀어지는 동안 전류를 유지해 제동 토크를 만들고, 다음 쇳조각이 오기 전에 −48 V로 전류를 0으로 되돌린다(배터리로 회수). 그래서 자속은 전류가 흐르는 구간에만 생긴다. 회전 기전력 <i>iω</i> d<i>L</i>/d<i>θ</i>가 음수인 구간(멀어질 때)에 기계 에너지가 전기로 바뀐다. 전류 모양은 켜고 끄는 각도를 대표값으로 둔 근사이다.</p>
+      <p class="m3-note" data-gen="diode" hidden>A 철심(0°, −30°, −60°, −90°)과 B 철심(45°, 75°, 105°, 135°)은 쇳조각 간격의 반 칸만큼 어긋나 있어서, 한쪽 자속이 커지면 다른 쪽은 작아진다. 계자 코일은 Φ<sub>A</sub> + Φ<sub>B</sub>(거의 일정)를, 반대로 이은 발전 코일은 Φ<sub>A</sub> − Φ<sub>B</sub>를 느낀다.</p>
+      <p class="m3-note" data-gen="srg">계자 코일이 없고, 철심마다 코일 하나(16회)를 두 다리에 나눠 감는다(초록). 쇳조각이 정렬하기 직전에 변환기가 +48 V를 걸어 전류를 세우고(여자), 쇳조각이 멀어지는 동안 전류를 유지해 제동 토크를 만들고, 다음 쇳조각이 오기 전에 −48 V로 전류를 0으로 되돌린다(배터리로 회수). 그래서 자속은 전류가 흐르는 구간에만 생긴다. 회전 기전력 <i>iω</i> d<i>L</i>/d<i>θ</i>가 음수인 구간(멀어질 때)에 기계 에너지가 전기로 바뀐다. 전류 모양은 켜고 끄는 각도를 대표값으로 둔 근사이다.</p>
     </div>
   </div>
-  <p class="m3-note">시뮬레이션 탭의 기본 설계와 같은 모형이다. ‘발전 방식’에서 다이오드 방식과 전력 변환기 방식을 바꿔 볼 수 있다. 치수와 수치는 설계 가정값이다. 타이어 235/45R18(반지름 0.33 m), 쇳조각 12개(폭 39 mm, 반지름 방향 65 mm, 두께 16 mm), 틈은 쇳조각이 있을 때 1 mm × 2, 없을 때 약 18 mm이다. U자 철심은 8개(A 0°·−30°·−60°·−90°, B 45°·75°·105°·135°)이고, 지면과 간격을 두려고 아래쪽은 비웠다. 다리와 등의 두께는 65 mm로 단면적이 다리 끝 면적과 같아 틈과 함께 포화된다. 철심은 와전류 손실을 줄이려고 얇은 규소강판을 쌓아 만든다. 다이오드 방식은 계자가 철심마다 140회 × 17 A(8개 직렬에 약 47 V), 발전 코일이 철심마다 17회이다. 전력 변환기 방식은 계자 코일 자리까지 써서 철심마다 코일 하나(17회, 전류 상한 약 140 A)를 감는다. 자속은 쇳조각과 철심이 겹치는 면적에 비례한다고 근사했고, 틈이 넓을 때 자속이 옆으로 퍼지는 효과는 무시했다.</p>
+  <p class="m3-note">시뮬레이션 탭의 기본 설계와 같은 모형이다. ‘발전 방식’에서 다이오드 방식과 전력 변환기 방식을 바꿔 볼 수 있다. 치수와 수치는 설계 가정값이다. 타이어 235/45R18(반지름 0.33 m), 쇳조각 12개(폭 39 mm, 반지름 방향 65 mm, 두께 16 mm), 틈은 쇳조각이 있을 때 1 mm × 2, 없을 때 약 18 mm이다. U자 철심은 8개(A 0°·−30°·−60°·−90°, B 45°·75°·105°·135°)이고, 지면과 간격을 두려고 아래쪽은 비웠다. 다리와 등의 두께는 65 mm로 단면적이 다리 끝 면적과 같아 틈과 함께 포화된다. 철심은 와전류 손실을 줄이려고 얇은 규소강판을 쌓아 만든다. 다이오드 방식은 계자가 철심마다 140회 × 17 A(8개 직렬에 약 47 V), 발전 코일이 철심마다 17회이다. 전력 변환기 방식(기본)은 계자 코일 자리까지 써서 철심마다 코일 하나(16회, 전류 상한 약 149 A)를 감는다. 자속은 쇳조각과 철심이 겹치는 면적에 비례한다고 근사했고, 틈이 넓을 때 자속이 옆으로 퍼지는 효과는 무시했다.</p>
 </div>
 
   </div>
@@ -456,9 +456,9 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
           <tr><td>타이어 반지름 <i>r</i><sub>w</sub> (고정)</td><td>0.33 m</td><td>같은 차의 타이어 규격 235/45R18에서 계산했다. 휠 지름 18인치(457 mm) + 옆면 높이 2 × 235 mm × 0.45 = 약 669 mm이므로 반지름은 약 0.33 m이다.</td></tr>
           <tr><td>계자 전류 <i>I</i><sub>f</sub></td><td>17 A</td><td>순이득이 가장 큰 계자 전류는 틈이 포화(1.5 T)에 이르는 전류 <i>I</i><sub>sat</sub> = <i>B</i><sub>sat</sub><i>g</i>/(<i>μ</i><sub>0</sub><i>N</i><sub>f</sub>)이다. 계자 140회에서 <i>I</i><sub>sat</sub> ≈ 17.05 A이므로 그 바로 아래인 17 A로 두었다. 이때 기자력은 약 2380 A이다.</td></tr>
           <tr><td>계자 코일 저항 <i>R</i><sub>f</sub> (철심 1개)</td><td>0.35 Ω (계산값)</td><td>감은 수로 자동 계산한다. 구리 단면적 합 250 mm²에 140회를 꽉 채우면 선 하나의 단면적은 약 1.8 mm²이고, 한 바퀴 0.258 m × 140회 ≈ 36 m이므로 <i>R</i><sub>f</sub> = <i>ρl</i>/<i>S</i> ≈ 0.35 Ω이다. 철심 8개를 직렬로 이으면 약 2.8 Ω, 17 A에서 필요한 전압은 약 47 V, 소비 전력은 약 800 W이다. 선의 전류 밀도는 약 9.5 A/mm²로 높지만, 제동하는 몇 초 동안만 흐른다.</td></tr>
-          <tr><td>철심 수 <i>n</i>, 다리 끝 길이 <i>h</i></td><td>8개, 65 mm</td><td>배치 조건(휠 안, 지면 10 cm)을 지키는 범위에서 다이오드 방식 순이득이 가장 큰 쪽으로 정했다. 철심 6개·60 mm는 회수 효율 약 0.7%, 8개·65 mm는 약 1.0%이다. 철심 10개는 바닥 쪽 철심 때문에 다리 끝 길이가 55 mm 이하로 제한되어 오히려 작다. 철심 8개는 A가 0°, −30°, −60°, −90°, B가 45°, 75°, 105°, 135°이고 아래쪽 135°는 비운다.</td></tr>
+          <tr><td>철심 수 <i>n</i>, 다리 끝 길이 <i>h</i></td><td>8개, 65 mm</td><td>배치 조건(휠 안, 지면 10 cm)을 지키는 범위에서 순이득이 가장 큰 쪽으로 정했고, 두 발전 방식 모두 같은 값이 최적이다(다이오드 방식 기준 철심 6개·60 mm는 회수 효율 약 0.7%, 8개·65 mm는 약 1.0%). 철심 10개는 바닥 쪽 철심 때문에 다리 끝 길이가 55 mm 이하로 제한되어 오히려 작다. 철심 8개는 A가 0°, −30°, −60°, −90°, B가 45°, 75°, 105°, 135°이고 아래쪽 135°는 비운다.</td></tr>
           <tr><td>계자 코일 감은 수 <i>N</i><sub>f</sub> (철심 1개)</td><td>140회</td><td>같은 공간에 감으면 전자석 소비 전력은 기자력 <i>N</i><sub>f</sub><i>I</i><sub>f</sub>만으로 정해지고, 필요한 전원 전압이 감은 수에 비례한다. 철심 8개를 직렬로 이어 48 V 배터리로 포화 직전 기자력을 낼 수 있는 가장 많은 감은 수(약 141회)로 정했다.</td></tr>
-          <tr><td>발전 코일 감은 수 <i>N</i><sub>a</sub> (철심 1개)</td><td>17회</td><td>다른 값이 모두 기본값일 때 다이오드 방식 순이득이 가장 큰 감은 수이다. 감은 수가 적으면 기전력이 작고, 많으면 인덕턴스(감은 수의 제곱에 비례)가 커져 전류가 줄어든다. 전력 변환기 방식에서는 16회가 가장 크므로, 발전 방식을 전력 변환기로 바꾸면 기본값이 16회로 바뀐다. 철심 수 8개, 다리 끝 길이 65 mm는 두 방식 모두에서 배치 조건 안의 최적값이다.</td></tr>
+          <tr><td>발전 코일 감은 수 <i>N</i><sub>a</sub> (철심 1개)</td><td>16회 (다이오드 방식 17회)</td><td>다른 값이 모두 기본값일 때 순이득이 가장 큰 감은 수이다. 기본 방식인 전력 변환기 방식에서는 감은 수가 적을수록 포화 전류가 커지는데, 스위치 허용 전류 150 A에 막히는 지점인 16회가 가장 크다. 다이오드 방식에서는 감은 수가 적으면 기전력이 작고, 많으면 인덕턴스(감은 수의 제곱에 비례)가 커져 전류가 줄어들어 17회가 가장 크다. 발전 방식을 바꾸면 기본값도 그 방식의 최적값으로 바뀐다. 철심 수 8개, 다리 끝 길이 65 mm는 두 방식 모두에서 배치 조건 안의 최적값이다.</td></tr>
           <tr><td>부하 저항 <i>R</i> (고정)</td><td>0.77 Ω</td><td>가정값이다. 48 V 배터리 충전 회로를 저항 하나로 근사했다.</td></tr>
         </tbody>
       </table>
@@ -613,8 +613,8 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
 
     <div class="card">
       <h2>회로도</h2>
-      <div class="cseg" role="group" aria-label="회로도 발전 방식"><button type="button" data-c="diode" aria-pressed="true">다이오드 방식</button><button type="button" data-c="srg" aria-pressed="false">전력 변환기 방식</button></div>
-      <div id="circ-diode">
+      <div class="cseg" role="group" aria-label="회로도 발전 방식"><button type="button" data-c="srg" aria-pressed="true">전력 변환기 방식</button><button type="button" data-c="diode" aria-pressed="false">다이오드 방식</button></div>
+      <div id="circ-diode" hidden>
       <p class="cap">직렬로 이은 발전 코일 <i>n</i>개는 크기 <i>Kv</i>인 네모파 기전력 <i>ε</i>, 저항 <i>r</i>, 인덕턴스 <i>L</i>을 가진 교류 전원으로 볼 수 있다. 다이오드 4개로 된 브리지 정류기를 거치면, 코일 전류의 방향이 바뀌어도 부하 <i>R</i>에는 한 방향으로 전류가 흐른다.</p>
       <div class="diagram">
         <svg viewBox="0 0 640 240" class="circ" role="img" aria-label="교류 전원, 내부저항, 브리지 정류기, 부하 저항으로 된 회로도">
@@ -649,7 +649,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
         </svg>
       </div>
       </div>
-      <div id="circ-srg" hidden>
+      <div id="circ-srg">
       <p class="cap">철심마다 코일 하나에 스위치 2개(S<sub>1</sub>, S<sub>2</sub>)와 다이오드 2개(D<sub>1</sub>, D<sub>2</sub>)로 된 비대칭 하프브리지가 붙고, 철심 <i>n</i>개의 회로가 48 V 배터리에 나란히 이어진다. ① S<sub>1</sub>·S<sub>2</sub>를 켜면 배터리 → S<sub>1</sub> → 코일 → S<sub>2</sub>로 전류가 흘러 코일에 +48 V가 걸린다(여자). ② 둘 다 끄면 코일 전류가 D<sub>1</sub> → 코일 → D<sub>2</sub>를 거쳐 배터리 + 쪽으로 밀려 들어가 코일에 −48 V가 걸린다(회수). ③ 하나만 켜면 전류가 스위치와 다이오드 하나씩을 돌며 코일 전압이 0이 된다. 회전 위치 센서로 쇳조각 각도를 읽어 켜고 끄는 시점을 정한다.</p>
       <div class="diagram">
         <svg viewBox="0 0 640 260" class="circ" role="img" aria-label="48 V 배터리에 철심마다 스위치 2개, 다이오드 2개, 코일 하나로 된 비대칭 하프브리지가 나란히 이어진 회로도">
@@ -698,10 +698,10 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
           <tr><td>③ 쇳조각 원판</td><td>바퀴 허브에 붙어 바퀴와 같은 각속도로 돈다. 비자성 원판에 쇳조각 12개를 쇳조각 간격의 반 칸 너비로 박아, 철심의 틈을 메웠다 비웠다 한다. 도는 부분에 코일과 전선이 없어 슬립링이 필요 없다.</td><td><i>Z</i> = 12, <i>A</i> = 39 × 50 mm², <i>t</i> = 16 mm</td></tr>
           <tr><td>④ U자 철심·계자 코일 (<i>n</i>개, 기본 8개)</td><td>차체에 고정한다. 바깥쪽 다리의 계자 코일에 직류 <i>I</i><sub>f</sub>를 흘려 자속을 만든다. A(0°, −30°, −60°, −90°)와 B(45°, 75°, 105°, 135°)는 쇳조각 간격의 반 칸만큼 어긋나 있다. 철심은 얇은 규소강판을 쌓아 만든다. 계자 코일은 같은 방향으로 이어 거의 일정한 <i>Φ</i><sub>A</sub> + <i>Φ</i><sub>B</sub>를 느끼므로 기전력이 생기지 않는다.</td><td><i>I</i><sub>f</sub>, <i>N</i><sub>f</sub>, <i>R</i><sub>f</sub> (조절), <i>g</i> = 2 mm</td></tr>
           <tr><td>⑤ 발전 코일 (<i>n</i>개)</td><td>안쪽 다리에 감는다. A는 정방향, B는 역방향으로 직렬로 이어 <i>Φ</i><sub>A</sub> − <i>Φ</i><sub>B</sub>의 변화로 기전력을 만든다. 유도전류가 자속 변화를 방해해 제동력이 된다.</td><td><i>N</i><sub>a</sub> (조절), <i>r</i>, <i>L</i> (계산)</td></tr>
-          <tr><td>⑥ 정류기</td><td>다이오드 브리지로 발전 코일의 교류를 직류로 바꾼다. 모델에서는 다이오드 전압 강하를 무시한다.</td><td>–</td></tr>
+          <tr><td>⑥ 정류기 (다이오드 방식)</td><td>다이오드 브리지로 발전 코일의 교류를 직류로 바꾼다. 모델에서는 다이오드 전압 강하를 무시한다.</td><td>–</td></tr>
           <tr><td>⑦ 부하·배터리</td><td>전기에너지를 받아 저장한다. 모델에서는 저항 <i>R</i> 하나로 나타낸다.</td><td><i>R</i> = 0.77 Ω</td></tr>
-          <tr><td>⑨ 전력 변환기 (선택)</td><td>전력 변환기 방식에서는 계자 코일과 ⑥·⑧ 대신 쓴다. 철심마다 스위치 2개와 다이오드 2개(비대칭 하프브리지)를 두고, 회전 위치 센서 신호에 맞춰 발전 코일에 배터리 전압을 걸었다 뗐다 한다.</td><td><i>V</i> = 48 V, <i>I</i><sub>max</sub> = 150 A</td></tr>
-          <tr><td>⑧ 계자 전류 제어</td><td>배터리 전기로 계자 코일에 일정한 전류를 흘리고, 손익분기 속력 아래에서 끈다.</td><td><i>P</i><sub>f</sub> = <i>I</i><sub>f</sub><sup>2</sup><i>R</i><sub>f</sub></td></tr>
+          <tr><td>⑨ 전력 변환기 (기본 방식)</td><td>전력 변환기 방식에서는 계자 코일과 ⑥·⑧ 대신 쓴다. 철심마다 스위치 2개와 다이오드 2개(비대칭 하프브리지)를 두고, 회전 위치 센서 신호에 맞춰 발전 코일에 배터리 전압을 걸었다 뗐다 한다.</td><td><i>V</i> = 48 V, <i>I</i><sub>max</sub> = 150 A</td></tr>
+          <tr><td>⑧ 계자 전류 제어 (다이오드 방식)</td><td>배터리 전기로 계자 코일에 일정한 전류를 흘리고, 손익분기 속력 아래에서 끈다.</td><td><i>P</i><sub>f</sub> = <i>I</i><sub>f</sub><sup>2</sup><i>R</i><sub>f</sub></td></tr>
         </tbody>
       </table>
       </div>
@@ -1049,7 +1049,7 @@ function proj(c){ const f=Math.min(W,H)*1.15; return [W/2 + f*c[0]/c[2], H/2 - f
 /* 상태 */
 let alpha=0, last=null, raf=0, running=false, lastUI=0;
 let playing=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
-const st={speed:50, slow:0.05, tire:0.22, brake:true, labels:true, flux:true, gen:'diode'};
+const st={speed:50, slow:0.05, tire:0.22, brake:true, labels:true, flux:true, gen:'srg'};
 function phase(coreA){ let d=((coreA - alpha) % TOOTH + TOOTH) % TOOTH; if(d>TOOTH/2) d-=TOOTH; return d; }
 function overlap(coreA){ return Math.max(0, 1-Math.abs(phase(coreA))/HALF); }               /* 겹침 비율 0~1 */
 function dOverlap(coreA){ const d=phase(coreA); return Math.abs(d)>=HALF ? 0 : (d>0?1:-1)/HALF; } /* d(겹침)/dα */
@@ -1061,7 +1061,7 @@ function srgCur(coreA){ const u=uPos(coreA), p=SRG_P;     /* 전류 / I_ref (모
   if(u<p.on||u>=p.zero) return 0; if(u<p.full) return (u-p.on)/(p.full-p.on); if(u<p.off) return 1; return 1-(u-p.off)/(p.zero-p.off); }
 const POFF=0.002/0.018;   /* 𝒫_off / 𝒫_on */
 function srgFlux(coreA){ return srgCur(coreA)*(POFF+(1-POFF)*overlap(coreA)); }   /* 자속 / 정렬·I_ref 때 자속 */
-const ISAT=1.5*0.002/(MU0*NARM), IREF=Math.min(ISAT,150), PON=MU0*AREA/0.002;
+const NSRG=16, ISAT=1.5*0.002/(MU0*NSRG), IREF=Math.min(ISAT,150), PON=MU0*AREA/0.002;   /* 전력 변환기 방식: 철심마다 16회 */
 
 /* 모드별 투명도 */
 function alphaOf(m){
@@ -1203,7 +1203,7 @@ function updateUI(){
   $('#m3-barS').style.width=((pA+pB)/(2*PHI_MAX)*100)+'%'; set('#m3-valS',((pA+pB)*1000).toFixed(2)+' mWb');
   if(srg){
     /* 철심 A 코일: 전류 i, 회전 기전력 e = i·dL/dt = i·N²(𝒫on−𝒫off)·d(겹침)/dα·dα/dt, dα/dt = −ω */
-    const i=IREF*srgCur(CORE_ANG[0]), e=i*NARM*NARM*PON*(1-POFF)*dOverlap(CORE_ANG[0])*(-omega);
+    const i=IREF*srgCur(CORE_ANG[0]), e=i*NSRG*NSRG*PON*(1-POFF)*dOverlap(CORE_ANG[0])*(-omega);
     set('#m3-emf', i.toFixed(0)+' A');
     set('#m3-e2', (e>=0?'+':'−')+Math.abs(e).toFixed(1)+' V');
   } else set('#m3-emf',(emf>=0?'+':'−')+Math.abs(emf).toFixed(1)+' V');
@@ -1740,7 +1740,7 @@ const SM=[
   {id:'v0', label:'제동 시작 속력', sym:'v<sub>0</sub>', unit:'km/h', v:50, min:0, max:150, step:1},
   {id:'m', label:'차량 질량', sym:'m', unit:'kg', v:1500, min:100, max:3000, step:10},
   {id:'Ffr', label:'마찰 브레이크 제동력', sym:'F<sub>fr</sub>', unit:'N', v:5100, min:0, max:15000, step:100},
-  {id:'Na', label:'발전 코일 감은 수 (철심 1개)', sym:'N<sub>a</sub>', unit:'회', v:17, min:1, max:200, step:1},
+  {id:'Na', label:'발전 코일 감은 수 (철심 1개)', sym:'N<sub>a</sub>', unit:'회', v:16, min:1, max:200, step:1},
   {id:'nC', label:'철심 수 (A·B 짝, 짝수)', sym:'n', unit:'개', v:8, min:2, max:10, step:2},
   {id:'hr', label:'다리 끝 길이 (반지름 방향)', sym:'h', unit:'mm', v:65, min:20, max:70, step:1},
 ];
@@ -1963,7 +1963,7 @@ function buildSimple(){
   $('#row-Rf').querySelector('label').innerHTML='계자 코일 저항 (철심 1개, 계산값)<i>R</i><sub>f</sub>';
   { const rb=$('#row-B'); $('#sm-em-params').after(rb); rb.querySelector('label').innerHTML='틈의 자기장 (쇳조각이 있을 때, 계산값)<i>B</i>'; }
   { const t=document.createElement('p'); t.className='note'; t.id='sm-rnote'; t.style.margin='-2px 0 6px'; $('#na-opt').after(t); }
-  $('#sm-reset').addEventListener('click',()=>{ [...SM,...SM_EM].forEach(d=>{ $('#sm-'+d.id).value=d.v; $('#sm-'+d.id+'-r').value=d.v; }); $('#sm-autooff').checked=true; document.querySelector('input[name=sm-gen][value=diode]').checked=true; runSimple(); });
+  $('#sm-reset').addEventListener('click',()=>{ [...SM,...SM_EM].forEach(d=>{ $('#sm-'+d.id).value=d.v; $('#sm-'+d.id+'-r').value=d.v; }); $('#sm-autooff').checked=true; document.querySelector('input[name=sm-gen][value=srg]').checked=true; runSimple(); });
 }
 
 /* ---------- 회로도 전환 ---------- */
