@@ -432,6 +432,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
       <div class="m3-meter"><span>Φ<sub>A</sub> (철심 A)</span><div class="m3-bar"><i id="m3-barA" style="background:var(--m3-phiA)"></i></div><b id="m3-valA">–</b></div>
       <div class="m3-meter"><span>Φ<sub>B</sub> (철심 B)</span><div class="m3-bar"><i id="m3-barB" style="background:var(--m3-phiB)"></i></div><b id="m3-valB">–</b></div>
       <div class="m3-meter"><span>Φ<sub>A</sub> + Φ<sub>B</sub></span><div class="m3-bar"><i id="m3-barS" style="background:var(--m3-sum)"></i></div><b id="m3-valS">–</b></div>
+      <p class="m3-note" id="m3-fast" hidden style="margin:0 0 8px"></p>
       <div class="m3-big">
         <div><span id="m3-emf-l">철심 A 코일 전류 i</span><b id="m3-emf">–</b></div>
         <div data-gen="srg">회전 기전력 (철심 A)<b id="m3-e2">–</b></div>
@@ -1064,17 +1065,17 @@ function proj(c){ const f=Math.min(W,H)*1.15; return [W/2 + f*c[0]/c[2], H/2 - f
 let alpha=0, last=null, raf=0, running=false, lastUI=0;
 let playing=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 const st={speed:50, slow:0.05, tire:0.22, brake:true, labels:true, flux:true, gen:'srg'};
-function phase(coreA){ let d=((coreA - alpha) % TOOTH + TOOTH) % TOOTH; if(d>TOOTH/2) d-=TOOTH; return d; }
-function overlap(coreA){ return Math.max(0, 1-Math.abs(phase(coreA))/HALF); }               /* 겹침 비율 0~1 */
-function dOverlap(coreA){ const d=phase(coreA); return Math.abs(d)>=HALF ? 0 : (d>0?1:-1)/HALF; } /* d(겹침)/dα */
+function phase(coreA,al=alpha){ let d=((coreA - al) % TOOTH + TOOTH) % TOOTH; if(d>TOOTH/2) d-=TOOTH; return d; }
+function overlap(coreA,al=alpha){ return Math.max(0, 1-Math.abs(phase(coreA,al))/HALF); }               /* 겹침 비율 0~1 */
+function dOverlap(coreA,al=alpha){ const d=phase(coreA,al); return Math.abs(d)>=HALF ? 0 : (d>0?1:-1)/HALF; } /* d(겹침)/dα */
 /* 전력 변환기 방식: 쇳조각 한 칸 안의 위치 u (0: 직전 쇳조각과 가운데, 0.5: 정렬, 1: 다음 가운데).
    바퀴가 돌면 α가 줄어 phase가 커지므로, phase < 0이 다가오는 구간, phase > 0이 멀어지는 구간이다. */
 const SRG_P={on:0.42, full:0.5, off:0.88, zero:0.96};
-function uPos(coreA){ return 0.5 + phase(coreA)/TOOTH; }
-function srgCur(coreA){ const u=uPos(coreA), p=SRG_P;     /* 전류 / I_ref (모양만 나타낸 근사) */
+function uPos(coreA,al=alpha){ return 0.5 + phase(coreA,al)/TOOTH; }
+function srgCur(coreA,al=alpha){ const u=uPos(coreA,al), p=SRG_P;     /* 전류 / I_ref (모양만 나타낸 근사) */
   if(u<p.on||u>=p.zero) return 0; if(u<p.full) return (u-p.on)/(p.full-p.on); if(u<p.off) return 1; return 1-(u-p.off)/(p.zero-p.off); }
 const POFF=0.002/0.018;   /* 𝒫_off / 𝒫_on */
-function srgFlux(coreA){ return srgCur(coreA)*(POFF+(1-POFF)*overlap(coreA)); }   /* 자속 / 정렬·I_ref 때 자속 */
+function srgFlux(coreA,al=alpha){ return srgCur(coreA,al)*(POFF+(1-POFF)*overlap(coreA,al)); }   /* 자속 / 정렬·I_ref 때 자속 */
 const NSRG=16, ISAT=1.5*0.002/(MU0*NSRG), IREF=Math.min(ISAT,150), PON=MU0*AREA/0.002;   /* 전력 변환기 방식: 철심마다 16회 */
 
 /* 모드별 투명도 */
@@ -1205,22 +1206,42 @@ function drawLabels(){
 }
 
 /* 측정값 */
-function updateUI(){
-  const omega=(st.speed/3.6)/RW;            /* 실제 바퀴 각속도 rad/s */
-  const srg=st.gen==='srg';
-  const pA= srg ? PHI_MAX*srgFlux(CORE_ANG[0]) : PHI_MIN+DPHI*overlap(CORE_ANG[0]), pB= srg ? PHI_MAX*srgFlux(CORE_ANG[1]) : PHI_MIN+DPHI*overlap(CORE_ANG[1]);
+/* 각도 al에서의 측정값 */
+function meas(al,omega){
+  const srg=st.gen==='srg', A=CORE_ANG[0], B=CORE_ANG[1];
+  const pA= srg ? PHI_MAX*srgFlux(A,al) : PHI_MIN+DPHI*overlap(A,al), pB= srg ? PHI_MAX*srgFlux(B,al) : PHI_MIN+DPHI*overlap(B,al);
   /* 바퀴는 α가 줄어드는 방향으로 돈다(dα/dt = −ω). ε = −N·d(ΦA−ΦB)/dt, 두 짝 직렬 */
-  const emf=-(NC/2)*NARM*DPHI*(dOverlap(CORE_ANG[0])-dOverlap(CORE_ANG[1]))*(-omega);
+  const emf=-(NC/2)*NARM*DPHI*(dOverlap(A,al)-dOverlap(B,al))*(-omega);
+  /* 철심 A 코일: 전류 i, 회전 기전력 e = i·dL/dt = i·N²(𝒫on−𝒫off)·d(겹침)/dα·dα/dt, dα/dt = −ω */
+  const i=IREF*srgCur(A,al), e=i*NSRG*NSRG*PON*(1-POFF)*dOverlap(A,al)*(-omega);
+  return {pA,pB,emf,i,e};
+}
+/* 화면에서 자속이 바뀌는 빈도(느리게 보기 반영)가 화면 갱신으로 따라갈 수 없을 만큼 빠르면, 순간값 대신 한 칸 평균과 최댓값을 보여 준다 */
+const FAST_HZ=6;   /* 1/20배로 볼 때 약 75 km/h */
+function updateUI(){
+  const omega=(st.speed/3.6)/RW, srg=st.gen==='srg';
+  const fShow=omega*st.slow*Z/(2*Math.PI), fast= playing && fShow>FAST_HZ;
   const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
-  $('#m3-barA').style.width=(pA/PHI_MAX*100)+'%'; set('#m3-valA',(pA*1000).toFixed(2)+' mWb');
-  $('#m3-barB').style.width=(pB/PHI_MAX*100)+'%'; set('#m3-valB',(pB*1000).toFixed(2)+' mWb');
-  $('#m3-barS').style.width=((pA+pB)/(2*PHI_MAX)*100)+'%'; set('#m3-valS',((pA+pB)*1000).toFixed(2)+' mWb');
-  if(srg){
-    /* 철심 A 코일: 전류 i, 회전 기전력 e = i·dL/dt = i·N²(𝒫on−𝒫off)·d(겹침)/dα·dα/dt, dα/dt = −ω */
-    const i=IREF*srgCur(CORE_ANG[0]), e=i*NSRG*NSRG*PON*(1-POFF)*dOverlap(CORE_ANG[0])*(-omega);
-    set('#m3-emf', i.toFixed(0)+' A');
-    set('#m3-e2', (e>=0?'+':'−')+Math.abs(e).toFixed(1)+' V');
-  } else set('#m3-emf',(emf>=0?'+':'−')+Math.abs(emf).toFixed(1)+' V');
+  const sgn=x=>(x>=0?'+':'−')+Math.abs(x).toFixed(1);
+  const bar=(id,v,max)=>{ $(id).style.width=Math.max(0,Math.min(100,v/max*100))+'%'; };
+  if(!fast){
+    const m=meas(alpha,omega);
+    bar('#m3-barA',m.pA,PHI_MAX); set('#m3-valA',(m.pA*1000).toFixed(2)+' mWb');
+    bar('#m3-barB',m.pB,PHI_MAX); set('#m3-valB',(m.pB*1000).toFixed(2)+' mWb');
+    bar('#m3-barS',m.pA+m.pB,2*PHI_MAX); set('#m3-valS',((m.pA+m.pB)*1000).toFixed(2)+' mWb');
+    if(srg){ set('#m3-emf', m.i.toFixed(0)+' A'); set('#m3-e2', sgn(m.e)+' V'); } else set('#m3-emf', sgn(m.emf)+' V');
+  } else {
+    const N=60; let sA=0,sB=0,mA=0,mB=0,mS=0,mE=0,mI=0,mR=0;
+    for(let k=0;k<N;k++){ const m=meas(alpha+k*TOOTH/N,omega);
+      sA+=m.pA; sB+=m.pB; mA=Math.max(mA,m.pA); mB=Math.max(mB,m.pB); mS=Math.max(mS,m.pA+m.pB);
+      mE=Math.max(mE,Math.abs(m.emf)); mI=Math.max(mI,m.i); mR=Math.max(mR,Math.abs(m.e)); }
+    sA/=N; sB/=N;
+    bar('#m3-barA',sA,PHI_MAX); set('#m3-valA','평균 '+(sA*1000).toFixed(2)+' mWb');
+    bar('#m3-barB',sB,PHI_MAX); set('#m3-valB','평균 '+(sB*1000).toFixed(2)+' mWb');
+    bar('#m3-barS',sA+sB,2*PHI_MAX); set('#m3-valS','평균 '+((sA+sB)*1000).toFixed(2)+' mWb');
+    if(srg){ set('#m3-emf','최대 '+mI.toFixed(0)+' A'); set('#m3-e2','최대 ±'+mR.toFixed(1)+' V'); } else set('#m3-emf','±'+mE.toFixed(1)+' V');
+  }
+  const fn=$('#m3-fast'); if(fn){ fn.hidden=!fast; if(fast) fn.textContent=`지금 화면에서 쇳조각이 1초에 ${fShow.toFixed(0)}개씩 지나가 숫자가 따라갈 수 없으므로, 쇳조각 한 칸 동안의 평균과 최댓값을 보여 준다. ‘느리게 보기’를 더 느리게 하거나 일시정지하면 순간값이 나온다.`; }
   set('#m3-freq',(omega/(2*Math.PI)*Z).toFixed(1)+' Hz');
   set('#m3-rps',(omega/(2*Math.PI)).toFixed(2)+' 회/s');
 }
@@ -1229,7 +1250,7 @@ function frame(ts){
   if(last!=null && playing){ alpha -= (st.speed/3.6)/RW*st.slow*Math.min(0.05,(ts-last)/1000); }
   last=ts;
   if(W>0 && H>0) draw();
-  if(ts-lastUI>80){ updateUI(); lastUI=ts; }
+  updateUI(); lastUI=ts;   /* 매 프레임 갱신 (빠르면 평균값으로 바뀐다) */
   raf=requestAnimationFrame(frame);
 }
 function setView(name){
