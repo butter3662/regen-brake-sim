@@ -2466,24 +2466,6 @@ document.querySelectorAll('table.parts').forEach(t=>{ const h=[...t.querySelecto
 })();
 })();
 </script>
-<footer class="upd">업데이트 <span id="upd-t" data-build="26/11/04/10/48"></span><span id="upd-new"></span></footer>
-<script>
-/* 업데이트 시각: 지금 열린 파일에 새겨진 빌드 시각(한국 시간 YY/MM/DD/시/분).
-   GitHub의 최신 커밋이 이보다 새로우면 ‘새 버전 있음’을 띄운다(브라우저 캐시 때문에 옛 파일이 열린 경우). */
-(function(){
-  const el=document.getElementById('upd-t'), nw=document.getElementById('upd-new'), b=el.dataset.build;
-  el.textContent=b;
-  const toKey=d=>{ const p=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',year:'2-digit',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(d).map(x=>[x.type,x.value]));
-    return `${p.year}/${p.month}/${p.day}/${p.hour}/${p.minute}`; };
-  fetch('https://api.github.com/repos/butter3662/regen-brake-sim/commits?per_page=1',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{
-    const t=j&&j[0]&&j[0].commit&&j[0].commit.committer&&j[0].commit.committer.date; if(!t) return;
-    const k=toKey(new Date(t)); if(k<=b) return;
-    /* 브라우저가 옛 파일을 저장해 둔 경우: 한 번만 캐시를 우회해 다시 불러온다(배포 중이면 반복하지 않도록 세션당 1회) */
-    let done=null; try{ done=sessionStorage.getItem('rbs-reload'); }catch(e){}
-    if(done!==k){ try{ sessionStorage.setItem('rbs-reload',k); }catch(e){} location.replace(location.pathname+'?v='+Date.now()+location.hash); return; }
-    nw.innerHTML=` · 새 버전 ${k} 배포 중 <a href="?v=${Date.now()}">새로고침</a>`;
-  }).catch(()=>{});
-})();
-</script>
+<footer class="upd">업데이트 <span id="upd-t" data-build="26/11/04/10/48">26/11/04/10/48</span></footer>
 </body>
 </html>
