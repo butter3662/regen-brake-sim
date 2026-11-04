@@ -123,7 +123,9 @@ dl.sym dd{margin:0;color:var(--ink-2)}
 .model a{color:var(--accent)}
 .anim canvas{display:block;width:100%;height:210px;border-radius:8px;background:var(--sky)}
 .hud{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:6px 12px;margin:10px 0 6px}
-.hud div{font-size:12px;color:var(--ink-3)}
+.hud div{font-size:12px;color:var(--ink-3);display:flex;flex-direction:column;justify-content:space-between}
+.lq{display:block;font-size:11px;color:var(--ink-3);font-weight:400;line-height:1.3}
+.srow label .lq{font-size:12px}
 .hud b{display:block;font-family:var(--f-mono);font-weight:500;font-size:16px;color:var(--ink);font-variant-numeric:tabular-nums}
 .ctrl{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-top:4px}
 .ctrl label{font-size:13px;color:var(--ink-2);display:inline-flex;gap:6px;align-items:center}
@@ -248,6 +250,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
 .m3 .m3-acc{margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
 .m3 .m3-acc-h{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13.5px;color:var(--ink-2);font-weight:500}
 .m3 .m3-acc-h button{font-family:var(--f-body);font-size:12.5px;padding:4px 10px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.m3 .m3-big div{display:flex;flex-direction:column;justify-content:space-between}
 .m3 .m3-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 </style>
 </head>
@@ -276,8 +279,8 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
     <div class="panel params">
       <h3>발전 방식</h3>
       <div class="genseg" role="radiogroup" aria-label="발전 방식">
-        <label><input type="radio" name="sm-gen" value="srg" checked> 전력 변환기 (기본, 계자 코일 없음)</label>
-        <label><input type="radio" name="sm-gen" value="diode"> 다이오드 정류 + 계자 코일 (비교용)</label>
+        <label><input type="radio" name="sm-gen" value="srg" checked><span>전력 변환기<span class="lq">(기본, 계자 코일 없음)</span></span></label>
+        <label><input type="radio" name="sm-gen" value="diode"><span>다이오드 정류 + 계자 코일<span class="lq">(비교용)</span></span></label>
       </div>
       <p class="note" id="sm-srg" hidden style="margin:2px 0 8px"></p>
       <h3>변수</h3>
@@ -434,25 +437,25 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
       </div>
     </div>
     <div class="m3-card">
-      <h2>철심 속 자속과 기전력 (실제 속력 기준)</h2>
-      <div class="m3-meter"><span>Φ<sub>A</sub> (철심 A)</span><div class="m3-bar"><i id="m3-barA" style="background:var(--m3-phiA)"></i></div><b id="m3-valA">–</b></div>
-      <div class="m3-meter"><span>Φ<sub>B</sub> (철심 B)</span><div class="m3-bar"><i id="m3-barB" style="background:var(--m3-phiB)"></i></div><b id="m3-valB">–</b></div>
+      <h2>철심 속 자속과 기전력<span class="lq">(실제 속력 기준)</span></h2>
+      <div class="m3-meter"><span>Φ<sub>A</sub><span class="lq">(철심 A)</span></span><div class="m3-bar"><i id="m3-barA" style="background:var(--m3-phiA)"></i></div><b id="m3-valA">–</b></div>
+      <div class="m3-meter"><span>Φ<sub>B</sub><span class="lq">(철심 B)</span></span><div class="m3-bar"><i id="m3-barB" style="background:var(--m3-phiB)"></i></div><b id="m3-valB">–</b></div>
       <div class="m3-meter"><span>Φ<sub>A</sub> + Φ<sub>B</sub></span><div class="m3-bar"><i id="m3-barS" style="background:var(--m3-sum)"></i></div><b id="m3-valS">–</b></div>
       <p class="m3-note" id="m3-fast" hidden style="margin:0 0 8px"></p>
       <div class="m3-big">
         <div><span id="m3-emf-l">철심 A 코일 전류 i</span><b id="m3-emf">–</b></div>
-        <div data-gen="srg">회전 기전력 (철심 A)<b id="m3-e2">–</b></div>
+        <div data-gen="srg">회전 기전력<span class="lq">(철심 A)</span><b id="m3-e2">–</b></div>
         <div>자속 변화 빈도<b id="m3-freq">–</b></div>
         <div>바퀴 회전수<b id="m3-rps">–</b></div>
       </div>
       <div class="m3-acc">
-        <div class="m3-acc-h"><span>누적 에너지 생산 (화면 속 시간 기준)</span><button type="button" id="m3-acc-reset">초기화</button></div>
+        <div class="m3-acc-h"><span>누적 에너지 생산<span class="lq">(화면 속 시간 기준)</span></span><button type="button" id="m3-acc-reset">초기화</button></div>
         <div class="m3-big">
           <div>배터리로 가는 순 전력<b id="m3-pw">–</b></div>
           <div>발전기 제동력<b id="m3-fg">–</b></div>
           <div>경과 시간<b id="m3-at">–</b></div>
           <div>누적 순 생산<b id="m3-ae">–</b></div>
-          <div>휴대폰 배터리 환산<b id="m3-amah">–</b></div>
+          <div>휴대폰 배터리 환산<span class="lq">(3.85 V 기준)</span><b id="m3-amah">–</b></div>
         </div>
         <p class="m3-note" id="m3-acc-note" style="margin:6px 0 0">가정: 이 속력을 유지하며 계속 발전. 시뮬레이션 탭 변수로 구한 순 전력 × 화면 속 시간(실제 시간 × 느리게 보기 배율). 실제 제동(감속)과는 다르다. 속력·방식을 바꾸면 초기화. mAh = <i>E</i>[J] ÷ 3.85 V ÷ 3.6 (휴대폰 배터리 기준).</p>
       </div>
@@ -752,7 +755,7 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
           <tr><td>제동 1회 순 생산 <i>E</i><sub>1</sub> (60 km/h → 0)</td><td><span data-fx="s_E1">–</span> kJ (회수 효율 <span data-fx="s_eta">–</span>)</td><td><span data-fx="d_E1">–</span> kJ (회수 효율 <span data-fx="d_eta">–</span>)</td><td><span data-fx="t_E1">–</span> kJ (회수 효율 <span data-fx="t_eta">–</span>)</td></tr>
           <tr><td>운동에너지 대비 (1회 208 kJ)</td><td><span data-fx="s_ke">–</span></td><td><span data-fx="d_ke">–</span></td><td>70%</td></tr>
           <tr><td>하루 순 생산 <i>E</i><sub>d</sub> (20회)</td><td><span data-fx="s_Ed">–</span> kJ</td><td><span data-fx="d_Ed">–</span> kJ</td><td><span data-fx="t_Ed">–</span> kJ</td></tr>
-          <tr><td>하루 순 생산 (휴대폰 배터리 환산)</td><td><span data-fx="s_mAh">–</span></td><td><span data-fx="d_mAh">–</span></td><td><span data-fx="t_mAh">–</span></td></tr>
+          <tr><td>하루 순 생산<span class="lq">(휴대폰 3.85 V 환산)</span></td><td><span data-fx="s_mAh">–</span></td><td><span data-fx="d_mAh">–</span></td><td><span data-fx="t_mAh">–</span></td></tr>
           <tr><td>하루 절약 연료 Δ<i>V</i></td><td><span data-fx="s_dv">–</span> mL</td><td><span data-fx="d_dv">–</span> mL</td><td><span data-fx="t_dv">–</span> mL</td></tr>
           <tr><td>연비 개선율 Δ<i>V</i>/<i>V</i><sub>0</sub></td><td><span data-fx="s_pct">–</span></td><td><span data-fx="d_pct">–</span></td><td><span data-fx="t_pct">–</span></td></tr>
           <tr><td>연비 (기준 12.6 km/L)</td><td><span data-fx="s_feR">–</span> km/L</td><td><span data-fx="d_feR">–</span> km/L</td><td><span data-fx="t_feR">–</span> km/L</td></tr>
@@ -1794,7 +1797,7 @@ function makeAnim(pre){
     const items= A.hudItems ? A.hudItems({t:A.t,st,v,x,F})
       : [['시간 t',fmt(A.t)+' s'],['속력 v',fmt(v*3.6)+' km/h'],['이동 거리 x',fmt(x)+' m'],[A.iLabel,fmt(F.I)+' A'],
          ['발전기 제동력',fmt(F.Fgen)+' N'],['마찰 제동력',fmt(F.Ffr)+' N'],['발전 전력 P',Pt],[A.eLabel,Et]];
-    el('hud').innerHTML=items.map(i=> i.sep ? `<div class="hud-sep">${i.sep}</div>` : `<div class="${i[2]||''}">${i[0]}<b>${i[1]}</b></div>`).join('');
+    el('hud').innerHTML=items.map(i=> i.sep ? `<div class="hud-sep">${labQ(i.sep)}</div>` : `<div class="${i[2]||''}">${labQ(i[0])}<b>${i[1]}</b></div>`).join('');
     const sc=el('scrub'); if(document.activeElement!==sc) sc.value=String(A.T>0?Math.min(1000,Math.round(A.t/A.T*1000)):(A.endless?1000:0));
   }
   A.set=o=>{
@@ -2013,9 +2016,12 @@ function smRec(q, withGen, Tcap){
   const rec=[]; const n=400; for(let i=0;i<=n;i++){ const t=T*i/n; rec.push({t,s:st(t)}); }
   return {rec, t:T, s:rec[n].s, stops:!endless};
 }
+/* 이름 끝의 괄호 설명은 줄을 바꿔 작게 쓴다: "코일 전류 (실효값)" → 코일 전류 / (실효값) */
+function labQ(t,sym){ const m=/^(.*?)\s*(\([^()]*\))\s*$/.exec(t); const main= m?m[1]:t, q= m?m[2]:'';
+  return main+(sym?`<i>${sym}</i>`:'')+(q?`<span class="lq">${q}</span>`:''); }
 function eTxt(E){ const a=Math.abs(E); return a>=1000 ? [fmt(E/1000),'kJ'] : [fmt(E),'J']; }
 function srowHTML(d){ return `<div class="srow" id="row-${d.id}">
-      <label for="sm-${d.id}">${d.label}<i>${d.sym}</i></label>
+      <label for="sm-${d.id}">${labQ(d.label,d.sym)}</label>
       <span class="sval"><input id="sm-${d.id}" type="number" inputmode="decimal" min="${d.min}" step="${d.step}" value="${d.v}"><span class="u">${d.unit}</span></span>
       <input id="sm-${d.id}-r" type="range" min="${d.min}" max="${d.max}" step="${d.step}" value="${d.v}" aria-label="${d.label} 슬라이더">
     </div>`; }
@@ -2179,7 +2185,7 @@ function runSimple(){
         ['누적 발전량 E',eF(E),'e-gen'],
         [srgMode ? '누적 사용 에너지 (코일 여자)' : '누적 사용 에너지 (전자석)', eF(Eu),'e-use'],
         ['순 생산 에너지 (발전 − 사용)',eF(E-Eu),'e-net'],
-        ['순 생산 (휴대폰 배터리 환산)',mAhTxt(E-Eu),'e-net'],
+        ['순 생산 (휴대폰 3.85 V 환산)',mAhTxt(E-Eu),'e-net'],
         ['손실된 에너지 (마찰 + 코일 열)',eF(fr+coil),'e-loss'],
         ['에너지 회수 효율 (순 생산 ÷ 손실)', (fr+coil)>0 ? pct((E-Eu)/(fr+coil)*100) : '–']);
       return it; }});
@@ -2298,7 +2304,7 @@ function drawCoilSrg(){
   $('#how-hud').innerHTML=[['바퀴 각속도 ω<sub>w</sub>',fmt(w)+' rad/s'],['쇳조각 통과 빈도 f',fmt(Z*w/(2*Math.PI))+' Hz'],
     ['L<sub>on</sub> / L<sub>off</sub> (코일 1개)',fmt(c.Lon*1000)+' / '+fmt(c.Loff*1000)+' mH'],['전류 상한 I<sub>ref</sub>',fmt(c.Iref)+' A'],
     ['켜는·끄는 각도 (정렬 기준)', wv.on ? `${deg(wv.uon)}° / ${deg(wv.uoff)}°` : '변환기 쉼'],
-    ['지금 철심 A 전류 i',fmt(iA)+' A'],['지금 철심 A 회전 기전력 iω dL/dθ',(eRot<-1e-9?'−':'')+fmt(Math.abs(eRot))+' V']].map(i=>`<div>${i[0]}<b>${i[1]}</b></div>`).join('');
+    ['지금 철심 A 전류 i',fmt(iA)+' A'],['지금 철심 A 회전 기전력 iω dL/dθ',(eRot<-1e-9?'−':'')+fmt(Math.abs(eRot))+' V']].map(i=>`<div>${labQ(i[0])}<b>${i[1]}</b></div>`).join('');
   $('#how-src').innerHTML=`시뮬레이션 탭의 값 <i>N</i><sub>a</sub> = ${Math.round(q.Na)}회, 다리 끝 길이 ${Math.round(q.hr)} mm, 배터리 48 V와 쇳조각 ${Z}개, 틈 1 mm × 2(쇳조각이 없으면 18 mm), 타이어 반지름 ${SMF.rw} m로 계산한다. 켜고 끄는 각도는 시뮬레이션이 이 속력에서 순 생산이 가장 크도록 고른 값이다. 그림의 틈은 보이도록 실제보다 넓게 그렸다.`+(wv.on?'':' 지금 속력은 변환기가 이득을 낼 수 있는 최저 속력보다 느려서 변환기를 쉰다.');
 }
 function drawCoil(){
@@ -2376,7 +2382,7 @@ function drawCoil(){
   $('#how-hud').innerHTML=[['바퀴 각속도 ω<sub>w</sub>',fmt(w)+' rad/s'],['쇳조각 통과 빈도 f',fmt(Z*w/(2*Math.PI))+' Hz'],
     ['Φ<sub>on</sub> / Φ<sub>off</sub>',fmt(g.phiOn*1000)+' / '+fmt(g.phiOff*1000)+' mWb'],
     ['지금 Φ<sub>A</sub>',fmt(phi(cA,u)*1000)+' mWb'],['지금 Φ<sub>B</sub>',fmt(phi(cB,u)*1000)+' mWb'],
-    ['기전력 크기 Kv',fmt(Emag)+' V'],['지금 기전력 ε',fmt(eNow)+' V']].map(i=>`<div>${i[0]}<b>${i[1]}</b></div>`).join('');
+    ['기전력 크기 Kv',fmt(Emag)+' V'],['지금 기전력 ε',fmt(eNow)+' V']].map(i=>`<div>${labQ(i[0])}<b>${i[1]}</b></div>`).join('');
   $('#how-src').innerHTML=`시뮬레이션 탭의 값 <i>N</i><sub>f</sub> = ${fmt(q.Nf)}회, <i>I</i><sub>f</sub> = ${fmt(q.If)} A, <i>N</i><sub>a</sub> = ${fmt(q.Na)}회와 쇳조각 ${Z}개, 틈 1 mm × 2(쇳조각이 없으면 18 mm), 타이어 반지름 ${SMF.rw} m로 계산한다. 그림의 틈은 보이도록 실제보다 넓게 그렸다.`;
 }
 function howEnergy(o){
