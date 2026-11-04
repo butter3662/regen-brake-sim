@@ -1873,7 +1873,7 @@ const SM_EM=[
 ];
 /* 전력 변환기 방식 전용 변수: 스위치·배선이 견디는 전류 한계. 코일 전류 상한 Iref = min(포화 전류, Imax) */
 const SM_SRG=[
-  {id:'Imax', label:'스위치 전류 한계 (철심 1개)', sym:'I<sub>max</sub>', unit:'A', v:150, min:10, max:400, step:10},
+  {id:'Imax', label:'스위치 전류 한계 (철심 1개)', sym:'I<sub>max</sub>', unit:'A', v:150, min:10, max:400, step:0.1},
 ];
 /* 마찰 브레이크 제동력 Ffr는 입력값(제동 내내 일정). 마찰만의 감속도 af = Ffr/m */
 /* 발전기 구조: 바퀴와 함께 도는 쇳조각 원판 + 차체에 고정한 U자 철심 n개(A, B, A, B, …). 3D 모형 탭과 같은 설계이다.
@@ -2168,11 +2168,11 @@ function runSimple(){
     $('#sm-rnote').innerHTML=`${geo} · 다리·등 두께 ${fmt(o.gen.h*1000)} mm `+(q.mode==='srg' ? '' : ` · 발전 코일 전체: 저항 <i>r</i> = ${fmt(o.r)} Ω, 인덕턴스 <i>L</i> = ${fmt(o.gen.L*1000)} mH · 계자 코일 전체 저항 ${fmt(q.Rf*o.gen.n)} Ω`)+` · 자속 변화폭 Δ<i>Φ</i> = ${fmt(o.gen.dphi*1000)} mWb (철심 1개)`; }
   const srgMode=q.mode==='srg';
   $('#sm-em').hidden=srgMode; $('#sm-srg').hidden=!srgMode; $('#sm-srgp').hidden=!srgMode;
-  if(srgMode){ const c=srgCoil(q), d=SM_SRG[0], sat=Math.ceil(c.Isat/d.step)*d.step, mk=$('#imax-mark');
+  if(srgMode){ const c=srgCoil(q), d=SM_SRG[0], sat=Math.round(c.Isat*10)/10, mk=$('#imax-mark');
     const f=Math.min(1,Math.max(0,(Math.min(c.Isat,d.max)-d.min)/(d.max-d.min))); if(mk){ mk.style.left=`calc(9px + (100% - 18px) * ${f})`; mk.style.display= c.Isat>d.max ? 'none' : ''; }
-    $('#imax-opt').innerHTML=`<span class="optdot" aria-hidden="true"></span>철심 포화 전류 = <b>${fmt(c.Isat)} A</b> (이보다 크게 해도 코일 전류 상한은 포화 전류에서 멈춤)${c.Isat<=d.max?` <button type="button" data-v="${Math.min(d.max,sat)}">적용</button>`:''}`; }
+    $('#imax-opt').innerHTML=`<span class="optdot" aria-hidden="true"></span>철심 포화 전류 = <b>${sat.toFixed(1)} A</b> (이보다 크게 해도 코일 전류 상한은 포화 전류에서 멈춤)${c.Isat<=d.max?` <button type="button" data-v="${Math.min(d.max,sat)}">적용</button>`:''}`; }
   if(srgMode){ const c=o.tb.c;
-    $('#sm-srg').innerHTML=`계자 코일 없음, 철심마다 코일 1개(구리 ${fmt(c.AS*1e6)} mm², ${fmt(c.R*1000)} mΩ, ${fmt(c.Loff*1000)}~${fmt(c.Lon*1000)} mH) · 전류 상한 <i>I</i><sub>ref</sub> = ${fmt(c.Iref)} A (포화 ${fmt(c.Isat)} A, 스위치 한계 ${fmt(q.Imax)} A 중 작은 값) · 배터리 ${SRG.V} V · 켜고 끄는 각도는 속력마다 자동 최적화 · 최저 속력 ${isFinite(o.tb.vmin)?fmt(o.tb.vmin*3.6)+' km/h':'없음'}`; }
+    $('#sm-srg').innerHTML=`계자 코일 없음, 철심마다 코일 1개(구리 ${fmt(c.AS*1e6)} mm², ${fmt(c.R*1000)} mΩ, ${fmt(c.Loff*1000)}~${fmt(c.Lon*1000)} mH) · 전류 상한 <i>I</i><sub>ref</sub> = ${+c.Iref.toFixed(1)} A (포화 ${(Math.round(c.Isat*10)/10).toFixed(1)} A, 스위치 한계 ${+(+q.Imax).toFixed(1)} A 중 작은 값) · 배터리 ${SRG.V} V · 켜고 끄는 각도는 속력마다 자동 최적화 · 최저 속력 ${isFinite(o.tb.vmin)?fmt(o.tb.vmin*3.6)+' km/h':'없음'}`; }
   if(q.em){ $('#sm-B').value=q.B.toFixed(3); $('#sm-B-r').value=String(q.B);
     $('#sm-Rf').value=q.Rf.toFixed(2);
     { const n=smN(q), over=q.Vf>SMF.Vbat;
@@ -2563,6 +2563,6 @@ document.querySelectorAll('table.parts').forEach(t=>{ const h=[...t.querySelecto
 })();
 })();
 </script>
-<footer class="upd"><span id="upd-ver">v1.2.1</span></footer>
+<footer class="upd"><span id="upd-ver">v1.2.2</span></footer>
 </body>
 </html>
