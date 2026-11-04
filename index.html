@@ -252,6 +252,36 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
 .m3 .m3-acc-h button{font-family:var(--f-body);font-size:12.5px;padding:4px 10px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .m3 .m3-big div{display:flex;flex-direction:column;justify-content:space-between}
 .m3 .m3-grid{align-items:start}
+.m3 .m3-demo{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:12px}
+.m3 .m3-d-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.m3 .m3-d-head b{font-family:var(--f-display);font-size:16px}
+.m3 .m3-d-head span{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-3)}
+.m3 .m3-d-tl{position:relative;height:12px;border-radius:6px;background:var(--line);margin:10px 0 2px;cursor:pointer;touch-action:none}
+.m3 .m3-d-tl i{position:absolute;top:0;bottom:0}
+.m3 .m3-d-tl .s-off{background:transparent}.m3 .m3-d-tl .s-ex{background:#378add}.m3 .m3-d-tl .s-hold{background:#d85a30}.m3 .m3-d-tl .s-ret{background:#1d9e75}
+.m3 .m3-d-tl .cur{position:absolute;top:-4px;width:3px;height:20px;margin-left:-1px;background:var(--ink);border-radius:2px}
+.m3 .m3-d-tlx{position:relative;height:16px;font-size:11.5px;color:var(--ink-3)}
+.m3 .m3-d-tlx span{position:absolute;transform:translateX(-50%)}
+.m3 .m3-d-body{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.m3 #m3-d-circ{width:min(100%,320px);height:auto;flex:0 0 auto}
+.m3 #m3-d-circ .w{stroke:var(--ink-3);stroke-width:2}
+.m3 #m3-d-circ .p-ex,.m3 #m3-d-circ .p-ret{fill:none;stroke-width:4;stroke-dasharray:8 6;opacity:0;animation:m3flow 0.6s linear infinite}
+.m3 #m3-d-circ .p-ex{stroke:#378add}.m3 #m3-d-circ .p-ret{stroke:#1d9e75}
+.m3 #m3-d-circ[data-k="ex"] .p-ex,.m3 #m3-d-circ[data-k="ret"] .p-ret{opacity:1}
+@keyframes m3flow{to{stroke-dashoffset:-14}}
+.m3 #m3-d-circ .sw circle{fill:var(--ink-2)} .m3 #m3-d-circ .sw .lev{stroke:var(--ink-2);stroke-width:2.5;transform-box:fill-box;transform-origin:50% 100%;transform:rotate(35deg);transition:transform .15s}
+.m3 #m3-d-circ[data-k="ex"] .sw .lev{transform:rotate(0deg);stroke:#378add}
+.m3 #m3-d-circ .dio path{fill:var(--ink-2)} .m3 #m3-d-circ .dio line{stroke:var(--ink-2);stroke-width:2}
+.m3 #m3-d-circ[data-k="ret"] .dio path{fill:#1d9e75} .m3 #m3-d-circ[data-k="ret"] .dio line{stroke:#1d9e75}
+.m3 #m3-d-circ .bat line{stroke:var(--ink-2);stroke-width:2}
+.m3 #m3-d-circ .tx{font-size:11px;fill:var(--ink-2);font-family:var(--f-body)}
+.m3 .m3-d-vals{display:grid;grid-template-columns:repeat(2,minmax(110px,1fr));gap:6px 16px;flex:1 1 220px}
+.m3 .m3-d-vals div{font-size:12.5px;color:var(--ink-3)}
+.m3 .m3-d-vals b{display:block;font-family:var(--f-mono);font-weight:500;font-size:18px;color:var(--ink)}
+.m3 .m3-d-text{margin:10px 0 8px;font-size:14px;color:var(--ink);line-height:1.6;min-height:3.2em}
+.m3 .m3-d-ctrl{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:13px}
+.m3 .m3-d-ctrl button{font-family:var(--f-body);font-size:13px;padding:6px 11px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.m3 .m3-d-ctrl label{display:inline-flex;gap:6px;align-items:center;color:var(--ink-2)}
 .m3 .m3-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
 </style>
 </head>
@@ -405,13 +435,48 @@ ul.plain li{margin:0 0 8px;max-width:80ch}
 
   <div id="sv-m3" hidden>
 <div class="m3">
-  <p class="m3-sub">최종 설계안(쇳조각 원판 + 고정 U자 철심)의 3D 모형이다. 화면을 끌어서 돌려 보고, 두 손가락이나 마우스 휠로 확대한다. ‘U자 철심 확대’를 누르면 철심 하나의 구조와 자속 경로를 가까이서 본다.</p>
+  <p class="m3-sub">최종 설계안(쇳조각 원판 + 고정 U자 철심)의 3D 모형이다. 화면을 끌어서 돌려 보고, 두 손가락이나 마우스 휠로 확대한다. ‘U자 철심 확대’를 누르면 철심 하나의 구조와 자속 경로를 가까이서 본다. ‘작동 과정 보기’는 전력 변환기 방식에서 쇳조각 하나가 지나갈 때 일어나는 일(켜기 → 붙잡기 → 끄기)을 회로와 함께 느리게 보여 준다.</p>
   <div class="m3-stage">
     <canvas id="m3-cv" aria-label="회생제동 발전 장치 3D 모형"></canvas>
     <div class="m3-views">
       <button type="button" id="m3-core" aria-pressed="false">U자 철심 확대</button>
+      <button type="button" id="m3-demo-btn" aria-pressed="false">작동 과정 보기 (슬로 모션)</button>
     </div>
     <div class="m3-hint">끌기: 회전 · 휠/두 손가락: 확대 · <span id="m3-hz"></span></div>
+  </div>
+    <div class="m3-demo" id="m3-demo" hidden>
+    <div class="m3-d-head"><b id="m3-d-title"></b><span id="m3-d-ang"></span></div>
+    <div class="m3-d-tl" id="m3-d-tl" aria-label="한 칸 진행 막대 (눌러서 이동)">
+      <i style="left:0;width:42%" class="s-off"></i><i style="left:42%;width:8%" class="s-ex"></i><i style="left:50%;width:38%" class="s-hold"></i><i style="left:88%;width:8%" class="s-ret"></i><i style="left:96%;width:4%" class="s-off"></i>
+      <span class="cur" id="m3-d-cur"></span>
+    </div>
+    <div class="m3-d-tlx"><span style="left:21%">대기</span><span style="left:46%">①</span><span style="left:69%">②</span><span style="left:92%">③</span></div>
+    <div class="m3-d-body">
+      <svg id="m3-d-circ" data-k="off" viewBox="0 0 300 150" role="img" aria-label="철심 하나의 비대칭 하프브리지 회로와 지금 전류가 흐르는 길">
+        <g class="w" fill="none"><path d="M30 64 V18 H270 M30 86 V132 H270"/><path d="M110 18 V38 M110 52 V62 H170 M80 132 V62 H110"/><path d="M170 94 H230 V104 M230 118 V132 M230 94 H260 V18"/>
+          <path d="M170 62 a6 5 0 0 1 0 10 a6 5 0 0 1 0 10 a6 5 0 0 1 0 10 a6 5 0 0 1 0 2"/></g>
+        <path class="p-ex" d="M30 64 V18 H110 V62 H170 V94 H230 V132 H30 V86"/>
+        <path class="p-ret" d="M30 86 V132 H80 V62 H170 V94 H260 V18 H30 V64"/>
+        <g class="sw s1"><circle cx="110" cy="38" r="2.5"/><circle cx="110" cy="52" r="2.5"/><line class="lev" x1="110" y1="52" x2="110" y2="38"/></g>
+        <g class="sw s2"><circle cx="230" cy="104" r="2.5"/><circle cx="230" cy="118" r="2.5"/><line class="lev" x1="230" y1="118" x2="230" y2="104"/></g>
+        <g class="dio d1"><path d="M73 102 L87 102 L80 92 Z"/><line x1="73" y1="92" x2="87" y2="92"/></g>
+        <g class="dio d2"><path d="M253 62 L267 62 L260 52 Z"/><line x1="253" y1="52" x2="267" y2="52"/></g>
+        <g class="bat"><line x1="18" y1="64" x2="42" y2="64"/><line x1="24" y1="70" x2="36" y2="70" stroke-width="4"/><line x1="18" y1="80" x2="42" y2="80"/><line x1="24" y1="86" x2="36" y2="86" stroke-width="4"/></g>
+        <g class="tx"><text x="46" y="62">+</text><text x="46" y="92">−</text><text x="30" y="148" text-anchor="middle">배터리</text>
+          <text x="118" y="48">S₁</text><text x="238" y="114">S₂</text><text x="66" y="100" text-anchor="end">D₁</text><text x="274" y="60">D₂</text><text x="180" y="84">코일</text></g>
+      </svg>
+      <div class="m3-d-vals">
+        <div>코일 전류<b id="m3-d-i">–</b></div><div>인덕턴스 L<b id="m3-d-L">–</b></div>
+        <div>코일에 거는 전압<b id="m3-d-v">–</b></div><div>배터리<b id="m3-d-b">–</b></div>
+      </div>
+    </div>
+    <p class="m3-d-text" id="m3-d-text"></p>
+    <div class="m3-d-ctrl">
+      <button type="button" id="m3-d-play">일시정지</button>
+      <button type="button" data-m3-jump="0.30">대기</button><button type="button" data-m3-jump="0.425">① 켜기</button><button type="button" data-m3-jump="0.55">② 붙잡기</button><button type="button" data-m3-jump="0.885">③ 끄기</button>
+      <label>한 칸 재생 시간 <select id="m3-d-speed"><option value="30">30초</option><option value="15" selected>15초</option><option value="8">8초</option></select></label>
+    </div>
+    <p class="m3-note" style="margin:6px 0 0">철심 A 하나를 쇳조각 한 칸(30°) 동안 느리게 보여 준다. 파란 선 = 배터리 → 코일(켬), 초록 선 = 코일 → 배터리(끔). 전류 모양은 대표 각도로 근사했고, 실제 50 km/h에서는 이 한 칸이 약 0.012초에 지나간다.</p>
   </div>
   <div class="m3-grid">
     <div class="m3-card">
@@ -1194,6 +1259,35 @@ const LABELS_ALL=[
   {t:'캘리퍼', p:()=>rotZ([0,0.15,-0.03],Math.PI/3), need:'brake'},
   {t:'타이어·휠', p:()=>[0,-0.3,0.1], need:'tire'},
 ];
+/* ---------- 작동 과정 보기 (전력 변환기 방식, 철심 A 하나를 슬로 모션으로) ----------
+   쇳조각 한 칸(30°)을 u = 0~1로 둔다(0.5 = 정렬). 전류 모양은 srgCur와 같은 대표 각도(켬 0.42, 최대 0.5, 끔 0.88, 0 0.96). */
+const demo={on:false, u:0.25, T:15, playing:true, chop:0};
+const STAGES=[
+  {a:0,    b:0.42, k:'off',  t:'대기: 쇳조각이 다가오는 중',
+   d:'스위치 꺼짐, 코일 전류 0. 지금 켜면 자석이 다가오는 쇳조각을 앞으로 당겨 바퀴를 밀어 준다(모터) → 손해라서 기다린다.'},
+  {a:0.42, b:0.5,  k:'ex',   t:'① 켜기 = 에너지 빌려주기',
+   d:'정렬 직전에 S₁·S₂를 켠다 → 코일에 +48 V → 전류가 0에서 약 149 A까지 빠르게 커진다. 배터리 → 코일로 에너지가 들어가 자기장에 저장된다(배터리 방전).'},
+  {a:0.5,  b:0.88, k:'hold', t:'② 붙잡기 = 발전 + 제동',
+   d:'쇳조각이 멀어지며 틈이 넓어진다 → 인덕턴스 L 감소. 자석이 쇳조각을 당기는 힘을 바퀴가 이기고 떼어 낸다 → 그 일이 코일 에너지로 더해진다(이 힘이 제동력). 전류가 상한을 넘으려 하면 S₁·S₂를 잠깐 꺼 남는 몫을 배터리로 보낸다(켬·끔 빠른 반복).'},
+  {a:0.88, b:0.96, k:'ret',  t:'③ 끄기 = 에너지 돌려받기',
+   d:'S₁·S₂를 끈다 → 전류의 관성 때문에 멈추지 못하고 D₁ → 코일 → D₂ → 배터리 +로 흐른다(배터리 충전). 코일 전압은 약 −48 V, 전류는 0까지 줄어든다. 돌려받는 양 = 빌려준 양 + 바퀴의 일 − 열.'},
+  {a:0.96, b:1.01, k:'off',  t:'준비: 다음 쇳조각 전에 전류 0',
+   d:'전류가 0이 되었다. 다음 쇳조각이 다가오기 전에 끝나야 모터 구간(손해)을 피한다. 철심 B는 반 칸 어긋나 있어 A가 쉬는 동안 일한다.'}];
+function demoStage(u){ return STAGES.find(x=>u>=x.a && u<x.b) || STAGES[0]; }
+function demoState(){
+  const u=demo.u, sg=demoStage(u), ov=overlap(CORE_ANG[0]), i=IREF*srgCur(CORE_ANG[0]);
+  const L=NSRG*NSRG*PON*(POFF+(1-POFF)*ov);
+  let k=sg.k; if(k==='hold') k = (demo.chop%2<1) ? 'ex' : 'ret';   /* 붙잡기: 켬(+48 V)·끔(−48 V)을 번갈아 보여 준다 */
+  if(k==='ret' && i<0.5) k='off';
+  return {u, sg, ov, i, L, k, deg:(u-0.5)*360/Z};
+}
+const DEMO_FLOW={off:'자석 꺼짐 (에너지 흐름 없음)', ex:'배터리 → 코일 (빌려줌)', ret:'코일 → 배터리 (돌려받음)'};
+const LABELS_DEMO=[
+  {t:()=>{ const d=demoState(); return `코일 전류 ${d.i.toFixed(0)} A`; }, p:()=>[0,RL-0.005,Z0-0.012-TL], sy:-1},
+  {t:()=>{ const d=demoState(); return `틈: 쇳조각 겹침 ${(d.ov*100).toFixed(0)}% · L ${(d.L*1000).toFixed(2)} mH`; }, p:()=>[0,0.135,Z0+0.009], sx:1, sy:1},
+  {t:()=>{ const d=demoState(); return d.sg.k==='hold' ? '바퀴가 쇳조각을 떼어 냄 → 제동·발전' : (d.u<0.42 ? '쇳조각이 다가옴' : (d.u<0.5 ? '정렬 직전' : '쇳조각이 멀어짐')); }, p:()=>rotZ([0,0.15,Z0+0.0085],alpha), sy:1},
+  {t:()=>{ const d=demoState(); return d.sg.k==='hold' ? '바퀴의 일 → 코일 · 남는 몫 → 배터리' : DEMO_FLOW[d.k]; }, p:()=>[0,RB,Z0], sy:-1},
+];
 const LABELS_CORE=[
   {t:'등 (자속이 돌아가는 길)', p:()=>[0,RB,Z0], sy:-1},
   {t:'바깥쪽 다리 + 계자 코일', p:()=>[0,RL-0.005,Z0+0.012+TL], sy:-1, gen:'diode'},
@@ -1207,7 +1301,7 @@ const LABELS_CORE=[
 function drawLabels(){
   ctx.font='12.5px "Noto Sans KR", sans-serif'; ctx.textBaseline='middle'; ctx.textAlign='left';
   const surf=css('--surface'), ink=css('--ink'), line=css('--ink-3');
-  const list = mode==='core' ? LABELS_CORE : LABELS_ALL;
+  const list = demo.on ? LABELS_DEMO : (mode==='core' ? LABELS_CORE : LABELS_ALL);
   const placed=[];
   for(const l of list){
     if(l.need==='brake' && !st.brake) continue;
@@ -1219,7 +1313,8 @@ function drawLabels(){
     let hid=false; const px=Math.floor(x*sc), py=Math.floor(y*sc);
     if(px>=0&&py>=0&&px<bw&&py<bh){ hid = zb[py*bw+px] > (1/c[2])*1.004; }
     const sxn=(l.sx!=null ? l.sx : (x>W/2?1:-1)), syn=(l.sy!=null ? l.sy : (y>H/2?1:-1));
-    const dx=sxn*34, tw=ctx.measureText(l.t).width+12;
+    const txt= typeof l.t==='function' ? l.t() : l.t;
+    const dx=sxn*34, tw=ctx.measureText(txt).width+12;
     let lx=x+dx, ly=y+syn*24, bx= dx>0 ? lx : lx-tw;
     /* 다른 라벨과 겹치면 같은 방향으로 밀어낸다 */
     for(let k=0;k<12;k++){
@@ -1234,7 +1329,7 @@ function drawLabels(){
     if(hid){ ctx.fillStyle=surf; ctx.fill(); ctx.strokeStyle=ink; ctx.stroke(); } else { ctx.fillStyle=ink; ctx.fill(); }
     ctx.globalAlpha=1;
     ctx.fillStyle=surf; ctx.globalAlpha=0.92; ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(bx,ly-10,tw,20,5); else ctx.rect(bx,ly-10,tw,20); ctx.fill(); ctx.globalAlpha=1;
-    ctx.strokeStyle=line; ctx.stroke(); ctx.fillStyle=ink; ctx.fillText(l.t,bx+6,ly+0.5);
+    ctx.strokeStyle=line; ctx.stroke(); ctx.fillStyle=ink; ctx.fillText(txt,bx+6,ly+0.5);
   }
 }
 
@@ -1298,11 +1393,15 @@ function updateUI(){
 }
 function frame(ts){
   if(!running) return;
-  if(last!=null && playing){ alpha -= (st.speed/3.6)/RW*st.slow*Math.min(0.05,(ts-last)/1000); }
+  if(demo.on){ const dts= last!=null ? Math.min(0.05,(ts-last)/1000) : 0;
+    if(demo.playing){ demo.u=(demo.u+dts/demo.T)%1; demo.chop+=dts*4; }
+    alpha=-(demo.u-0.5)*TOOTH; }
+  else if(last!=null && playing){ alpha -= (st.speed/3.6)/RW*st.slow*Math.min(0.05,(ts-last)/1000); }
   if(last!=null){ const dt=ts-last; if(dt>0 && dt<200) fps+=(1000/dt-fps)*0.05;
-    if(playing) accStep(Math.min(0.05,dt/1000)*st.slow); }
+    if(playing && !demo.on) accStep(Math.min(0.05,dt/1000)*st.slow); }
   last=ts;
   updateUI(); lastUI=ts;   /* 게이지는 매 프레임(화면 주사율) 갱신 */
+  if(demo.on) demoUI();
   if(W>0 && H>0){ const t0=performance.now(); draw(); drawMs+=(performance.now()-t0-drawMs)*0.1;
     if(++nAdj>=20){ nAdj=0;
       if(st.quality!=='auto') rs=1;   /* 선명하게: 해상도 고정 */
@@ -1331,7 +1430,7 @@ function init(){
   const up=e=>{ ptrs.delete(e.pointerId); if(ptrs.size<2) pinch0=null; };
   cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
   cv.addEventListener('wheel',e=>{ e.preventDefault(); cam.dist=Math.max(0.15,Math.min(3,cam.dist*Math.exp(e.deltaY*0.001))); },{passive:false});
-  $('#m3-core').addEventListener('click',()=>setView(mode==='core'?'in':'core'));
+  $('#m3-core').addEventListener('click',()=>{ if(demo.on) demoStop(); setView(mode==='core'?'in':'core'); });
   const pb=$('#m3-play'); pb.textContent=playing?'일시정지':'재생';
   pb.addEventListener('click',()=>{ playing=!playing; pb.textContent=playing?'일시정지':'재생'; });
   $('#m3-spd').addEventListener('input',e=>{ st.speed=+e.target.value; $('#m3-spdo').textContent=st.speed+' km/h'; });
@@ -1342,13 +1441,43 @@ function init(){
   $('#m3-flux').addEventListener('change',e=>{ st.flux=e.target.checked; });
   { const ab=$('.m3-acc'); if(ab && typeof window.M3D_power!=='function') ab.hidden=true; }   /* 단독 3D 페이지에는 발전 모형이 없다 */
   const qs=$('#m3-q'); if(qs) qs.addEventListener('change',e=>{ st.quality=e.target.value; if(st.quality!=='auto') rs=1; });
+  { const db=$('#m3-demo-btn'); if(db) db.addEventListener('click',()=> demo.on ? demoStop() : demoStart());
+    const pp=$('#m3-d-play'); if(pp) pp.addEventListener('click',()=>{ demo.playing=!demo.playing; demoUI(); });
+    document.querySelectorAll('[data-m3-jump]').forEach(b=>b.addEventListener('click',()=>{ demo.u=+b.dataset.m3Jump; demo.chop=0; demoUI(); }));
+    const ds=$('#m3-d-speed'); if(ds) ds.addEventListener('change',e=>{ demo.T=+e.target.value; });
+    const tl=$('#m3-d-tl'); if(tl){ const seek=e=>{ const r=tl.getBoundingClientRect(); demo.u=Math.max(0,Math.min(0.999,(e.clientX-r.left)/r.width)); demoUI(); };
+      tl.addEventListener('pointerdown',e=>{ tl.setPointerCapture(e.pointerId); seek(e); }); tl.addEventListener('pointermove',e=>{ if(e.buttons) seek(e); }); } }
   const ar=$('#m3-acc-reset'); if(ar) ar.addEventListener('click',()=>{ acc.E=0; acc.t=0; acc.n=0; });
   const gs=$('#m3-gen'); if(gs) gs.addEventListener('change',e=>{ setGen(e.target.value); if(typeof window.M3D_onGen==='function') window.M3D_onGen(st.gen); });
   setGen(st.gen);
 }
+/* 작동 과정 패널 갱신 */
+function demoUI(){
+  const d=demoState(), set=(id,v)=>{ const e=$(id); if(e && e.textContent!==v) e.textContent=v; };
+  set('#m3-d-title',d.sg.t); set('#m3-d-text',d.sg.d);
+  set('#m3-d-ang',`쇳조각 위치: 정렬 기준 ${d.deg<0?'−':'+'}${Math.abs(d.deg).toFixed(1)}°`);
+  set('#m3-d-i',d.i.toFixed(0)+' A'); set('#m3-d-L',(d.L*1000).toFixed(2)+' mH');
+  set('#m3-d-v', d.k==='ex' ? '+48 V' : (d.k==='ret' ? '약 −48 V' : '0 V'));
+  set('#m3-d-b', d.k==='ex' ? '방전 (빌려줌)' : (d.k==='ret' ? '충전 (돌려받음)' : '—'));
+  const c=$('#m3-d-circ'); if(c) c.setAttribute('data-k',d.k);
+  const cur=$('#m3-d-cur'); if(cur) cur.style.left=(d.u*100)+'%';
+  const pb=$('#m3-d-play'); if(pb) pb.textContent= demo.playing ? '일시정지' : '재생';
+}
+function demoStart(){
+  if(!inited) return; demo.on=true; demo.playing=true;
+  if(st.gen!=='srg'){ setGen('srg'); if(typeof window.M3D_onGen==='function') window.M3D_onGen('srg'); }
+  setView('core'); st.flux=true; const fx=$('#m3-flux'); if(fx) fx.checked=true;
+  const p=$('#m3-demo'); if(p) p.hidden=false; const b=$('#m3-demo-btn'); if(b){ b.setAttribute('aria-pressed','true'); b.textContent='작동 과정 닫기'; }
+  demoUI();
+}
+function demoStop(){
+  demo.on=false; const p=$('#m3-demo'); if(p) p.hidden=true;
+  const b=$('#m3-demo-btn'); if(b){ b.setAttribute('aria-pressed','false'); b.textContent='작동 과정 보기 (슬로 모션)'; }
+}
 /* 발전 방식에 따라 코일 색·이름표·측정값 이름을 바꾼다 */
 function setGen(g){
   st.gen = g==='srg' ? 'srg' : 'diode'; const srg=st.gen==='srg';
+  if(!srg && demo.on) demoStop();
   const gs=$('#m3-gen'); if(gs && gs.value!==st.gen) gs.value=st.gen;
   document.querySelectorAll('.m3 [data-gen]').forEach(el=>{ el.hidden = el.getAttribute('data-gen')!==st.gen; });
   const t=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
@@ -2563,6 +2692,6 @@ document.querySelectorAll('table.parts').forEach(t=>{ const h=[...t.querySelecto
 })();
 })();
 </script>
-<footer class="upd"><span id="upd-ver">v1.2.2</span></footer>
+<footer class="upd"><span id="upd-ver">v1.3.0</span></footer>
 </body>
 </html>
