@@ -2434,6 +2434,48 @@ function applyMode(){
 }
 $('#adv-toggle').addEventListener('change',e=>{ adv=e.target.checked; try{ localStorage.setItem('rbs-adv',adv?'1':'0'); }catch(err){} applyMode(); });
 buildSimple(); runSimple(); applyMode(); fxFill();
+/* ---------- 새 버전 자동 새로고침 (쓰던 세팅 유지) ----------
+   1분마다(그리고 화면으로 돌아올 때) 서버의 index.html을 캐시 없이 받아 하단 버전을 비교한다.
+   다르면 입력값·선택·탭·스크롤을 sessionStorage에 저장하고, 캐시를 우회하는 주소로 다시 불러와 복원한다. */
+(function(){
+  const KEY='rbs-state', TRY='rbs-reload-to', curVer=()=>((document.getElementById('upd-ver')||{}).textContent||'').trim();   /* 하단 버전(스크립트보다 뒤에 있어 나중에 읽음) */
+  const fields=()=>[...document.querySelectorAll('input[id],select[id]')].filter(e=>!e.readOnly && e.type!=='file' && e.id!=='adv-toggle' && !(e.id.endsWith('-r') && document.getElementById(e.id.slice(0,-2))));
+  function save(){
+    const st={v:{}, radio:{}, view:smView, y:window.scrollY};
+    fields().forEach(e=>{ if(e.type==='radio') return; st.v[e.id]= e.type==='checkbox' ? !!e.checked : e.value; });
+    document.querySelectorAll('input[type=radio][name]:checked').forEach(r=>{ st.radio[r.name]=r.value; });
+    try{ sessionStorage.setItem(KEY,JSON.stringify(st)); }catch(e){}
+  }
+  function restore(){
+    let st=null; try{ st=JSON.parse(sessionStorage.getItem(KEY)||'null'); sessionStorage.removeItem(KEY); }catch(e){}
+    if(!st) return;
+    const fire=(e,t)=>e.dispatchEvent(new Event(t,{bubbles:true}));
+    Object.entries(st.radio||{}).forEach(([n,v])=>{ const r=document.querySelector(`input[type=radio][name="${n}"][value="${v}"]`); if(r && !r.checked){ r.checked=true; fire(r,'change'); } });
+    Object.entries(st.v||{}).forEach(([id,v])=>{ const e=document.getElementById(id); if(!e) return;
+      if(e.type==='checkbox'){ if(e.checked!==v){ e.checked=v; fire(e,'change'); } }
+      else if(e.value!==v){ e.value=v; fire(e,'input'); fire(e,'change'); } });
+    if(st.view && !adv) setSmView(st.view);
+    if(st.y) setTimeout(()=>window.scrollTo(0,st.y),300);
+  }
+  restore();
+  let busy=false;
+  async function check(){
+    const cur=curVer(); if(busy || document.hidden || !cur) return; busy=true;
+    try{
+      const r=await fetch(location.pathname+'?vc='+Date.now(),{cache:'no-store'}); if(!r.ok) return;
+      const doc=new DOMParser().parseFromString(await r.text(),'text/html'), el=doc.getElementById('upd-ver'); const nv=el&&el.textContent.trim();
+      if(!nv || nv===cur) return;
+      let tried=null; try{ tried=sessionStorage.getItem(TRY); }catch(e){}
+      if(tried===nv) return;                                   /* 이미 한 번 시도함(배포 중) → 반복하지 않음 */
+      const a=document.activeElement; if(a && /INPUT|SELECT|TEXTAREA/.test(a.tagName) && a.type!=='range') return;   /* 입력 중이면 다음에 */
+      try{ sessionStorage.setItem(TRY,nv); }catch(e){}
+      save();
+      location.replace(location.pathname+'?v='+encodeURIComponent(nv)+location.hash);
+    }catch(e){} finally{ busy=false; }
+  }
+  setTimeout(check,3000); setInterval(check,60000);
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) check(); });
+})();
 document.querySelectorAll('.cseg button').forEach(b=>b.addEventListener('click',()=>genSet(b.dataset.c)));
 /* 표 칸마다 머리글 이름을 달아 둔다 (좁은 화면에서 칸 위에 표시) */
 document.querySelectorAll('table.parts').forEach(t=>{ const h=[...t.querySelectorAll('thead th')].map(th=>th.textContent.trim());
@@ -2469,6 +2511,6 @@ document.querySelectorAll('table.parts').forEach(t=>{ const h=[...t.querySelecto
 })();
 })();
 </script>
-<footer class="upd"><span id="upd-ver">v1.0.2</span></footer>
+<footer class="upd"><span id="upd-ver">v1.1.0</span></footer>
 </body>
 </html>
