@@ -1353,7 +1353,16 @@ return {
   start(){ init(); resize(); if(running) return; running=true; last=null; raf=requestAnimationFrame(frame); },
   stop(){ running=false; cancelAnimationFrame(raf); },
   setGen(g){ setGen(g); },
-  paramsChanged(){ acc.n=0; acc.E=0; acc.t=0; }
+  paramsChanged(){ acc.n=0; acc.E=0; acc.t=0; },
+  /* 새로고침해도 이어 보도록: 카메라·확대 상태·바퀴 각도·재생 여부·누적 에너지 */
+  getState(){ return {cam:{...cam}, mode, alpha, playing, acc:{E:acc.E, t:acc.t, key:acc.key}}; },
+  setState(o){ if(!o) return;
+    if(o.cam) Object.assign(cam,o.cam);
+    if(o.mode){ mode=o.mode; const b=$('#m3-core'); if(b){ b.setAttribute('aria-pressed', mode==='core'?'true':'false'); b.textContent = mode==='core' ? '전체 보기' : 'U자 철심 확대'; } }
+    if(isFinite(o.alpha)) alpha=o.alpha;
+    if(typeof o.playing==='boolean'){ playing=o.playing; const pb=$('#m3-play'); if(pb) pb.textContent=playing?'일시정지':'재생'; }
+    if(o.acc){ acc.E=o.acc.E; acc.t=o.acc.t; acc.key=o.acc.key; acc.n=0; acc.P=null; }
+  }
 };
 })();
 
@@ -1814,6 +1823,9 @@ function makeAnim(pre){
     sync(); draw(); if(A.playing) start();
   };
   A.pause=()=>{ if(A.playing){ A.playing=false; sync(); } };
+  /* 새로고침해도 이어 보도록 재생 위치·재생 여부를 저장/복원 */
+  A.getState=()=>({t:A.t, phase:A.phase, playing:A.playing});
+  A.setState=o=>{ if(!o||!A.on) return; A.t=Math.max(0,Math.min(o.t||0,A.T)); A.phase=o.phase||0; A.playing=!!o.playing && canPlay() && !reduceMotion && visible(); sync(); draw(); if(A.playing) start(); };
   A.wake=()=>{ if(!A.on) return; draw(); if(!A.playing && A.t===0 && canPlay() && !reduceMotion){ A.playing=true; sync(); start(); } };
   el('play').addEventListener('click',()=>{ if(A.playing){ A.playing=false; } else { if(!A.endless && A.t>=A.T){ A.t=0; A.phase=0; } A.playing=canPlay(); if(A.playing) start(); } sync(); });
   el('restart').addEventListener('click',()=>{ A.t=0; A.phase=0; A.playing=canPlay(); sync(); if(A.playing) start(); else draw(); });
@@ -2441,7 +2453,8 @@ buildSimple(); runSimple(); applyMode(); fxFill();
   const KEY='rbs-state', TRY='rbs-reload-to', curVer=()=>((document.getElementById('upd-ver')||{}).textContent||'').trim();   /* 하단 버전(스크립트보다 뒤에 있어 나중에 읽음) */
   const fields=()=>[...document.querySelectorAll('input[id],select[id]')].filter(e=>!e.readOnly && e.type!=='file' && e.id!=='adv-toggle' && !(e.id.endsWith('-r') && document.getElementById(e.id.slice(0,-2))));
   function save(){
-    const st={v:{}, radio:{}, view:smView, y:window.scrollY};
+    const st={v:{}, radio:{}, view:smView, y:window.scrollY,
+      anim:{sm:smAnim.getState(), veh:vehAnim.getState(), coil:coil.th, m3: window.M3D&&M3D.getState ? M3D.getState() : null}};
     fields().forEach(e=>{ if(e.type==='radio') return; st.v[e.id]= e.type==='checkbox' ? !!e.checked : e.value; });
     document.querySelectorAll('input[type=radio][name]:checked').forEach(r=>{ st.radio[r.name]=r.value; });
     try{ sessionStorage.setItem(KEY,JSON.stringify(st)); }catch(e){}
@@ -2456,6 +2469,10 @@ buildSimple(); runSimple(); applyMode(); fxFill();
       else if(e.value!==v){ e.value=v; fire(e,'input'); fire(e,'change'); } });
     if(st.view && !adv) setSmView(st.view);
     if(st.y) setTimeout(()=>window.scrollTo(0,st.y),300);
+    /* 입력 복원으로 다시 계산(다음 프레임)된 뒤에 재생 위치·3D 상태를 되돌린다 */
+    if(st.anim) setTimeout(()=>{ const a=st.anim; smAnim.setState(a.sm); vehAnim.setState(a.veh);
+      if(isFinite(a.coil)){ coil.th=a.coil; if(smView==='how' && !coil.on) drawCoil(); }
+      if(a.m3 && window.M3D && M3D.setState) M3D.setState(a.m3); },350);
   }
   restore();
   let busy=false;
@@ -2511,6 +2528,6 @@ document.querySelectorAll('table.parts').forEach(t=>{ const h=[...t.querySelecto
 })();
 })();
 </script>
-<footer class="upd"><span id="upd-ver">v1.1.0</span></footer>
+<footer class="upd"><span id="upd-ver">v1.1.1</span></footer>
 </body>
 </html>
