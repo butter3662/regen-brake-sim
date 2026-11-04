@@ -2462,11 +2462,14 @@ document.querySelectorAll('table.parts').forEach(t=>{ const h=[...t.querySelecto
 </script>
 <footer class="upd">업데이트 <span id="upd-t"></span></footer>
 <script>
-/* 업데이트 시각: 서버가 알려 주는 파일 수정 시각(Last-Modified)을 한국 시간 YY/MM/DD/시/분으로 표시 */
+/* 업데이트 시각: GitHub 저장소의 마지막 커밋 시각(실패하면 서버의 파일 수정 시각)을 한국 시간 YY/MM/DD/시/분으로 표시 */
 (function(){
-  let d=new Date(document.lastModified); if(isNaN(d)) return;
-  const p=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',year:'2-digit',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(d).map(x=>[x.type,x.value]));
-  document.getElementById('upd-t').textContent=`${p.year}/${p.month}/${p.day}/${p.hour}/${p.minute}`;
+  const el=document.getElementById('upd-t');
+  const show=d=>{ if(isNaN(d)) return; const p=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Seoul',year:'2-digit',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(d).map(x=>[x.type,x.value]));
+    el.textContent=`${p.year}/${p.month}/${p.day}/${p.hour}/${p.minute}`; };
+  show(new Date(document.lastModified));
+  fetch('https://api.github.com/repos/butter3662/regen-brake-sim/commits?per_page=1').then(r=>r.ok?r.json():null)
+    .then(j=>{ const t=j&&j[0]&&j[0].commit&&j[0].commit.committer&&j[0].commit.committer.date; if(t) show(new Date(t)); }).catch(()=>{});
 })();
 </script>
 </body>
